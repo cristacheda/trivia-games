@@ -21,6 +21,7 @@
 - Game metadata comes from `src/config/site.ts`
 - Flag quiz data and weighting live under `src/features/flag-quiz`
 - Round results are stored through `src/lib/storage.ts`
+- Sound cues are generated client-side through `src/lib/sound.ts`
 - Integration hooks exist, but external providers are currently no-op
 
 ## Persistence
@@ -31,6 +32,7 @@
   - last selected difficulty per game
   - per-game high score
   - most recent round result
+  - app-level sound enabled preference
 
 ## Offline model
 

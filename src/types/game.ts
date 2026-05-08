@@ -37,10 +37,15 @@ export interface GameLocalStats {
   lastDifficulty: DifficultyId | null
 }
 
+export interface AppPreferences {
+  soundEnabled: boolean
+}
+
 export interface PersistedAppState {
   version: number
   playerId: string
   games: Partial<Record<GameId, GameLocalStats>>
+  preferences: AppPreferences
 }
 
 export interface GameCatalogEntry {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type {
+  AppPreferences,
   DifficultyId,
   GameId,
   GameLocalStats,
@@ -9,9 +10,15 @@ import type {
 
 const STORAGE_KEY = 'atlas-of-answers:app-state'
 const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
-export const STORAGE_VERSION = 1
+export const STORAGE_VERSION = 2
 
 type RoundResultInput = Omit<RoundResult, 'previousBestScore' | 'beatHighScore'>
+
+function createDefaultPreferences(): AppPreferences {
+  return {
+    soundEnabled: true,
+  }
+}
 
 function createDefaultStats(): GameLocalStats {
   return {
@@ -26,6 +33,7 @@ function createDefaultState(): PersistedAppState {
     version: STORAGE_VERSION,
     playerId: crypto.randomUUID(),
     games: {},
+    preferences: createDefaultPreferences(),
   }
 }
 
@@ -40,7 +48,20 @@ function normalizeState(value: unknown): PersistedAppState {
 
   const state = value as Partial<PersistedAppState>
 
-  if (state.version !== STORAGE_VERSION || typeof state.playerId !== 'string') {
+  if (typeof state.playerId !== 'string') {
+    return createDefaultState()
+  }
+
+  if (state.version === 1) {
+    return {
+      version: STORAGE_VERSION,
+      playerId: state.playerId,
+      games: state.games ?? {},
+      preferences: createDefaultPreferences(),
+    }
+  }
+
+  if (state.version !== STORAGE_VERSION) {
     return createDefaultState()
   }
 
@@ -48,6 +69,10 @@ function normalizeState(value: unknown): PersistedAppState {
     version: STORAGE_VERSION,
     playerId: state.playerId,
     games: state.games ?? {},
+    preferences: {
+      ...createDefaultPreferences(),
+      ...(state.preferences ?? {}),
+    },
   }
 }
 
@@ -80,9 +105,26 @@ export function getPlayerId() {
   return state.playerId
 }
 
+export function getAppPreferences() {
+  const state = readAppState()
+  return state.preferences
+}
+
 export function getGameStats(gameId: GameId): GameLocalStats {
   const state = readAppState()
   return state.games[gameId] ?? createDefaultStats()
+}
+
+export function setSoundEnabled(soundEnabled: boolean) {
+  const state = readAppState()
+
+  writeAppState({
+    ...state,
+    preferences: {
+      ...state.preferences,
+      soundEnabled,
+    },
+  })
 }
 
 export function setLastDifficulty(gameId: GameId, difficultyId: DifficultyId) {
@@ -156,4 +198,25 @@ export function useGameStats(gameId: GameId) {
   }, [gameId])
 
   return stats
+}
+
+export function useSoundEnabled() {
+  const [soundEnabled, setSoundEnabledState] = useState(
+    () => getAppPreferences().soundEnabled,
+  )
+
+  useEffect(() => {
+    const update = () => setSoundEnabledState(getAppPreferences().soundEnabled)
+
+    update()
+    window.addEventListener('storage', update)
+    window.addEventListener(STORAGE_EVENT, update)
+
+    return () => {
+      window.removeEventListener('storage', update)
+      window.removeEventListener(STORAGE_EVENT, update)
+    }
+  }, [])
+
+  return soundEnabled
 }

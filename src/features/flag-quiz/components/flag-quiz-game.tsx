@@ -6,7 +6,7 @@ import {
   useState,
   type FormEvent,
 } from 'react'
-import { RotateCcw, Trophy } from 'lucide-react'
+import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { CountryFlag } from '@/components/country-flag'
 import { Badge } from '@/components/ui/badge'
@@ -27,12 +27,16 @@ import { generateFlagQuizRound } from '@/features/flag-quiz/lib/round'
 import { scoreAnswer } from '@/features/flag-quiz/lib/scoring'
 import type { FlagQuizQuestion } from '@/features/flag-quiz/types'
 import { getDebugSettings } from '@/lib/debug'
+import { playSoundCue, primeSound } from '@/lib/sound'
 import {
+  getAppPreferences,
   getGameStats,
   getPlayerId,
   recordRoundResult,
+  setSoundEnabled,
   setLastDifficulty,
   useGameStats,
+  useSoundEnabled,
 } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 import type { DifficultyRule, RoundResult } from '@/types/game'
@@ -66,6 +70,7 @@ function getResolutionMessage(
 
 export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
   const stats = useGameStats(FLAG_QUIZ_GAME_ID)
+  const soundEnabled = useSoundEnabled()
   const initialDifficulty =
     getGameStats(FLAG_QUIZ_GAME_ID).lastDifficulty ?? 'level-1'
   const [selectedDifficultyId, setSelectedDifficultyId] =
@@ -124,6 +129,10 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
         })
       }
 
+      if (getAppPreferences().soundEnabled) {
+        void playSoundCue(stored.beatHighScore ? 'high-score' : 'finish')
+      }
+
       await scoreSync.syncRoundResult(stored)
       setResult(stored)
       setPhase('results')
@@ -180,6 +189,10 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
 
       if (isCorrect) {
         setCorrectBurstCounter((current) => current + 1)
+      }
+
+      if (getAppPreferences().soundEnabled) {
+        void playSoundCue(isCorrect ? 'correct' : 'wrong')
       }
 
       analytics.trackEvent('question_answered', {
@@ -259,6 +272,9 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
 
   const startRound = () => {
     const rule = getDifficultyRule(selectedDifficultyId)
+    if (getAppPreferences().soundEnabled) {
+      void primeSound()
+    }
     setLastDifficulty(FLAG_QUIZ_GAME_ID, selectedDifficultyId)
     setQuestions(generateFlagQuizRound(rule))
     setQuestionIndex(0)
@@ -295,6 +311,19 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
       textAnswer,
     )
   }
+
+  const toggleSound = async () => {
+    const nextSoundEnabled = !soundEnabled
+    setSoundEnabled(nextSoundEnabled)
+
+    if (nextSoundEnabled) {
+      await primeSound()
+      await playSoundCue('correct')
+    }
+  }
+
+  const SoundIcon = soundEnabled ? Volume2 : VolumeX
+  const soundButtonLabel = soundEnabled ? 'Sound on' : 'Sound off'
 
   if (phase === 'setup') {
     return (
@@ -384,14 +413,31 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
               </div>
             </div>
 
-            <Button
-              className="w-full sm:w-auto"
-              data-testid="start-round"
-              onClick={startRound}
-              size="lg"
-            >
-              Start round
-            </Button>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button
+                className="w-full sm:w-auto"
+                data-testid="start-round"
+                onClick={startRound}
+                size="lg"
+              >
+                Start round
+              </Button>
+              <Button
+                aria-pressed={soundEnabled}
+                className="w-full justify-center sm:w-auto"
+                data-testid="sound-toggle"
+                onClick={() => void toggleSound()}
+                type="button"
+                variant="outline"
+              >
+                <SoundIcon className="h-4 w-4" />
+                {soundButtonLabel}
+              </Button>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Subtle game sounds for correct answers, misses, round finish, and new
+              records.
+            </p>
           </CardContent>
         </Card>
       </>
@@ -499,13 +545,31 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
               </Badge>
               <Badge variant="outline">{difficulty.label}</Badge>
             </div>
-            <div className="text-right">
-              <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
-                Score
-              </p>
-              <p className="font-serif text-3xl font-semibold" data-testid="live-score">
-                {score}
-              </p>
+            <div className="flex items-start gap-2">
+              <Button
+                aria-label={soundButtonLabel}
+                aria-pressed={soundEnabled}
+                className="shrink-0"
+                data-testid="in-round-sound-toggle"
+                onClick={() => void toggleSound()}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                <SoundIcon className="h-4 w-4" />
+                <span className="sr-only">{soundButtonLabel}</span>
+              </Button>
+              <div className="text-right">
+                <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
+                  Score
+                </p>
+                <p
+                  className="font-serif text-3xl font-semibold"
+                  data-testid="live-score"
+                >
+                  {score}
+                </p>
+              </div>
             </div>
           </div>
 

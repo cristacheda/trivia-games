@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   STORAGE_VERSION,
+  getAppPreferences,
   getGameStats,
   readAppState,
   recordRoundResult,
+  setSoundEnabled,
   setLastDifficulty,
 } from '@/lib/storage'
 
@@ -22,13 +24,41 @@ describe('storage', () => {
   it('resets invalid schema versions', () => {
     window.localStorage.setItem(
       'atlas-of-answers:app-state',
-      JSON.stringify({ version: 999, playerId: 'old', games: {} }),
+      JSON.stringify({ version: 999, playerId: 'old', games: {}, preferences: {} }),
     )
 
     const state = readAppState()
 
     expect(state.version).toBe(STORAGE_VERSION)
     expect(state.playerId).not.toBe('old')
+  })
+
+  it('migrates version 1 state without dropping scores', () => {
+    window.localStorage.setItem(
+      'atlas-of-answers:app-state',
+      JSON.stringify({
+        version: 1,
+        playerId: 'player-1',
+        games: {
+          'flag-quiz': {
+            highScore: {
+              score: 12,
+              achievedAt: '2026-05-07T20:00:00.000Z',
+              difficultyId: 'level-2',
+            },
+            recentResult: null,
+            lastDifficulty: 'level-2',
+          },
+        },
+      }),
+    )
+
+    const state = readAppState()
+
+    expect(state.version).toBe(STORAGE_VERSION)
+    expect(state.playerId).toBe('player-1')
+    expect(state.games['flag-quiz']?.highScore?.score).toBe(12)
+    expect(state.preferences.soundEnabled).toBe(true)
   })
 
   it('stores last difficulty and high score', () => {
@@ -49,5 +79,11 @@ describe('storage', () => {
     expect(stats.lastDifficulty).toBe('level-3')
     expect(stats.highScore?.score).toBe(17)
     expect(stats.recentResult?.totalScore).toBe(17)
+  })
+
+  it('stores the sound preference', () => {
+    setSoundEnabled(false)
+
+    expect(getAppPreferences().soundEnabled).toBe(false)
   })
 })

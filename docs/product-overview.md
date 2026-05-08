@@ -16,6 +16,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - One playable game: `Name the Country Flag`
 - One teaser card for the upcoming outline game
 - Local-first score and preference storage
+- Subtle in-game sound cues with a local mute toggle
 - Offline-capable first game after the initial asset load
 
 ## Core product decisions
@@ -34,6 +35,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Prioritizes countries outside Europe.
 - Gives extra exposure to smaller or less familiar countries.
 - Runs in rounds of 10 questions.
+- Plays subtle sounds for correct answers, wrong answers, round finish, and new high scores.
 
 ### Difficulty levels
 
