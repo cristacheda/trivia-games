@@ -15,6 +15,7 @@ const appCommitSha =
   process.env.GITHUB_SHA ||
   'local'
 const appBuildId = `${appVersion}-${appCommitSha.slice(0, 7)}`
+const serviceWorkerFilename = `sw-${appBuildId}.js`
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -27,6 +28,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      filename: serviceWorkerFilename,
       registerType: 'autoUpdate',
       includeAssets: ['atlas.png', 'atlas-192.png', 'apple-touch-icon.png'],
       manifest: {

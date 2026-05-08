@@ -13,8 +13,10 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - The app version comes from `package.json`.
 - Each build also exposes the current commit SHA.
 - The PWA cache id includes the app version.
+- The generated offline service worker filename includes the current build id.
+- `public/sw.js` is kept as a compatibility worker that unregisters stale legacy service workers and clears old app caches.
 - Built assets use Vite content hashes.
-- `index.html`, `sw.js`, and `manifest.webmanifest` are configured for revalidation instead of long-lived caching.
+- `index.html`, `sw.js`, `sw-*.js`, and `manifest.webmanifest` are configured for revalidation instead of long-lived caching.
 
 ## Release flow
 
@@ -35,6 +37,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - `npm run test:e2e`
 - `npm run check`
 - `npm run docs:check` for the staged pre-commit docs guard
+- `curl -I https://triviagames.cristache.net/sw.js` after production deploys when checking a cache fix
 
 For UI changes, verify the experience at a mobile viewport before shipping. Treat mobile layout and interaction as required validation, not optional spot-checking.
 
@@ -45,6 +48,7 @@ For UI changes, verify the experience at a mobile viewport before shipping. Trea
 - CI runs on pull requests and pushes.
 - Deployment runs on pushes to `main` and `preview`.
 - The deploy workflow uploads the `dist` directory to the Cloudflare Pages project named `trivia-games`.
+- Production deploys can optionally purge the root HTML, compatibility service worker, and manifest when `CLOUDFLARE_ZONE_ID` is available in GitHub Actions secrets.
 - `main` is the production branch.
 - `preview` is the long-lived preview branch.
 

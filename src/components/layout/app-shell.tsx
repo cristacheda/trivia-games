@@ -131,7 +131,7 @@ export function AppShell({ children }: AppShellProps) {
                   {needRefresh ? (
                     <Button onClick={refreshApp} size="sm" variant="secondary">
                       <RefreshCw className="h-4 w-4" />
-                      <span className="hidden sm:inline">Update</span>
+                      <span>Update app</span>
                     </Button>
                   ) : null}
                   <Button
@@ -191,9 +191,11 @@ export function AppShell({ children }: AppShellProps) {
                           )}
                         </Badge>
                         <Badge variant="outline">
-                          {offlineReady
-                            ? 'Playable games cached for offline replay'
-                            : 'Offline cache after first load'}
+                          {needRefresh
+                            ? 'New version ready to install'
+                            : offlineReady
+                              ? 'Playable games cached for offline replay'
+                              : 'Offline cache after first load'}
                         </Badge>
                       </div>
                     </div>
