@@ -86,6 +86,7 @@ export function FlagQuizGame() {
     : 0
   const timerScale = getDebugSettings().timerScale
   const revealAnswers = getDebugSettings().revealAnswers
+  const hasTimeLimit = difficulty.timeLimitSeconds !== null
 
   const finishRound = useCallback(
     async (nextScore: number, nextCorrectAnswers: number) => {
@@ -129,7 +130,11 @@ export function FlagQuizGame() {
       }
 
       setQuestionIndex((current) => current + 1)
-      setRemainingMs(difficulty.timeLimitSeconds * 1000 * timerScale)
+      setRemainingMs(
+        difficulty.timeLimitSeconds === null
+          ? 0
+          : difficulty.timeLimitSeconds * 1000 * timerScale,
+      )
       setResolution('idle')
       setTextAnswer('')
     },
@@ -191,7 +196,12 @@ export function FlagQuizGame() {
   }, [currentQuestion, difficulty.answerMode, phase])
 
   useEffect(() => {
-    if (phase !== 'question' || !currentQuestion || resolution !== 'idle') {
+    if (
+      phase !== 'question' ||
+      !currentQuestion ||
+      resolution !== 'idle' ||
+      difficulty.timeLimitSeconds === null
+    ) {
       return
     }
 
@@ -231,7 +241,9 @@ export function FlagQuizGame() {
     setQuestionIndex(0)
     setScore(0)
     setCorrectAnswers(0)
-    setRemainingMs(rule.timeLimitSeconds * 1000 * timerScale)
+    setRemainingMs(
+      rule.timeLimitSeconds === null ? 0 : rule.timeLimitSeconds * 1000 * timerScale,
+    )
     setResolution('idle')
     setTextAnswer('')
     setResult(null)
@@ -292,7 +304,11 @@ export function FlagQuizGame() {
                     {rule.prompt}
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    <span>{rule.timeLimitSeconds}s</span>
+                    <span>
+                      {rule.timeLimitSeconds === null
+                        ? 'No timer'
+                        : `${rule.timeLimitSeconds}s`}
+                    </span>
                     <span>{rule.pointsPerCorrect} pts</span>
                     <span>
                       {rule.optionCount === null
@@ -416,7 +432,10 @@ export function FlagQuizGame() {
     return null
   }
 
-  const timeLimitMs = difficulty.timeLimitSeconds * 1000 * timerScale
+  const timeLimitMs =
+    difficulty.timeLimitSeconds === null
+      ? 0
+      : difficulty.timeLimitSeconds * 1000 * timerScale
   const timerPercent = timeLimitMs ? (remainingMs / timeLimitMs) * 100 : 0
   const resolutionMessage = getResolutionMessage(
     resolution,
@@ -445,20 +464,29 @@ export function FlagQuizGame() {
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-sm font-semibold text-muted-foreground">
-            <span>{difficulty.timeLimitSeconds}s limit</span>
-            <span>{Math.ceil(remainingMs / 1000)}s left</span>
-          </div>
-          <Progress
-            indicatorClassName={
-              timerPercent < 25
-                ? 'bg-danger'
-                : timerPercent < 50
-                  ? 'bg-accent'
-                  : 'bg-primary'
-            }
-            value={timerPercent}
-          />
+          {hasTimeLimit ? (
+            <>
+              <div className="flex items-center justify-between text-sm font-semibold text-muted-foreground">
+                <span>{difficulty.timeLimitSeconds}s limit</span>
+                <span>{Math.ceil(remainingMs / 1000)}s left</span>
+              </div>
+              <Progress
+                indicatorClassName={
+                  timerPercent < 25
+                    ? 'bg-danger'
+                    : timerPercent < 50
+                      ? 'bg-accent'
+                      : 'bg-primary'
+                }
+                value={timerPercent}
+              />
+            </>
+          ) : (
+            <div className="flex items-center justify-between text-sm font-semibold text-muted-foreground">
+              <span>Learning mode</span>
+              <span>No time limit</span>
+            </div>
+          )}
           <Progress className="h-1.5" value={progressValue} />
         </div>
       </CardHeader>
@@ -474,8 +502,9 @@ export function FlagQuizGame() {
               />
             </div>
             <div className="rounded-[24px] bg-secondary/55 p-4 text-sm text-muted-foreground">
-              Select the matching country as fast as you can. The round will
-              continue immediately after each answer.
+              {hasTimeLimit
+                ? 'Select the matching country as fast as you can. The round will continue immediately after each answer.'
+                : 'Take your time and use each flag as a learning rep. The round will continue immediately after each answer.'}
             </div>
           </div>
 
@@ -496,7 +525,6 @@ export function FlagQuizGame() {
                       type="button"
                       variant="outline"
                     >
-                      <span className="text-xl">{option.flagEmoji}</span>
                       <span className="text-base">{option.name}</span>
                     </Button>
                   )

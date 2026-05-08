@@ -36,7 +36,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 
 ### Difficulty levels
 
-- `Level 1`: 5 options, 20 seconds, 1 point
+- `Level 1`: 5 options, no time limit, 1 point
 - `Level 2`: 3 options, 10 seconds, 2 points
 - `Level 3`: free text, 15 seconds, 3 points, light misspelling tolerance
 

@@ -49,10 +49,21 @@ test('each difficulty can start a round', async ({ page }) => {
   }
 })
 
-test('timer expiry advances to the next question', async ({ page }) => {
+test('untimed level 1 shows learning mode without a countdown', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/flag-quiz')
   await page.getByTestId('difficulty-level-1').click()
+  await page.getByTestId('start-round').click()
+
+  await expect(page.getByText('Learning mode')).toBeVisible()
+  await expect(page.getByText('No time limit')).toBeVisible()
+  await expect(page.getByText(/s left/)).toHaveCount(0)
+})
+
+test('timer expiry advances to the next question on timed difficulties', async ({ page }) => {
+  await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
+  await page.goto('/games/flag-quiz')
+  await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
   await expect(page.getByTestId('question-progress')).toContainText(
@@ -91,7 +102,7 @@ test('replaying shows the previous high score', async ({ page }) => {
     )
   })
   await page.goto('/games/flag-quiz')
-  await page.getByTestId('difficulty-level-1').click()
+  await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
   await expect(page.getByTestId('result-score')).toContainText('0 points', {

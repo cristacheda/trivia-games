@@ -6,10 +6,10 @@ export const difficultyRules: DifficultyRule[] = [
   {
     id: 'level-1',
     label: 'Level 1',
-    prompt: 'Five answers, 20 seconds, one point for each correct match.',
+    prompt: 'Five answers, no timer, one point for each correct match.',
     answerMode: 'multiple-choice',
     optionCount: 5,
-    timeLimitSeconds: 20,
+    timeLimitSeconds: null,
     pointsPerCorrect: 1,
   },
   {

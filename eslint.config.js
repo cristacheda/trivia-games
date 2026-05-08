@@ -14,6 +14,7 @@ export default defineConfig([
     'dist',
     'coverage',
     'playwright-report',
+    'test-results',
     'private',
     'dev-dist',
     '.playwright-mcp',

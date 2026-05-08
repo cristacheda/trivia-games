@@ -10,7 +10,7 @@ export interface DifficultyRule {
   prompt: string
   answerMode: AnswerMode
   optionCount: number | null
-  timeLimitSeconds: number
+  timeLimitSeconds: number | null
   pointsPerCorrect: number
 }
 
