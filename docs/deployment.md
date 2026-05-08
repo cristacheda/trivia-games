@@ -36,6 +36,8 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - `npm run check`
 - `npm run docs:check` for the staged pre-commit docs guard
 
+For UI changes, verify the experience at a mobile viewport before shipping. Treat mobile layout and interaction as required validation, not optional spot-checking.
+
 ## Cloudflare Pages
 
 ### Workflow

@@ -25,21 +25,21 @@
 }
 
 :root {
-  --background: #f6f1ea;
-  --foreground: #1f2530;
-  --muted: rgba(255, 255, 255, 0.55);
-  --muted-foreground: #596171;
-  --card: rgba(255, 249, 242, 0.88);
-  --card-foreground: #1f2530;
-  --border: rgba(49, 57, 71, 0.12);
-  --primary: #185a71;
-  --primary-foreground: #f9faf8;
-  --secondary: #efe4d2;
-  --secondary-foreground: #253443;
-  --accent: #d4834f;
-  --accent-foreground: #fffaf4;
-  --success: #2d7d62;
-  --danger: #b95d46;
+  --background: #eef6ef;
+  --foreground: #13261b;
+  --muted: rgba(255, 255, 255, 0.58);
+  --muted-foreground: #617566;
+  --card: rgba(248, 252, 248, 0.88);
+  --card-foreground: #13261b;
+  --border: rgba(19, 38, 27, 0.1);
+  --primary: #1f7a45;
+  --primary-foreground: #f6fcf7;
+  --secondary: #dff0e2;
+  --secondary-foreground: #163526;
+  --accent: #c38a2e;
+  --accent-foreground: #fffaf1;
+  --success: #1f7a45;
+  --danger: #c15b38;
   --radius: 22px;
   color: var(--foreground);
   font-family: "Source Sans 3", sans-serif;
@@ -67,9 +67,10 @@
     min-width: 320px;
     min-height: 100vh;
     background-image:
-      radial-gradient(circle at top left, rgba(212, 131, 79, 0.2), transparent 32%),
-      radial-gradient(circle at top right, rgba(24, 90, 113, 0.18), transparent 28%),
-      linear-gradient(180deg, #faf4ee 0%, #f3ede5 48%, #f6f1ea 100%);
+      radial-gradient(circle at top left, rgba(69, 154, 103, 0.18), transparent 30%),
+      radial-gradient(circle at top right, rgba(191, 219, 198, 0.48), transparent 26%),
+      radial-gradient(circle at 50% 100%, rgba(132, 193, 152, 0.15), transparent 38%),
+      linear-gradient(180deg, #f7fcf7 0%, #edf6ee 52%, #e7f2e8 100%);
   }
 
   a {

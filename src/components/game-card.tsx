@@ -17,8 +17,8 @@ export function GameCard({ game, eyebrow, footer, onOpen }: GameCardProps) {
   const content = (
     <Card
       className={cn(
-        'group h-full transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_-52px_rgba(24,37,48,0.75)]',
-        game.comingSoon && 'bg-secondary/45',
+        'group h-full border-white/70 transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_-52px_rgba(12,49,33,0.4)]',
+        game.comingSoon && 'bg-secondary/30',
       )}
     >
       <CardHeader>

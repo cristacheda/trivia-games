@@ -15,25 +15,47 @@ async function enableDebugMode(
   }, { timerScale: 1, revealAnswers: true, ...overrides })
 }
 
-test('homepage renders the game shelf and offline badge', async ({ page }) => {
+async function useMobileViewport(page: import('@playwright/test').Page) {
+  await page.setViewportSize({ width: 390, height: 844 })
+}
+
+test('homepage renders the game shelf and offline badge on mobile', async ({ page }) => {
   await enableDebugMode(page)
+  await useMobileViewport(page)
   await page.goto('/')
 
   await expect(
     page.getByRole('heading', {
-      name: 'Train for trivia rounds with games that respect your attention.',
+      name: 'Train like you are about to walk into the next quiz final.',
     }),
   ).toBeVisible()
   await expect(
-    page.getByRole('link', { name: 'Name the Country Flag', exact: true }),
+    page.getByRole('heading', { name: 'Name the Country Flag', exact: true }),
   ).toBeVisible()
   await expect(
-    page.getByRole('link', {
+    page.getByRole('heading', {
       name: 'Name the Country by Its Outline',
       exact: true,
     }),
   ).toBeVisible()
   await expect(page.getByTestId('offline-badge-flag-quiz')).toBeVisible()
+  await expect(page.getByText('Atlas of Answers')).toBeVisible()
+  await expect(page.getByRole('button', { name: /menu/i })).toBeVisible()
+
+  await expect
+    .poll(async () =>
+      page
+        .getByRole('heading', {
+          name: 'Train like you are about to walk into the next quiz final.',
+        })
+        .evaluate((element) => window.getComputedStyle(element).fontSize),
+    )
+    .toBe('24px')
+  await expect(
+    page.getByText('Atlas of Answers').evaluate(
+      (element) => element.scrollWidth <= element.clientWidth + 1,
+    ),
+  ).resolves.toBe(true)
 })
 
 test('each difficulty can start a round', async ({ page }) => {
@@ -76,6 +98,61 @@ test('timer expiry advances to the next question on timed difficulties', async (
     .not.toContain('Question 1 / 10')
 })
 
+test('active round hides extra chrome on mobile', async ({ page }) => {
+  await enableDebugMode(page)
+  await useMobileViewport(page)
+  await page.goto('/games/flag-quiz')
+  await page.getByTestId('difficulty-level-2').click()
+  await page.getByTestId('start-round').click()
+
+  await expect(page.getByTestId('question-progress')).toContainText(
+    'Question 1 / 10',
+  )
+  await expect(page.getByText('Atlas of Answers')).toHaveCount(0)
+  await expect(
+    page.getByRole('heading', { name: 'Name the Country Flag' }),
+  ).toHaveCount(0)
+})
+
+test('wrong multiple-choice answer marks wrong and correct options before advancing', async ({ page }) => {
+  await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
+  await page.goto('/games/flag-quiz')
+  await page.getByTestId('difficulty-level-1').click()
+  await page.getByTestId('start-round').click()
+
+  const correctAnswer = page.locator('[data-correct="true"]').first()
+  const wrongAnswer = page
+    .locator('[data-testid^="answer-"]')
+    .filter({ hasNot: page.locator('[data-correct="true"]') })
+    .first()
+
+  await wrongAnswer.click()
+
+  await expect(wrongAnswer).toHaveAttribute('data-feedback', 'wrong')
+  await expect(correctAnswer).toHaveAttribute('data-feedback', 'correct')
+  await expect(page.getByTestId('resolution-message')).toContainText(
+    'The correct answer was',
+  )
+})
+
+test('correct multiple-choice answer triggers success feedback and advances', async ({ page }) => {
+  await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
+  await page.goto('/games/flag-quiz')
+  await page.getByTestId('difficulty-level-1').click()
+  await page.getByTestId('start-round').click()
+
+  const correctAnswer = page.locator('[data-correct="true"]').first()
+  await correctAnswer.click()
+
+  await expect(correctAnswer).toHaveAttribute('data-feedback', 'correct')
+  await expect(page.getByTestId('resolution-message')).toContainText('Correct.')
+  await expect
+    .poll(async () => page.getByTestId('question-progress').textContent(), {
+      timeout: 5000,
+    })
+    .not.toContain('Question 1 / 10')
+})
+
 test('replaying shows the previous high score', async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(
@@ -110,4 +187,55 @@ test('replaying shows the previous high score', async ({ page }) => {
   })
   await expect(page.getByText('Previous best')).toBeVisible()
   await expect(page.getByText('10', { exact: true })).toBeVisible()
+  await expect(page.getByTestId('confetti-layer')).toHaveAttribute(
+    'data-active',
+    'false',
+  )
+})
+
+test('beating the high score activates the long confetti celebration', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'atlas-of-answers:app-state',
+      JSON.stringify({
+        version: 1,
+        playerId: 'e2e-player',
+        games: {
+          'flag-quiz': {
+            highScore: {
+              score: 0,
+              achievedAt: '2026-05-08T20:00:00.000Z',
+              difficultyId: 'level-1',
+            },
+            recentResult: null,
+            lastDifficulty: 'level-1',
+          },
+        },
+      }),
+    )
+    window.localStorage.setItem(
+      'atlas-of-answers:debug',
+      JSON.stringify({ timerScale: 1, revealAnswers: true }),
+    )
+  })
+  await page.goto('/games/flag-quiz')
+  await page.getByTestId('difficulty-level-1').click()
+  await page.getByTestId('start-round').click()
+
+  for (let index = 0; index < 10; index += 1) {
+    await page.locator('[data-correct="true"]').first().click()
+    if (index < 9) {
+      await expect
+        .poll(async () => page.getByTestId('question-progress').textContent(), {
+          timeout: 5000,
+        })
+        .toContain(`Question ${index + 2} / 10`)
+    }
+  }
+
+  await expect(page.getByText('New high score')).toBeVisible({ timeout: 10000 })
+  await expect(page.getByTestId('confetti-layer')).toHaveAttribute(
+    'data-active',
+    'true',
+  )
 })

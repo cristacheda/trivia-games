@@ -6,6 +6,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 
 ## Audience
 
+- Mobile users are the primary product audience for interaction and layout quality.
 - European trivia players are the primary audience.
 - The games should still feel globally relevant and not Europe-centric.
 

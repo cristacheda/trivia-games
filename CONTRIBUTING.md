@@ -3,6 +3,7 @@
 ## Principles
 
 - Keep the app accessible, fast, and easy to host cheaply.
+- Default UI decisions to mobile-first layouts and touch-friendly interaction.
 - Prefer incremental changes that preserve the current product direction.
 - Treat anonymous local-first play as a core requirement.
 
@@ -38,6 +39,7 @@ Main local app URL:
 
 - `npm run check`
 - `npm run test:e2e` for interactive or routing changes
+- Verify UI changes at a mobile viewport before opening a PR
 
 ## Coding expectations
 

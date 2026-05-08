@@ -23,6 +23,7 @@ Load this file first for repo-specific implementation context. Follow links for 
 ## Repo-specific rules
 
 - Anonymous play must work without an account.
+- Mobile users are the primary UX target for layout and interaction decisions.
 - Scores and preferences live in `localStorage`, not cookies.
 - Login, sync, analytics, and consent are intentionally stubbed for now, not fully wired.
 
@@ -48,3 +49,4 @@ Load this file first for repo-specific implementation context. Follow links for 
 
 - Run `npm run check`
 - Run `npm run test:e2e` when browser behavior changes
+- Verify UI changes at a mobile viewport before handoff
