@@ -6,6 +6,7 @@ export type GameId =
   | 'guess-the-official-language'
 
 export type DifficultyId = 'level-1' | 'level-2' | 'level-3'
+export type TrackingConsent = 'unknown' | 'granted' | 'denied'
 
 export type AnswerMode = 'multiple-choice' | 'free-text'
 
@@ -66,6 +67,7 @@ export interface GameLocalStats {
 
 export interface AppPreferences {
   soundEnabled: boolean
+  trackingConsent: TrackingConsent
 }
 
 export interface PersistedAppState {

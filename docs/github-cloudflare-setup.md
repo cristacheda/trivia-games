@@ -8,6 +8,8 @@ Use this file for one-time repository and deployment setup. For ongoing release 
 
 - Ensure GitHub Actions is enabled for the repository.
 - Confirm the default branch is `main`.
+- Protect `main` with required pull requests and required status checks before shipping.
+- Prefer SHA-pinned or policy-restricted GitHub Actions where possible.
 
 ### Secrets
 
@@ -27,6 +29,7 @@ Path:
 
 - The repository includes `.github/pull_request_template.md`.
 - CI runs automatically from `.github/workflows/ci.yml`.
+- Enable secret scanning, push protection, and Dependabot security updates for the public repository.
 
 ## Cloudflare setup
 
@@ -59,7 +62,11 @@ This follows Cloudflare's branch-alias custom domain model for Pages preview bra
 
 ### API token
 
-Create a Cloudflare API token with permissions sufficient to deploy Pages projects for the target account.
+Create a Cloudflare API token with only the permissions needed to deploy the target Pages project and purge the target zone cache if you use the purge step.
+
+### Privacy-sensitive hosting features
+
+- If the app uses opt-in-only analytics, disable any host-injected analytics product that runs before the app can evaluate player consent.
 
 ### Account ID
 

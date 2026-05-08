@@ -61,7 +61,9 @@
 - SPA pageviews are emitted from the shared app shell instead of relying on GA automatic pageviews.
 - Custom game analytics include game views, difficulty selection, round start, question answers, round completion, homepage game-entry clicks, and high-score beats.
 - Free-text answer contents are intentionally excluded from analytics payloads.
-- Consent gating is not implemented yet; the current provider tracks immediately when configured.
+- Consent gating is implemented through a local in-app privacy control.
+- Optional analytics remain off until the player explicitly allows them.
+- Free-text answer contents remain excluded from analytics payloads.
 
 ## Constraints
 

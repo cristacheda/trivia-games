@@ -8,10 +8,10 @@ import type {
   ScoreSyncProvider,
 } from '@/integrations/contracts'
 import { createGa4AnalyticsProvider } from '@/integrations/ga4-provider'
+import { createLocalConsentProvider } from '@/integrations/local-consent-provider'
 import {
   noopAnalyticsProvider,
   noopAuthProvider,
-  noopConsentProvider,
   noopScoreSyncProvider,
 } from '@/integrations/noop-providers'
 
@@ -25,19 +25,20 @@ interface AppServices {
 export const AppServicesContext = createContext<AppServices | null>(null)
 
 export function AppProviders({ children }: PropsWithChildren) {
+  const consent = useMemo<ConsentProvider>(() => createLocalConsentProvider(), [])
   const services = useMemo<AppServices>(
     () => ({
       auth: noopAuthProvider,
       scoreSync: noopScoreSyncProvider,
       analytics: env.analyticsMeasurementId
         ? createGa4AnalyticsProvider({
+            canTrack: () => consent.canTrackAnalytics(),
             measurementId: env.analyticsMeasurementId,
-            enabled: true,
           })
         : noopAnalyticsProvider,
-      consent: noopConsentProvider,
+      consent,
     }),
-    [],
+    [consent],
   )
 
   return (
