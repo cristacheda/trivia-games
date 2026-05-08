@@ -1,11 +1,8 @@
-import { Link } from 'react-router-dom'
-import { ArrowRight, Clock3, Sparkles, Trophy } from 'lucide-react'
+import { Clock3, Trophy } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
-import { gameCatalog, getGamePath, siteConfig } from '@/config/site'
+import { gameCatalog, siteConfig } from '@/config/site'
 import { GameCard } from '@/components/game-card'
-import { CountryFlag } from '@/components/country-flag'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useGameStats } from '@/lib/storage'
 import type { GameId } from '@/types/game'
@@ -46,7 +43,7 @@ export function HomePage() {
 
   return (
     <div className="space-y-5 sm:space-y-7">
-      <section className="grid gap-4 lg:grid-cols-[1.15fr,0.85fr]">
+      <section>
         <Card className="overflow-hidden border-primary/10 bg-[linear-gradient(160deg,rgba(246,252,247,0.98)_0%,rgba(229,245,235,0.9)_56%,rgba(212,236,220,0.84)_100%)]">
           <CardContent className="p-4 sm:p-8">
             <div className="max-w-2xl space-y-4">
@@ -61,70 +58,6 @@ export function HomePage() {
                 capitals and outline rounds are live, with currency and
                 official language rounds next.
               </p>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button
-                asChild
-                onClick={() =>
-                  analytics.trackEvent('homepage_card_clicked', { gameId: 'flag-quiz' })
-                }
-                size="lg"
-              >
-                <Link to={getGamePath('flag-quiz')}>
-                  Play the flag quiz
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                onClick={() =>
-                  analytics.trackEvent('homepage_card_clicked', {
-                    gameId: 'guess-the-capital',
-                  })
-                }
-                size="lg"
-                variant="secondary"
-              >
-                <Link to={getGamePath('guess-the-capital')}>
-                  Guess the capital
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#103826] text-primary-foreground shadow-[0_30px_100px_-60px_rgba(12,49,33,0.95)]">
-          <CardContent className="flex h-full flex-col justify-between gap-4 p-4 sm:p-8">
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-              <CountryFlag countryCode="NA" label="Namibia flag" />
-              <CountryFlag countryCode="WS" label="Samoa flag" />
-              <CountryFlag countryCode="SR" label="Suriname flag" />
-              <CountryFlag countryCode="TD" label="Chad flag" />
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.18em] text-primary-foreground/70">
-                <Sparkles className="h-4 w-4" />
-                Tonight's warm-up
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-primary-foreground/70">Best score</p>
-                  <p className="mt-2 font-serif text-4xl font-semibold">
-                    {flagStats.highScore?.score ?? '—'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-primary-foreground/70">Last round</p>
-                  <p className="mt-2 text-lg font-semibold">
-                    {flagStats.recentResult
-                      ? `${flagStats.recentResult.totalScore} pts`
-                      : 'No rounds yet'}
-                  </p>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>
