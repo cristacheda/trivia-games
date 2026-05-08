@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Clock3, Sparkles, Trophy } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
-import { gameCatalog, siteConfig } from '@/config/site'
+import { gameCatalog, getGamePath, siteConfig } from '@/config/site'
 import { GameCard } from '@/components/game-card'
 import { CountryFlag } from '@/components/country-flag'
 import { Badge } from '@/components/ui/badge'
@@ -11,11 +11,18 @@ import { useGameStats } from '@/lib/storage'
 
 export function HomePage() {
   const flagStats = useGameStats('flag-quiz')
+  const capitalStats = useGameStats('guess-the-capital')
   const outlineStats = useGameStats('outline-quiz')
   const { analytics } = useAppServices()
+  const statsByGame = {
+    'flag-quiz': flagStats,
+    'guess-the-capital': capitalStats,
+    'outline-quiz': outlineStats,
+  } as const
   const recentGames = [
     { game: gameCatalog[0], stats: flagStats },
-    { game: gameCatalog[1], stats: outlineStats },
+    { game: gameCatalog[1], stats: capitalStats },
+    { game: gameCatalog[2], stats: outlineStats },
   ]
     .sort((left, right) => {
       const leftTime = left.stats.recentResult
@@ -44,6 +51,7 @@ export function HomePage() {
           recentResult: null,
           lastDifficulty: null,
           countryDeck: null,
+          capitalDeck: null,
         },
       },
     ])
@@ -63,7 +71,7 @@ export function HomePage() {
               </h1>
               <p className="max-w-xl text-base text-muted-foreground sm:text-xl">
                 {siteConfig.description} Start with fast flag reps now. Country
-                outlines are next.
+                capitals are live, and country outlines are next.
               </p>
             </div>
 
@@ -75,8 +83,23 @@ export function HomePage() {
                 }
                 size="lg"
               >
-                <Link to="/games/flag-quiz">
+                <Link to={getGamePath('flag-quiz')}>
                   Play the flag quiz
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                onClick={() =>
+                  analytics.trackEvent('homepage_card_clicked', {
+                    gameId: 'guess-the-capital',
+                  })
+                }
+                size="lg"
+                variant="secondary"
+              >
+                <Link to={getGamePath('guess-the-capital')}>
+                  Guess the capital
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
@@ -135,14 +158,16 @@ export function HomePage() {
           {gameCatalog.map((game) => (
             <GameCard
               footer={
-                game.id === 'flag-quiz' ? (
+                !game.comingSoon ? (
                   <div className="rounded-[24px] bg-[#edf7ef] p-4">
                     <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
                       <Trophy className="h-4 w-4" />
-                      Flag quiz high score
+                      {game.id === 'flag-quiz'
+                        ? 'Flag quiz high score'
+                        : 'Capital quiz high score'}
                     </div>
                     <p className="mt-2 font-serif text-3xl font-semibold">
-                      {flagStats.highScore?.score ?? '—'}
+                      {statsByGame[game.id].highScore?.score ?? '—'}
                     </p>
                   </div>
                 ) : undefined

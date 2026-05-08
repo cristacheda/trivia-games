@@ -35,6 +35,9 @@ test('homepage renders the game shelf and offline badge on mobile', async ({ pag
     page.getByRole('heading', { name: 'Name the Country Flag', exact: true }),
   ).toBeVisible()
   await expect(
+    page.getByRole('heading', { name: 'Guess the Capital', exact: true }),
+  ).toBeVisible()
+  await expect(
     page.getByRole('heading', {
       name: 'Name the Country by Its Outline',
       exact: true,
@@ -73,6 +76,19 @@ test('each difficulty can start a round', async ({ page }) => {
   }
 })
 
+test('each capital-game difficulty can start a round', async ({ page }) => {
+  await enableDebugMode(page)
+
+  for (const difficultyId of ['level-1', 'level-2', 'level-3']) {
+    await page.goto('/games/guess-the-capital')
+    await page.getByTestId(`difficulty-${difficultyId}`).click()
+    await page.getByTestId('start-round').click()
+    await expect(page.getByTestId('question-progress')).toContainText(
+      `Question 1 / ${QUESTIONS_PER_ROUND}`,
+    )
+  }
+})
+
 test('untimed level 1 shows learning mode without a countdown', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/flag-quiz')
@@ -87,6 +103,22 @@ test('untimed level 1 shows learning mode without a countdown', async ({ page })
 test('timer expiry advances to the next question on timed difficulties', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/flag-quiz')
+  await page.getByTestId('difficulty-level-2').click()
+  await page.getByTestId('start-round').click()
+
+  await expect(page.getByTestId('question-progress')).toContainText(
+    `Question 1 / ${QUESTIONS_PER_ROUND}`,
+  )
+  await expect
+    .poll(async () => page.getByTestId('question-progress').textContent(), {
+      timeout: 5000,
+    })
+    .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
+})
+
+test('capital game timer expiry advances to the next question', async ({ page }) => {
+  await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
+  await page.goto('/games/guess-the-capital')
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -303,4 +335,104 @@ test('wrong free-text answer reveals the correct country name', async ({ page })
   await expect(page.getByTestId('revealed-correct-answer')).toContainText(
     `Correct answer: ${correctAnswer}`,
   )
+})
+
+test('capital game free-text input autofocuses and reveals the correct capital', async ({
+  page,
+}) => {
+  await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
+  await useMobileViewport(page)
+  await page.goto('/games/guess-the-capital')
+  await page.getByTestId('difficulty-level-3').click()
+  await page.getByTestId('start-round').click()
+
+  await expect(page.locator('#capital-answer')).toBeFocused()
+
+  const correctAnswer = await page.locator('#capital-answer').getAttribute('data-answer')
+  await page.locator('#capital-answer').fill('Definitely not the correct capital')
+  await page.getByRole('button', { name: 'Lock answer' }).click()
+
+  await expect(page.getByTestId('revealed-correct-answer')).toContainText(
+    `Correct answer: ${correctAnswer}`,
+  )
+})
+
+test('capital game replaying shows the previous high score', async ({ page }) => {
+  test.setTimeout(45000)
+
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'atlas-of-answers:app-state',
+      JSON.stringify({
+        version: 4,
+        playerId: 'e2e-player',
+        games: {
+          'guess-the-capital': {
+            highScore: {
+              score: 8,
+              achievedAt: '2026-05-08T20:00:00.000Z',
+              difficultyId: 'level-1',
+            },
+            recentResult: null,
+            lastDifficulty: 'level-1',
+            countryDeck: null,
+            capitalDeck: null,
+          },
+        },
+        preferences: {
+          soundEnabled: true,
+        },
+      }),
+    )
+    window.localStorage.setItem(
+      'atlas-of-answers:debug',
+      JSON.stringify({ timerScale: 0.01, revealAnswers: false }),
+    )
+  })
+  await page.goto('/games/guess-the-capital')
+  await page.getByTestId('difficulty-level-2').click()
+  await page.getByTestId('start-round').click()
+
+  await expect(page.getByTestId('result-score')).toContainText('0 points', {
+    timeout: 30000,
+  })
+  await expect(page.getByText('Previous best')).toBeVisible()
+  await expect(page.getByText('8', { exact: true })).toBeVisible()
+})
+
+test('starting new capital rounds advances the shared country and state decks across reloads', async ({
+  page,
+}) => {
+  await enableDebugMode(page)
+  await useMobileViewport(page)
+  await page.goto('/games/guess-the-capital')
+  await page.getByTestId('difficulty-level-2').click()
+  await page.getByTestId('start-round').click()
+
+  const firstDeck = await page.evaluate(() => {
+    const state = JSON.parse(
+      window.localStorage.getItem('atlas-of-answers:app-state') ?? '{}',
+    )
+
+    return state.games?.['guess-the-capital']?.capitalDeck
+  })
+
+  await page.reload()
+  await page.getByTestId('difficulty-level-3').click()
+  await page.getByTestId('start-round').click()
+
+  const secondDeck = await page.evaluate(() => {
+    const state = JSON.parse(
+      window.localStorage.getItem('atlas-of-answers:app-state') ?? '{}',
+    )
+
+    return state.games?.['guess-the-capital']?.capitalDeck
+  })
+
+  expect(firstDeck.nextCountryIndex).toBe(18)
+  expect(firstDeck.nextStateIndex).toBe(2)
+  expect(secondDeck.nextCountryIndex).toBe(36)
+  expect(secondDeck.nextStateIndex).toBe(4)
+  expect(secondDeck.orderedCountryCodes).toEqual(firstDeck.orderedCountryCodes)
+  expect(secondDeck.orderedStateCodes).toEqual(firstDeck.orderedStateCodes)
 })

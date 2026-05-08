@@ -13,11 +13,11 @@ Atlas of Answers is a collection of web games designed to help players train for
 ## Current MVP
 
 - Homepage with a grid of games
-- One playable game: `Name the Country Flag`
+- Two playable games: `Name the Country Flag` and `Guess the Capital`
 - One teaser card for the upcoming outline game
 - Local-first score and preference storage
 - Subtle in-game sound cues with a local mute toggle
-- Offline-capable first game after the initial asset load
+- Offline-capable playable games after the initial asset load
 
 ## Core product decisions
 
@@ -44,6 +44,15 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 1`: 3 options, no time limit, 1 point
 - `Level 2`: 5 options, 10 seconds, 2 points
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance
+
+### Guess the Capital
+
+- Uses UN member countries plus the 50 US states.
+- Runs in rounds of 20 questions: 18 countries and 2 states.
+- Reuses as many unseen countries and states as possible across rounds before reshuffling into a new weighted cycle.
+- `Level 1`: 3 options, no time limit, 1 point.
+- `Level 2`: 5 options, 15 seconds, 2 points, stronger bias away from Europe.
+- `Level 3`: free text, no time limit, 3 points, light misspelling tolerance plus common capital variants.
 
 ## Near-term roadmap
 

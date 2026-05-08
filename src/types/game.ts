@@ -1,4 +1,4 @@
-export type GameId = 'flag-quiz' | 'outline-quiz'
+export type GameId = 'flag-quiz' | 'guess-the-capital' | 'outline-quiz'
 
 export type DifficultyId = 'level-1' | 'level-2' | 'level-3'
 
@@ -25,6 +25,13 @@ export interface CountryDeckProgress {
   nextIndex: number
 }
 
+export interface CapitalDeckProgress {
+  orderedCountryCodes: string[]
+  nextCountryIndex: number
+  orderedStateCodes: string[]
+  nextStateIndex: number
+}
+
 export interface RoundResult {
   gameId: GameId
   difficultyId: DifficultyId
@@ -41,6 +48,7 @@ export interface GameLocalStats {
   recentResult: RoundResult | null
   lastDifficulty: DifficultyId | null
   countryDeck: CountryDeckProgress | null
+  capitalDeck: CapitalDeckProgress | null
 }
 
 export interface AppPreferences {

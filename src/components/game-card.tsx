@@ -1,5 +1,6 @@
 import { ChevronRight, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { getGamePath } from '@/config/site'
 import type { GameCatalogEntry } from '@/types/game'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
@@ -59,7 +60,7 @@ export function GameCard({ game, eyebrow, footer, onOpen }: GameCardProps) {
   }
 
   return (
-    <Link onClick={onOpen} to="/games/flag-quiz">
+    <Link onClick={onOpen} to={getGamePath(game.id)}>
       {content}
     </Link>
   )

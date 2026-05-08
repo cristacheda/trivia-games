@@ -21,7 +21,7 @@ import { AppChromeContext } from '@/components/layout/app-chrome'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { buildInfo } from '@/config/build'
-import { gameCatalog, siteConfig } from '@/config/site'
+import { gameCatalog, getGamePath, siteConfig } from '@/config/site'
 import { useOnlineStatus } from '@/hooks/use-online-status'
 import { usePwaStatus } from '@/hooks/use-pwa-status'
 import { cn } from '@/lib/utils'
@@ -192,7 +192,7 @@ export function AppShell({ children }: AppShellProps) {
                         </Badge>
                         <Badge variant="outline">
                           {offlineReady
-                            ? 'Flag quiz cached for offline replay'
+                            ? 'Playable games cached for offline replay'
                             : 'Offline cache after first load'}
                         </Badge>
                       </div>
@@ -216,7 +216,7 @@ export function AppShell({ children }: AppShellProps) {
                             <Link
                               className="flex items-center justify-between rounded-2xl bg-white/70 px-4 py-3 text-sm font-semibold transition hover:bg-white"
                               key={game.id}
-                              to="/games/flag-quiz"
+                              to={getGamePath(game.id)}
                             >
                               {game.title}
                               <ChevronRight className="h-4 w-4 text-muted-foreground" />

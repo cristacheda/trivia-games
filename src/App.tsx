@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AppProviders } from '@/app/app-providers'
 import { AppShell } from '@/components/layout/app-shell'
 import { FlagQuizPage } from '@/pages/flag-quiz-page'
+import { GuessTheCapitalPage } from '@/pages/guess-the-capital-page'
 import { HomePage } from '@/pages/home-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 
@@ -13,6 +14,10 @@ export default function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/games/flag-quiz" element={<FlagQuizPage />} />
+            <Route
+              path="/games/guess-the-capital"
+              element={<GuessTheCapitalPage />}
+            />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </AppShell>

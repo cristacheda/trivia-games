@@ -1,4 +1,4 @@
-import type { GameCatalogEntry } from '@/types/game'
+import type { GameCatalogEntry, GameId } from '@/types/game'
 
 export const siteConfig = {
   title: 'Atlas of Answers',
@@ -22,6 +22,16 @@ export const gameCatalog: GameCatalogEntry[] = [
     comingSoon: false,
   },
   {
+    id: 'guess-the-capital',
+    title: 'Guess the Capital',
+    description:
+      'Match UN countries and US states to their capitals, with tougher rounds steering toward more obscure geography.',
+    status: 'ready',
+    offlineCapable: true,
+    difficultySet: ['level-1', 'level-2', 'level-3'],
+    comingSoon: false,
+  },
+  {
     id: 'outline-quiz',
     title: 'Name the Country by Its Outline',
     description:
@@ -33,3 +43,7 @@ export const gameCatalog: GameCatalogEntry[] = [
     teaser: 'Coming after the flag quiz review cycle.',
   },
 ]
+
+export function getGamePath(gameId: GameId) {
+  return `/games/${gameId}`
+}

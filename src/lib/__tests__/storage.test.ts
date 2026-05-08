@@ -2,14 +2,23 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { FLAG_QUIZ_QUESTIONS_PER_ROUND } from '@/features/flag-quiz/constants'
 import { flagQuestionBank } from '@/features/flag-quiz/data/countries'
 import {
+  GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND,
+  GUESS_THE_CAPITAL_STATES_PER_ROUND,
+} from '@/features/guess-the-capital/constants'
+import { capitalCountryQuestionBank } from '@/features/guess-the-capital/data/countries'
+import { capitalStateQuestionBank } from '@/features/guess-the-capital/data/states'
+import {
   STORAGE_VERSION,
   getFlagQuizCountryDeck,
+  getGuessTheCapitalDeck,
   getAppPreferences,
   getGameStats,
   readAppState,
   recordRoundResult,
   reserveFlagQuizCountries,
+  reserveGuessTheCapitalSubjects,
   setFlagQuizCountryDeck,
+  setGuessTheCapitalDeck,
   setSoundEnabled,
   setLastDifficulty,
 } from '@/lib/storage'
@@ -67,6 +76,7 @@ describe('storage', () => {
       orderedCountryCodes: [],
       nextIndex: 0,
     })
+    expect(state.games['flag-quiz']?.capitalDeck).toBeNull()
     expect(state.preferences.soundEnabled).toBe(true)
   })
 
@@ -113,7 +123,43 @@ describe('storage', () => {
       orderedCountryCodes: [],
       nextIndex: 0,
     })
+    expect(state.games['flag-quiz']?.capitalDeck).toBeNull()
     expect(state.preferences.soundEnabled).toBe(false)
+  })
+
+  it('migrates version 3 state and initializes capital deck progress', () => {
+    window.localStorage.setItem(
+      'atlas-of-answers:app-state',
+      JSON.stringify({
+        version: 3,
+        playerId: 'player-3',
+        games: {
+          'guess-the-capital': {
+            highScore: {
+              score: 22,
+              achievedAt: '2026-05-08T20:00:00.000Z',
+              difficultyId: 'level-2',
+            },
+            recentResult: null,
+            lastDifficulty: 'level-2',
+          },
+        },
+        preferences: {
+          soundEnabled: true,
+        },
+      }),
+    )
+
+    const state = readAppState()
+
+    expect(state.version).toBe(STORAGE_VERSION)
+    expect(state.games['guess-the-capital']?.highScore?.score).toBe(22)
+    expect(state.games['guess-the-capital']?.capitalDeck).toEqual({
+      orderedCountryCodes: [],
+      nextCountryIndex: 0,
+      orderedStateCodes: [],
+      nextStateIndex: 0,
+    })
   })
 
   it('stores last difficulty and high score', () => {
@@ -140,6 +186,27 @@ describe('storage', () => {
     setSoundEnabled(false)
 
     expect(getAppPreferences().soundEnabled).toBe(false)
+  })
+
+  it('stores capital game results and high score', () => {
+    setLastDifficulty('guess-the-capital', 'level-2')
+    const saved = recordRoundResult({
+      gameId: 'guess-the-capital',
+      difficultyId: 'level-2',
+      totalScore: 24,
+      correctAnswers: 12,
+      totalQuestions:
+        GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND + GUESS_THE_CAPITAL_STATES_PER_ROUND,
+      completedAt: '2026-05-08T20:00:00.000Z',
+    })
+
+    const stats = getGameStats('guess-the-capital')
+
+    expect(saved.previousBestScore).toBeNull()
+    expect(saved.beatHighScore).toBe(true)
+    expect(stats.lastDifficulty).toBe('level-2')
+    expect(stats.highScore?.score).toBe(24)
+    expect(stats.recentResult?.totalScore).toBe(24)
   })
 
   it('reserves unique flag quiz countries across consecutive rounds', () => {
@@ -195,6 +262,58 @@ describe('storage', () => {
     expect(getFlagQuizCountryDeck()).toEqual({
       orderedCountryCodes,
       nextIndex: FLAG_QUIZ_QUESTIONS_PER_ROUND - 5,
+    })
+  })
+
+  it('reserves unique capital quiz countries and states across consecutive rounds', () => {
+    const orderedCountryCodes = capitalCountryQuestionBank
+      .slice(0, GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND * 2)
+      .map((country) => country.code)
+    const orderedStateCodes = capitalStateQuestionBank
+      .slice(0, GUESS_THE_CAPITAL_STATES_PER_ROUND * 2)
+      .map((state) => state.code)
+
+    setGuessTheCapitalDeck({
+      orderedCountryCodes,
+      nextCountryIndex: 0,
+      orderedStateCodes,
+      nextStateIndex: 0,
+    })
+
+    const firstRound = reserveGuessTheCapitalSubjects(
+      GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND,
+      GUESS_THE_CAPITAL_STATES_PER_ROUND,
+      'level-2',
+    )
+    const secondRound = reserveGuessTheCapitalSubjects(
+      GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND,
+      GUESS_THE_CAPITAL_STATES_PER_ROUND,
+      'level-3',
+    )
+
+    expect(firstRound.countries.map((country) => country.code)).toEqual(
+      orderedCountryCodes.slice(0, GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND),
+    )
+    expect(firstRound.states.map((state) => state.code)).toEqual(
+      orderedStateCodes.slice(0, GUESS_THE_CAPITAL_STATES_PER_ROUND),
+    )
+    expect(secondRound.countries.map((country) => country.code)).toEqual(
+      orderedCountryCodes.slice(
+        GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND,
+        GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND * 2,
+      ),
+    )
+    expect(secondRound.states.map((state) => state.code)).toEqual(
+      orderedStateCodes.slice(
+        GUESS_THE_CAPITAL_STATES_PER_ROUND,
+        GUESS_THE_CAPITAL_STATES_PER_ROUND * 2,
+      ),
+    )
+    expect(getGuessTheCapitalDeck()).toEqual({
+      orderedCountryCodes,
+      nextCountryIndex: GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND * 2,
+      orderedStateCodes,
+      nextStateIndex: GUESS_THE_CAPITAL_STATES_PER_ROUND * 2,
     })
   })
 })

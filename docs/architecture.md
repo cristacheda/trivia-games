@@ -20,7 +20,9 @@
 
 - Game metadata comes from `src/config/site.ts`
 - Flag quiz data and weighting live under `src/features/flag-quiz`
+- Capital quiz data, state/country mixing, and answer matching live under `src/features/guess-the-capital`
 - Flag quiz rounds reserve country codes from a persisted weighted deck before building question objects
+- Capital quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Round results are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Integration hooks exist, but external providers are currently no-op
@@ -34,6 +36,7 @@
   - per-game high score
   - most recent round result
   - flag quiz country deck progress for cross-run non-repeating play
+  - capital quiz country/state deck progress for cross-run non-repeating play
   - app-level sound enabled preference
 
 ## Offline model
