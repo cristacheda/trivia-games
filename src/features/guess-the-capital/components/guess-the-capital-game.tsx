@@ -98,6 +98,8 @@ export function GuessTheCapitalGame({
   const [correctBurstCounter, setCorrectBurstCounter] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const advanceTimeoutRef = useRef<number | null>(null)
+  const roundStartedAtRef = useRef<number | null>(null)
+  const timeoutCountRef = useRef(0)
   const { analytics, scoreSync } = useAppServices()
   const difficulty = getGuessTheCapitalDifficultyRule(selectedDifficultyId)
   const currentQuestion = questions[questionIndex]
@@ -113,6 +115,9 @@ export function GuessTheCapitalGame({
 
   const finishRound = useCallback(
     async (nextScore: number, nextCorrectAnswers: number) => {
+      const roundDurationSeconds = roundStartedAtRef.current
+        ? Math.max(1, Math.round((Date.now() - roundStartedAtRef.current) / 1000))
+        : 0
       const stored = recordRoundResult({
         gameId: GUESS_THE_CAPITAL_GAME_ID,
         difficultyId: selectedDifficultyId,
@@ -123,15 +128,23 @@ export function GuessTheCapitalGame({
       })
 
       analytics.trackEvent('round_completed', {
-        gameId: GUESS_THE_CAPITAL_GAME_ID,
+        accuracy: Number((nextCorrectAnswers / questions.length).toFixed(4)),
+        answer_mode: difficulty.answerMode,
+        beat_high_score: stored.beatHighScore,
+        correct_answers: stored.correctAnswers,
+        difficulty_id: selectedDifficultyId,
+        game_id: GUESS_THE_CAPITAL_GAME_ID,
+        round_duration_seconds: roundDurationSeconds,
         score: stored.totalScore,
-        correctAnswers: stored.correctAnswers,
-        beatHighScore: stored.beatHighScore,
+        timeouts_count: timeoutCountRef.current,
+        total_questions: stored.totalQuestions,
       })
 
       if (stored.beatHighScore) {
         analytics.trackEvent('high_score_beaten', {
-          gameId: GUESS_THE_CAPITAL_GAME_ID,
+          difficulty_id: selectedDifficultyId,
+          game_id: GUESS_THE_CAPITAL_GAME_ID,
+          previous_best_score: stored.previousBestScore,
           score: stored.totalScore,
         })
       }
@@ -146,8 +159,10 @@ export function GuessTheCapitalGame({
       setResolution('idle')
       setSelectedOption(null)
       setTextAnswer('')
+      roundStartedAtRef.current = null
+      timeoutCountRef.current = 0
     },
-    [analytics, questions.length, scoreSync, selectedDifficultyId],
+    [analytics, difficulty.answerMode, questions.length, scoreSync, selectedDifficultyId],
   )
 
   const goToNextQuestion = useCallback(
@@ -202,11 +217,12 @@ export function GuessTheCapitalGame({
       }
 
       analytics.trackEvent('question_answered', {
-        gameId: GUESS_THE_CAPITAL_GAME_ID,
-        difficultyId: selectedDifficultyId,
-        answerMode: difficulty.answerMode,
-        isCorrect,
-        answerLabel: answerLabel ?? '',
+        answer_mode: difficulty.answerMode,
+        difficulty_id: selectedDifficultyId,
+        game_id: GUESS_THE_CAPITAL_GAME_ID,
+        is_correct: isCorrect,
+        question_index: questionIndex + 1,
+        resolution: nextResolution,
       })
 
       advanceTimeoutRef.current = window.setTimeout(() => {
@@ -219,6 +235,7 @@ export function GuessTheCapitalGame({
       currentQuestion,
       difficulty,
       goToNextQuestion,
+      questionIndex,
       resolution,
       score,
       selectedDifficultyId,
@@ -254,6 +271,7 @@ export function GuessTheCapitalGame({
 
       if (nextRemaining <= 0) {
         window.clearInterval(interval)
+        timeoutCountRef.current += 1
         handleAnswer(false, undefined, 'timeout')
       }
     }, 100)
@@ -308,11 +326,17 @@ export function GuessTheCapitalGame({
     setTextAnswer('')
     setResult(null)
     setPhase('question')
+    roundStartedAtRef.current = Date.now()
+    timeoutCountRef.current = 0
 
-    analytics.trackEvent('game_started', {
-      gameId: GUESS_THE_CAPITAL_GAME_ID,
-      difficultyId: selectedDifficultyId,
-      playerId: getPlayerId(),
+    analytics.trackEvent('round_started', {
+      answer_mode: rule.answerMode,
+      difficulty_id: selectedDifficultyId,
+      game_id: GUESS_THE_CAPITAL_GAME_ID,
+      question_count:
+        GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND + GUESS_THE_CAPITAL_STATES_PER_ROUND,
+      time_limit_seconds: rule.timeLimitSeconds,
+      timed_round: rule.timeLimitSeconds !== null,
     })
   }
 
@@ -377,7 +401,13 @@ export function GuessTheCapitalGame({
                     }`}
                     data-testid={`difficulty-${rule.id}`}
                     key={rule.id}
-                    onClick={() => setSelectedDifficultyId(rule.id)}
+                    onClick={() => {
+                      setSelectedDifficultyId(rule.id)
+                      analytics.trackEvent('difficulty_selected', {
+                        difficulty_id: rule.id,
+                        game_id: GUESS_THE_CAPITAL_GAME_ID,
+                      })
+                    }}
                     type="button"
                   >
                     <p className="font-serif text-xl font-semibold">{rule.label}</p>

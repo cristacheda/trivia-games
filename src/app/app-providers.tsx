@@ -1,11 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, type PropsWithChildren } from 'react'
+import { env } from '@/config/env'
 import type {
   AnalyticsProvider,
   AuthProvider,
   ConsentProvider,
   ScoreSyncProvider,
 } from '@/integrations/contracts'
+import { createGa4AnalyticsProvider } from '@/integrations/ga4-provider'
 import {
   noopAnalyticsProvider,
   noopAuthProvider,
@@ -20,14 +22,19 @@ interface AppServices {
   consent: ConsentProvider
 }
 
-const AppServicesContext = createContext<AppServices | null>(null)
+export const AppServicesContext = createContext<AppServices | null>(null)
 
 export function AppProviders({ children }: PropsWithChildren) {
   const services = useMemo<AppServices>(
     () => ({
       auth: noopAuthProvider,
       scoreSync: noopScoreSyncProvider,
-      analytics: noopAnalyticsProvider,
+      analytics: env.analyticsMeasurementId
+        ? createGa4AnalyticsProvider({
+            measurementId: env.analyticsMeasurementId,
+            enabled: true,
+          })
+        : noopAnalyticsProvider,
       consent: noopConsentProvider,
     }),
     [],

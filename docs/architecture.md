@@ -55,6 +55,14 @@
 - Consent manager for GDPR-sensitive tracking
 - Analytics provider after consent behavior is defined
 
+## Current analytics
+
+- GA4 is initialized through `src/integrations/ga4-provider.ts` when `VITE_ANALYTICS_MEASUREMENT_ID` is set.
+- SPA pageviews are emitted from the shared app shell instead of relying on GA automatic pageviews.
+- Custom game analytics include game views, difficulty selection, round start, question answers, round completion, homepage game-entry clicks, and high-score beats.
+- Free-text answer contents are intentionally excluded from analytics payloads.
+- Consent gating is not implemented yet; the current provider tracks immediately when configured.
+
 ## Constraints
 
 - Keep hosting portable between Cloudflare Pages and Vercel

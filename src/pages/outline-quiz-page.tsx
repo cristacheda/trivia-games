@@ -1,16 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
+import { useAppServices } from '@/app/app-providers'
 import { useAppChrome } from '@/components/layout/app-chrome'
 import { OutlineQuizGame } from '@/features/outline-quiz/components/outline-quiz-game'
+import { OUTLINE_QUIZ_GAME_ID } from '@/features/outline-quiz/constants'
 
 export function OutlineQuizPage() {
   const [isPlayingRound, setIsPlayingRound] = useState(false)
   const { setChromeHidden } = useAppChrome()
+  const { analytics } = useAppServices()
 
   useEffect(() => {
     return () => setChromeHidden(false)
   }, [setChromeHidden])
+
+  useEffect(() => {
+    analytics.trackEvent('game_viewed', {
+      game_id: OUTLINE_QUIZ_GAME_ID,
+      game_title: 'Name the Country by Its Outline',
+    })
+  }, [analytics])
 
   return (
     <div className="space-y-4">

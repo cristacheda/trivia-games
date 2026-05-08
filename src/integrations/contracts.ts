@@ -12,16 +12,19 @@ export interface ScoreSyncProvider {
   syncLocalSnapshot: (playerId: string) => Promise<void>
 }
 
+export type AnalyticsEventName =
+  | 'difficulty_selected'
+  | 'game_viewed'
+  | 'high_score_beaten'
+  | 'homepage_card_clicked'
+  | 'question_answered'
+  | 'round_completed'
+  | 'round_started'
+
 export interface AnalyticsProvider {
   trackPageView: (path: string) => void
   trackEvent: (
-    name:
-      | 'game_viewed'
-      | 'game_started'
-      | 'question_answered'
-      | 'round_completed'
-      | 'high_score_beaten'
-      | 'homepage_card_clicked',
+    name: AnalyticsEventName,
     payload?: Record<string, string | number | boolean | null>,
   ) => void
 }

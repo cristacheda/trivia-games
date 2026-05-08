@@ -1,16 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
+import { useAppServices } from '@/app/app-providers'
 import { useAppChrome } from '@/components/layout/app-chrome'
 import { GuessTheCapitalGame } from '@/features/guess-the-capital/components/guess-the-capital-game'
+import { GUESS_THE_CAPITAL_GAME_ID } from '@/features/guess-the-capital/constants'
 
 export function GuessTheCapitalPage() {
   const [isPlayingRound, setIsPlayingRound] = useState(false)
   const { setChromeHidden } = useAppChrome()
+  const { analytics } = useAppServices()
 
   useEffect(() => {
     return () => setChromeHidden(false)
   }, [setChromeHidden])
+
+  useEffect(() => {
+    analytics.trackEvent('game_viewed', {
+      game_id: GUESS_THE_CAPITAL_GAME_ID,
+      game_title: 'Guess the Capital',
+    })
+  }, [analytics])
 
   return (
     <div className="space-y-4">
