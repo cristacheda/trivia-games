@@ -20,6 +20,7 @@ import {
   getOutlineQuizDeck,
   getAppPreferences,
   getGameStats,
+  getTrackingConsent,
   readAppState,
   recordRoundResult,
   reserveFlagQuizCountries,
@@ -28,6 +29,7 @@ import {
   setFlagQuizCountryDeck,
   setGuessTheCapitalDeck,
   setOutlineQuizDeck,
+  setTrackingConsent,
   setSoundEnabled,
   setLastDifficulty,
 } from '@/lib/storage'
@@ -233,6 +235,13 @@ describe('storage', () => {
     setSoundEnabled(false)
 
     expect(getAppPreferences().soundEnabled).toBe(false)
+  })
+
+  it('stores the tracking consent preference', () => {
+    setTrackingConsent('granted')
+
+    expect(getTrackingConsent()).toBe('granted')
+    expect(getAppPreferences().trackingConsent).toBe('granted')
   })
 
   it('stores capital game results and high score', () => {

@@ -25,8 +25,11 @@ export const noopAnalyticsProvider: AnalyticsProvider = {
 }
 
 export const noopConsentProvider: ConsentProvider = {
+  getTrackingConsent() {
+    return 'unknown'
+  },
   canTrackAnalytics() {
     return false
   },
-  openConsentManager() {},
+  setTrackingConsent() {},
 }

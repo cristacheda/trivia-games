@@ -18,12 +18,14 @@ import {
 import { Link, useLocation } from 'react-router-dom'
 import { useAppServices } from '@/app/app-providers'
 import { AppChromeContext } from '@/components/layout/app-chrome'
+import { PrivacyPanel } from '@/components/privacy-panel'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { buildInfo } from '@/config/build'
 import { gameCatalog, getGamePath, siteConfig } from '@/config/site'
 import { useOnlineStatus } from '@/hooks/use-online-status'
 import { usePwaStatus } from '@/hooks/use-pwa-status'
+import { useTrackingConsent } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 
 interface AppShellProps {
@@ -37,13 +39,16 @@ export function AppShell({ children }: AppShellProps) {
   const { analytics, auth, consent } = useAppServices()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAccountOpen, setIsAccountOpen] = useState(false)
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
   const [panelRoute, setPanelRoute] = useState<string | null>(null)
   const [sessionUserId, setSessionUserId] = useState<string | null>(null)
   const [chromeHidden, setChromeHidden] = useState(false)
+  const trackingConsent = useTrackingConsent()
   const isGameRoute = location.pathname.startsWith('/games/')
   const hideHeader = isGameRoute && chromeHidden
   const isMenuVisible = isMenuOpen && panelRoute === location.pathname
   const isAccountVisible = isAccountOpen && panelRoute === location.pathname
+  const isPrivacyVisible = isPrivacyOpen && panelRoute === location.pathname
   const chromeContextValue = useMemo(
     () => ({
       chromeHidden,
@@ -54,7 +59,7 @@ export function AppShell({ children }: AppShellProps) {
 
   useEffect(() => {
     analytics.trackPageView(location.pathname)
-  }, [analytics, location.pathname])
+  }, [analytics, location.pathname, trackingConsent])
 
   useEffect(() => {
     let mounted = true
@@ -75,6 +80,7 @@ export function AppShell({ children }: AppShellProps) {
       if (event.key === 'Escape') {
         setIsMenuOpen(false)
         setIsAccountOpen(false)
+        setIsPrivacyOpen(false)
       }
     }
 
@@ -85,13 +91,14 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <AppChromeContext.Provider value={chromeContextValue}>
       <div className="min-h-screen bg-background">
-        {(isMenuVisible || isAccountVisible) ? (
+        {(isMenuVisible || isAccountVisible || isPrivacyVisible) ? (
           <button
             aria-label="Close panel overlay"
             className="fixed inset-0 z-10 bg-[#0c2319]/18 backdrop-blur-[2px]"
             onClick={() => {
               setIsMenuOpen(false)
               setIsAccountOpen(false)
+              setIsPrivacyOpen(false)
             }}
             type="button"
           />
@@ -142,6 +149,7 @@ export function AppShell({ children }: AppShellProps) {
                       setPanelRoute(location.pathname)
                       setIsMenuOpen((current) => !current || panelRoute !== location.pathname)
                       setIsAccountOpen(false)
+                      setIsPrivacyOpen(false)
                     }}
                     size="sm"
                     variant="outline"
@@ -159,6 +167,7 @@ export function AppShell({ children }: AppShellProps) {
                         (current) => !current || panelRoute !== location.pathname,
                       )
                       setIsMenuOpen(false)
+                      setIsPrivacyOpen(false)
                     }}
                     size="sm"
                     variant="outline"
@@ -229,7 +238,14 @@ export function AppShell({ children }: AppShellProps) {
 
                     <div className="grid gap-2 sm:grid-cols-2">
                       <Button
-                        onClick={consent.openConsentManager}
+                        onClick={() => {
+                          setPanelRoute(location.pathname)
+                          setIsPrivacyOpen(
+                            (current) => !current || panelRoute !== location.pathname,
+                          )
+                          setIsMenuOpen(false)
+                          setIsAccountOpen(false)
+                        }}
                         size="sm"
                         variant="outline"
                       >
@@ -244,6 +260,20 @@ export function AppShell({ children }: AppShellProps) {
                       </Button>
                     </div>
                   </div>
+                </div>
+              ) : null}
+
+              {isPrivacyVisible ? (
+                <div className="absolute right-0 top-[calc(100%-0.25rem)] z-30 w-[min(28rem,calc(100vw-1.5rem))] rounded-[24px] border border-white/70 bg-[#f7fbf6]/95 p-4 shadow-[0_24px_72px_-36px_rgba(12,49,33,0.35)] backdrop-blur-xl sm:w-[min(32rem,calc(100vw-2rem))] sm:p-5">
+                  <PrivacyPanel
+                    onAllowTracking={() => {
+                      consent.setTrackingConsent('granted')
+                    }}
+                    onDenyTracking={() => {
+                      consent.setTrackingConsent('denied')
+                    }}
+                    trackingConsent={trackingConsent}
+                  />
                 </div>
               ) : null}
 

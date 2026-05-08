@@ -32,11 +32,12 @@ import type {
   OutlineDeckProgress,
   PersistedAppState,
   RoundResult,
+  TrackingConsent,
 } from '@/types/game'
 
 const STORAGE_KEY = 'atlas-of-answers:app-state'
 const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
-export const STORAGE_VERSION = 5
+export const STORAGE_VERSION = 6
 
 type RoundResultInput = Omit<RoundResult, 'previousBestScore' | 'beatHighScore'>
 
@@ -68,7 +69,12 @@ function createDefaultOutlineDeck(): OutlineDeckProgress {
 function createDefaultPreferences(): AppPreferences {
   return {
     soundEnabled: true,
+    trackingConsent: 'unknown',
   }
+}
+
+function normalizeTrackingConsent(value: unknown): TrackingConsent {
+  return value === 'granted' || value === 'denied' ? value : 'unknown'
 }
 
 function createDefaultStats(): GameLocalStats {
@@ -204,7 +210,8 @@ function normalizeState(value: unknown): PersistedAppState {
     state.version === 1 ||
     state.version === 2 ||
     state.version === 3 ||
-    state.version === 4
+    state.version === 4 ||
+    state.version === 5
   ) {
     return {
       version: STORAGE_VERSION,
@@ -213,6 +220,7 @@ function normalizeState(value: unknown): PersistedAppState {
       preferences: {
         ...createDefaultPreferences(),
         ...(state.preferences ?? {}),
+        trackingConsent: normalizeTrackingConsent(state.preferences?.trackingConsent),
       },
     }
   }
@@ -228,6 +236,7 @@ function normalizeState(value: unknown): PersistedAppState {
     preferences: {
       ...createDefaultPreferences(),
       ...(state.preferences ?? {}),
+      trackingConsent: normalizeTrackingConsent(state.preferences?.trackingConsent),
     },
   }
 }
@@ -279,6 +288,22 @@ export function setSoundEnabled(soundEnabled: boolean) {
     preferences: {
       ...state.preferences,
       soundEnabled,
+    },
+  })
+}
+
+export function getTrackingConsent(): TrackingConsent {
+  return getAppPreferences().trackingConsent
+}
+
+export function setTrackingConsent(trackingConsent: TrackingConsent) {
+  const state = readAppState()
+
+  writeAppState({
+    ...state,
+    preferences: {
+      ...state.preferences,
+      trackingConsent,
     },
   })
 }
@@ -786,4 +811,25 @@ export function useSoundEnabled() {
   }, [])
 
   return soundEnabled
+}
+
+export function useTrackingConsent() {
+  const [trackingConsent, setTrackingConsentState] = useState(
+    () => getAppPreferences().trackingConsent,
+  )
+
+  useEffect(() => {
+    const update = () => setTrackingConsentState(getAppPreferences().trackingConsent)
+
+    update()
+    window.addEventListener('storage', update)
+    window.addEventListener(STORAGE_EVENT, update)
+
+    return () => {
+      window.removeEventListener('storage', update)
+      window.removeEventListener(STORAGE_EVENT, update)
+    }
+  }, [])
+
+  return trackingConsent
 }

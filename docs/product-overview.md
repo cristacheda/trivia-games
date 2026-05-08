@@ -26,7 +26,8 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Flag quiz country exposure is also tracked in `localStorage` so new rounds avoid repeating flags until a full country cycle has been used.
 - Cookies are not the default persistence mechanism.
 - Google and GitHub login are planned for cross-device sync later.
-- GDPR consent and analytics are planned but not fully implemented yet.
+- An in-app privacy panel lets players decide whether optional analytics are enabled.
+- Scores and gameplay progress still stay local even when optional analytics are denied.
 
 ## First game rules
 

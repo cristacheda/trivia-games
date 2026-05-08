@@ -24,6 +24,7 @@ describe('createGa4AnalyticsProvider', () => {
 
   it('loads gtag and configures ga4 when enabled', () => {
     const analytics = createGa4AnalyticsProvider({
+      canTrack: () => true,
       measurementId: 'G-XST9JEW1Y2',
     })
 
@@ -47,6 +48,7 @@ describe('createGa4AnalyticsProvider', () => {
 
   it('passes custom event payloads through unchanged', () => {
     const analytics = createGa4AnalyticsProvider({
+      canTrack: () => true,
       measurementId: 'G-XST9JEW1Y2',
     })
 
@@ -63,5 +65,19 @@ describe('createGa4AnalyticsProvider', () => {
       is_correct: false,
       resolution: 'timeout',
     })
+  })
+
+  it('does not initialize analytics before consent is granted', () => {
+    const appendChildSpy = vi.spyOn(document.head, 'appendChild')
+    const analytics = createGa4AnalyticsProvider({
+      canTrack: () => false,
+      measurementId: 'G-XST9JEW1Y2',
+    })
+
+    analytics.trackPageView('/games/flag-quiz')
+    analytics.trackEvent('round_started', { game_id: 'flag-quiz' })
+
+    expect(appendChildSpy).not.toHaveBeenCalled()
+    expect(window.gtag).not.toHaveBeenCalled()
   })
 })

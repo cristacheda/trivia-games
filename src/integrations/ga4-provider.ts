@@ -9,7 +9,7 @@ declare global {
 
 interface Ga4AnalyticsProviderOptions {
   measurementId: string
-  enabled?: boolean
+  canTrack?: () => boolean
 }
 
 let activeMeasurementId: string | null = null
@@ -54,18 +54,20 @@ function initializeGa4(measurementId: string) {
 
 export function createGa4AnalyticsProvider({
   measurementId,
-  enabled = true,
+  canTrack = () => true,
 }: Ga4AnalyticsProviderOptions): AnalyticsProvider {
   const trimmedMeasurementId = measurementId.trim()
-  const canTrack = enabled && trimmedMeasurementId.length > 0
-
-  if (canTrack) {
-    initializeGa4(trimmedMeasurementId)
-  }
+  const canSend = () => trimmedMeasurementId.length > 0 && canTrack()
 
   return {
     trackPageView(path) {
-      if (!canTrack || !window.gtag) {
+      if (!canSend()) {
+        return
+      }
+
+      initializeGa4(trimmedMeasurementId)
+
+      if (!window.gtag) {
         return
       }
 
@@ -76,7 +78,13 @@ export function createGa4AnalyticsProvider({
       })
     },
     trackEvent(name, payload = {}) {
-      if (!canTrack || !window.gtag) {
+      if (!canSend()) {
+        return
+      }
+
+      initializeGa4(trimmedMeasurementId)
+
+      if (!window.gtag) {
         return
       }
 

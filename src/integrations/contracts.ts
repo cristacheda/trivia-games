@@ -1,4 +1,5 @@
 import type { RoundResult } from '@/types/game'
+import type { TrackingConsent } from '@/types/game'
 
 export interface AuthProvider {
   signInWithGoogle: () => Promise<void>
@@ -30,6 +31,7 @@ export interface AnalyticsProvider {
 }
 
 export interface ConsentProvider {
+  getTrackingConsent: () => TrackingConsent
   canTrackAnalytics: () => boolean
-  openConsentManager: () => void
+  setTrackingConsent: (consent: TrackingConsent) => void
 }
