@@ -35,7 +35,7 @@ jobs:
           command: pages deploy dist --project-name trivia-games --branch ${{ github.ref_name }}
 
       - name: Purge cache-sensitive URLs
-        if: github.ref_name == 'main' && secrets.CLOUDFLARE_ZONE_ID != ''
+        if: github.ref_name == 'main' && env.CLOUDFLARE_ZONE_ID != ''
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
