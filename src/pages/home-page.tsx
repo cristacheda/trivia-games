@@ -8,6 +8,15 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { useGameStats } from '@/lib/storage'
+import type { GameId } from '@/types/game'
+
+const playableGameIds = ['flag-quiz', 'guess-the-capital', 'outline-quiz'] as const
+
+function hasPlayableStats(
+  gameId: GameId,
+): gameId is (typeof playableGameIds)[number] {
+  return playableGameIds.includes(gameId as (typeof playableGameIds)[number])
+}
 
 export function HomePage() {
   const flagStats = useGameStats('flag-quiz')
@@ -31,31 +40,8 @@ export function HomePage() {
       const rightTime = right.stats.recentResult
         ? new Date(right.stats.recentResult.completedAt).getTime()
         : 0
-
       return rightTime - leftTime
     })
-    .concat([
-      {
-        game: {
-          id: 'outline-quiz',
-          title: 'Open slot',
-          description: '',
-          status: 'coming-soon',
-          offlineCapable: false,
-          difficultySet: ['level-1', 'level-2', 'level-3'],
-          comingSoon: true,
-          teaser: '',
-        },
-        stats: {
-          highScore: null,
-          recentResult: null,
-          lastDifficulty: null,
-          countryDeck: null,
-          capitalDeck: null,
-          outlineDeck: null,
-        },
-      },
-    ])
     .slice(0, 3)
 
   return (
@@ -72,7 +58,8 @@ export function HomePage() {
               </h1>
               <p className="max-w-xl text-base text-muted-foreground sm:text-xl">
                 {siteConfig.description} Start with fast flag reps now. Country
-                capitals and outline rounds are live.
+                capitals and outline rounds are live, with currency and
+                official language rounds next.
               </p>
             </div>
 
@@ -150,38 +137,42 @@ export function HomePage() {
               Game shelf
             </p>
             <h2 className="font-serif text-3xl font-semibold tracking-tight">
-              Ready to play
+              Play now and what's next
             </h2>
           </div>
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
-          {gameCatalog.map((game) => (
-            <GameCard
-              footer={
-                !game.comingSoon ? (
-                  <div className="rounded-[24px] bg-[#edf7ef] p-4">
-                    <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                      <Trophy className="h-4 w-4" />
-                      {game.id === 'flag-quiz'
-                        ? 'Flag quiz high score'
-                        : game.id === 'guess-the-capital'
-                          ? 'Capital quiz high score'
-                          : 'Outline quiz high score'}
+          {gameCatalog.map((game) => {
+            const stats = hasPlayableStats(game.id) ? statsByGame[game.id] : null
+
+            return (
+              <GameCard
+                footer={
+                  !game.comingSoon && stats ? (
+                    <div className="rounded-[24px] bg-[#edf7ef] p-4">
+                      <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                        <Trophy className="h-4 w-4" />
+                        {game.id === 'flag-quiz'
+                          ? 'Flag quiz high score'
+                          : game.id === 'guess-the-capital'
+                            ? 'Capital quiz high score'
+                            : 'Outline quiz high score'}
+                      </div>
+                      <p className="mt-2 font-serif text-3xl font-semibold">
+                        {stats.highScore?.score ?? '—'}
+                      </p>
                     </div>
-                    <p className="mt-2 font-serif text-3xl font-semibold">
-                      {statsByGame[game.id].highScore?.score ?? '—'}
-                    </p>
-                  </div>
-                ) : undefined
-              }
-              game={game}
-              key={game.id}
-              onOpen={() =>
-                analytics.trackEvent('homepage_card_clicked', { gameId: game.id })
-              }
-            />
-          ))}
+                  ) : undefined
+                }
+                game={game}
+                key={game.id}
+                onOpen={() =>
+                  analytics.trackEvent('homepage_card_clicked', { gameId: game.id })
+                }
+              />
+            )
+          })}
         </div>
       </section>
 
@@ -214,11 +205,9 @@ export function HomePage() {
               <p className="mt-2 text-sm text-muted-foreground">
                 {stats.recentResult
                   ? `${stats.recentResult.totalScore} points on ${stats.recentResult.correctAnswers}/${stats.recentResult.totalQuestions}`
-                  : game.title === 'Open slot'
-                    ? 'Your next played game will appear here'
-                    : game.comingSoon
-                      ? 'Coming soon'
-                      : 'No rounds played yet'}
+                  : game.comingSoon
+                    ? 'Coming soon'
+                    : 'No rounds played yet'}
               </p>
             </div>
           ))}

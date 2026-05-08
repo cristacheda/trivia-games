@@ -41,6 +41,28 @@ export const gameCatalog: GameCatalogEntry[] = [
     difficultySet: ['level-1', 'level-2', 'level-3'],
     comingSoon: false,
   },
+  {
+    id: 'guess-the-currency',
+    title: 'Guess the Currency',
+    description:
+      'Match countries to the currencies they actually use, including the rounds where more than one answer is right.',
+    status: 'coming-soon',
+    offlineCapable: false,
+    difficultySet: ['level-1', 'level-2', 'level-3'],
+    comingSoon: true,
+    teaser: 'Multi-currency edge cases are up next.',
+  },
+  {
+    id: 'guess-the-official-language',
+    title: 'Guess the Official Language',
+    description:
+      'Train on official languages without assuming one-country, one-language simplicity.',
+    status: 'coming-soon',
+    offlineCapable: false,
+    difficultySet: ['level-1', 'level-2', 'level-3'],
+    comingSoon: true,
+    teaser: 'Built for countries with more than one official answer.',
+  },
 ]
 
 export function getGamePath(gameId: GameId) {

@@ -14,6 +14,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 
 - Homepage with a grid of games
 - Three playable games: `Name the Country Flag`, `Guess the Capital`, and `Name the Country by Its Outline`
+- Two upcoming teaser cards: `Guess the Currency` and `Guess the Official Language`
 - Local-first score and preference storage
 - Subtle in-game sound cues with a local mute toggle
 - Offline-capable playable games after the initial asset load
@@ -65,6 +66,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 ## Near-term roadmap
 
 - Gather feedback on the homepage and first game
+- Build the currency and official-language games now teased on the homepage
 - Add login and score sync with Supabase
 - Add privacy/consent UX
 - Add analytics events after consent design is finalized

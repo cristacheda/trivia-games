@@ -154,6 +154,22 @@ function normalizeGames(
     ...(games?.[OUTLINE_QUIZ_GAME_ID]
       ? { [OUTLINE_QUIZ_GAME_ID]: normalizeGameStats(OUTLINE_QUIZ_GAME_ID, games[OUTLINE_QUIZ_GAME_ID]) }
       : {}),
+    ...(games?.['guess-the-currency']
+      ? {
+          'guess-the-currency': normalizeGameStats(
+            'guess-the-currency',
+            games['guess-the-currency'],
+          ),
+        }
+      : {}),
+    ...(games?.['guess-the-official-language']
+      ? {
+          'guess-the-official-language': normalizeGameStats(
+            'guess-the-official-language',
+            games['guess-the-official-language'],
+          ),
+        }
+      : {}),
     ...(games?.[FLAG_QUIZ_GAME_ID]
       ? { [FLAG_QUIZ_GAME_ID]: normalizeGameStats(FLAG_QUIZ_GAME_ID, games[FLAG_QUIZ_GAME_ID]) }
       : {}),

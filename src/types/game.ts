@@ -1,4 +1,9 @@
-export type GameId = 'flag-quiz' | 'guess-the-capital' | 'outline-quiz'
+export type GameId =
+  | 'flag-quiz'
+  | 'guess-the-capital'
+  | 'outline-quiz'
+  | 'guess-the-currency'
+  | 'guess-the-official-language'
 
 export type DifficultyId = 'level-1' | 'level-2' | 'level-3'
 

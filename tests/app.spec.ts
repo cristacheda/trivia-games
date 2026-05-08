@@ -43,6 +43,15 @@ test('homepage renders the game shelf and offline badge on mobile', async ({ pag
       exact: true,
     }),
   ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Guess the Currency', exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', {
+      name: 'Guess the Official Language',
+      exact: true,
+    }),
+  ).toBeVisible()
   await expect(page.getByTestId('offline-badge-flag-quiz')).toBeVisible()
   await expect(page.getByTestId('offline-badge-outline-quiz')).toBeVisible()
   await expect(page.getByText('Atlas of Answers')).toBeVisible()
