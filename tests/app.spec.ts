@@ -21,10 +21,29 @@ async function useMobileViewport(page: import('@playwright/test').Page) {
   await page.setViewportSize({ width: 390, height: 844 })
 }
 
+async function dismissPrivacyPromptIfVisible(
+  page: import('@playwright/test').Page,
+) {
+  const denyButton = page.getByRole('button', {
+    name: 'Use only essential storage',
+  })
+
+  if (await denyButton.isVisible()) {
+    await denyButton.click()
+  }
+}
+
 test('homepage renders the game shelf and offline badge on mobile', async ({ page }) => {
   await enableDebugMode(page)
   await useMobileViewport(page)
   await page.goto('/')
+
+  await expect(
+    page.getByRole('heading', {
+      name: 'Play anonymously and choose whether optional tracking is allowed.',
+    }),
+  ).toBeVisible()
+  await dismissPrivacyPromptIfVisible(page)
 
   await expect(
     page.getByRole('heading', {
@@ -78,6 +97,7 @@ test('each difficulty can start a round', async ({ page }) => {
 
   for (const difficultyId of ['level-1', 'level-2', 'level-3']) {
     await page.goto('/games/flag-quiz')
+    await dismissPrivacyPromptIfVisible(page)
     await page.getByTestId(`difficulty-${difficultyId}`).click()
     await page.getByTestId('start-round').click()
     await expect(page.getByTestId('question-progress')).toContainText(
@@ -91,6 +111,7 @@ test('each capital-game difficulty can start a round', async ({ page }) => {
 
   for (const difficultyId of ['level-1', 'level-2', 'level-3']) {
     await page.goto('/games/guess-the-capital')
+    await dismissPrivacyPromptIfVisible(page)
     await page.getByTestId(`difficulty-${difficultyId}`).click()
     await page.getByTestId('start-round').click()
     await expect(page.getByTestId('question-progress')).toContainText(
@@ -104,6 +125,7 @@ test('each outline-game difficulty can start a round', async ({ page }) => {
 
   for (const difficultyId of ['level-1', 'level-2', 'level-3']) {
     await page.goto('/games/outline-quiz')
+    await dismissPrivacyPromptIfVisible(page)
     await page.getByTestId(`difficulty-${difficultyId}`).click()
     await page.getByTestId('start-round').click()
     await expect(page.getByTestId('question-progress')).toContainText(
@@ -115,6 +137,7 @@ test('each outline-game difficulty can start a round', async ({ page }) => {
 test('untimed level 1 shows learning mode without a countdown', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-1').click()
   await page.getByTestId('start-round').click()
 
@@ -126,6 +149,7 @@ test('untimed level 1 shows learning mode without a countdown', async ({ page })
 test('timer expiry advances to the next question on timed difficulties', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -142,6 +166,7 @@ test('timer expiry advances to the next question on timed difficulties', async (
 test('capital game timer expiry advances to the next question', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/guess-the-capital')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -158,6 +183,7 @@ test('capital game timer expiry advances to the next question', async ({ page })
 test('outline game timer expiry advances to the next question', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/outline-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -175,6 +201,7 @@ test('active round hides extra chrome on mobile', async ({ page }) => {
   await enableDebugMode(page)
   await useMobileViewport(page)
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -190,6 +217,7 @@ test('active round hides extra chrome on mobile', async ({ page }) => {
 test('wrong multiple-choice answer marks wrong and correct options before advancing', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-1').click()
   await page.getByTestId('start-round').click()
 
@@ -218,6 +246,7 @@ test('wrong multiple-choice answer marks wrong and correct options before advanc
 test('correct multiple-choice answer triggers success feedback and advances', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-1').click()
   await page.getByTestId('start-round').click()
 
@@ -261,6 +290,7 @@ test('replaying shows the previous high score', async ({ page }) => {
     )
   })
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -281,6 +311,7 @@ test('starting new rounds advances the shared country deck across reloads and di
   await enableDebugMode(page)
   await useMobileViewport(page)
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-1').click()
   await page.getByTestId('start-round').click()
 
@@ -293,6 +324,7 @@ test('starting new rounds advances the shared country deck across reloads and di
   })
 
   await page.reload()
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-3').click()
   await page.getByTestId('start-round').click()
 
@@ -340,6 +372,7 @@ test('beating the high score activates the long confetti celebration', async ({ 
     )
   })
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-1').click()
   await page.getByTestId('start-round').click()
 
@@ -364,6 +397,7 @@ test('beating the high score activates the long confetti celebration', async ({ 
 test('wrong free-text answer reveals the correct country name', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
   await page.goto('/games/flag-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-3').click()
   await page.getByTestId('start-round').click()
 
@@ -382,6 +416,7 @@ test('capital game free-text input autofocuses and reveals the correct capital',
   await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
   await useMobileViewport(page)
   await page.goto('/games/guess-the-capital')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-3').click()
   await page.getByTestId('start-round').click()
 
@@ -429,6 +464,7 @@ test('capital game replaying shows the previous high score', async ({ page }) =>
     )
   })
   await page.goto('/games/guess-the-capital')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -445,6 +481,7 @@ test('starting new capital rounds advances the shared country and state decks ac
   await enableDebugMode(page)
   await useMobileViewport(page)
   await page.goto('/games/guess-the-capital')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -457,6 +494,7 @@ test('starting new capital rounds advances the shared country and state decks ac
   })
 
   await page.reload()
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-3').click()
   await page.getByTestId('start-round').click()
 
@@ -482,6 +520,7 @@ test('outline game free-text input autofocuses and reveals the correct place', a
   await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
   await useMobileViewport(page)
   await page.goto('/games/outline-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-3').click()
   await page.getByTestId('start-round').click()
 
@@ -530,6 +569,7 @@ test('outline game replaying shows the previous high score', async ({ page }) =>
     )
   })
   await page.goto('/games/outline-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -546,6 +586,7 @@ test('starting new outline rounds advances the shared country and state decks ac
   await enableDebugMode(page)
   await useMobileViewport(page)
   await page.goto('/games/outline-quiz')
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -558,6 +599,7 @@ test('starting new outline rounds advances the shared country and state decks ac
   })
 
   await page.reload()
+  await dismissPrivacyPromptIfVisible(page)
   await page.getByTestId('difficulty-level-3').click()
   await page.getByTestId('start-round').click()
 

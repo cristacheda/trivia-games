@@ -17,6 +17,8 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - `public/sw.js` is kept as a compatibility worker that unregisters stale legacy service workers and clears old app caches.
 - Built assets use Vite content hashes.
 - `index.html`, `sw.js`, `sw-*.js`, and `manifest.webmanifest` are configured for revalidation instead of long-lived caching.
+- `public/_headers` is the source of truth for production CSP and cache-related response headers on Cloudflare Pages.
+- The production CSP must stay aligned with Cloudflare-injected scripts and app features that rely on `blob:` images or workers.
 
 ## Release flow
 

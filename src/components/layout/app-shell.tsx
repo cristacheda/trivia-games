@@ -25,7 +25,7 @@ import { buildInfo } from '@/config/build'
 import { gameCatalog, getGamePath, siteConfig } from '@/config/site'
 import { useOnlineStatus } from '@/hooks/use-online-status'
 import { usePwaStatus } from '@/hooks/use-pwa-status'
-import { useTrackingConsent } from '@/lib/storage'
+import { getTrackingConsent, useTrackingConsent } from '@/lib/storage'
 import { cn } from '@/lib/utils'
 
 interface AppShellProps {
@@ -34,13 +34,16 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const location = useLocation()
+  const shouldPromptForTrackingOnLoad = getTrackingConsent() === 'unknown'
   const isOnline = useOnlineStatus()
   const { offlineReady, needRefresh, refreshApp } = usePwaStatus()
   const { analytics, auth, consent } = useAppServices()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAccountOpen, setIsAccountOpen] = useState(false)
-  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false)
-  const [panelRoute, setPanelRoute] = useState<string | null>(null)
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(shouldPromptForTrackingOnLoad)
+  const [panelRoute, setPanelRoute] = useState<string | null>(
+    shouldPromptForTrackingOnLoad ? location.pathname : null,
+  )
   const [sessionUserId, setSessionUserId] = useState<string | null>(null)
   const [chromeHidden, setChromeHidden] = useState(false)
   const trackingConsent = useTrackingConsent()
@@ -88,6 +91,19 @@ export function AppShell({ children }: AppShellProps) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  const closePanels = () => {
+    setIsMenuOpen(false)
+    setIsAccountOpen(false)
+    setIsPrivacyOpen(false)
+  }
+
+  const openPrivacyPanel = () => {
+    setPanelRoute(location.pathname)
+    setIsPrivacyOpen(true)
+    setIsMenuOpen(false)
+    setIsAccountOpen(false)
+  }
+
   return (
     <AppChromeContext.Provider value={chromeContextValue}>
       <div className="min-h-screen bg-background">
@@ -95,11 +111,7 @@ export function AppShell({ children }: AppShellProps) {
           <button
             aria-label="Close panel overlay"
             className="fixed inset-0 z-10 bg-[#0c2319]/18 backdrop-blur-[2px]"
-            onClick={() => {
-              setIsMenuOpen(false)
-              setIsAccountOpen(false)
-              setIsPrivacyOpen(false)
-            }}
+            onClick={closePanels}
             type="button"
           />
         ) : null}
@@ -239,10 +251,12 @@ export function AppShell({ children }: AppShellProps) {
                     <div className="grid gap-2 sm:grid-cols-2">
                       <Button
                         onClick={() => {
-                          setPanelRoute(location.pathname)
-                          setIsPrivacyOpen(
-                            (current) => !current || panelRoute !== location.pathname,
-                          )
+                          if (panelRoute !== location.pathname || !isPrivacyVisible) {
+                            openPrivacyPanel()
+                            return
+                          }
+
+                          setIsPrivacyOpen(false)
                           setIsMenuOpen(false)
                           setIsAccountOpen(false)
                         }}
@@ -268,9 +282,11 @@ export function AppShell({ children }: AppShellProps) {
                   <PrivacyPanel
                     onAllowTracking={() => {
                       consent.setTrackingConsent('granted')
+                      closePanels()
                     }}
                     onDenyTracking={() => {
                       consent.setTrackingConsent('denied')
+                      closePanels()
                     }}
                     trackingConsent={trackingConsent}
                   />

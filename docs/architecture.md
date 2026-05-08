@@ -42,6 +42,7 @@
   - capital quiz country/state deck progress for cross-run non-repeating play
   - outline quiz country/state deck progress for cross-run non-repeating play
   - app-level sound enabled preference
+  - app-level tracking consent preference
 
 ## Offline model
 
@@ -61,7 +62,7 @@
 - SPA pageviews are emitted from the shared app shell instead of relying on GA automatic pageviews.
 - Custom game analytics include game views, difficulty selection, round start, question answers, round completion, homepage game-entry clicks, and high-score beats.
 - Free-text answer contents are intentionally excluded from analytics payloads.
-- Consent gating is implemented through a local in-app privacy control.
+- Consent gating is implemented through a local in-app privacy control that auto-opens on first visit while consent is still unknown.
 - Optional analytics remain off until the player explicitly allows them.
 - Free-text answer contents remain excluded from analytics payloads.
 
