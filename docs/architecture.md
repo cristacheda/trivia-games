@@ -20,6 +20,7 @@
 
 - Game metadata comes from `src/config/site.ts`
 - Flag quiz data and weighting live under `src/features/flag-quiz`
+- Flag quiz rounds reserve country codes from a persisted weighted deck before building question objects
 - Round results are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Integration hooks exist, but external providers are currently no-op
@@ -32,6 +33,7 @@
   - last selected difficulty per game
   - per-game high score
   - most recent round result
+  - flag quiz country deck progress for cross-run non-repeating play
   - app-level sound enabled preference
 
 ## Offline model

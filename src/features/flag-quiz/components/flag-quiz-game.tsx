@@ -22,8 +22,9 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ConfettiLayer } from '@/features/flag-quiz/components/confetti-layer'
 import { difficultyRules, FLAG_QUIZ_GAME_ID, getDifficultyRule } from '@/features/flag-quiz/constants'
+import { flagQuestionBankByCode } from '@/features/flag-quiz/data/countries'
 import { isAcceptableCountryAnswer } from '@/features/flag-quiz/lib/match'
-import { generateFlagQuizRound } from '@/features/flag-quiz/lib/round'
+import { buildFlagQuizRoundFromCountries } from '@/features/flag-quiz/lib/round'
 import { scoreAnswer } from '@/features/flag-quiz/lib/scoring'
 import type { FlagQuizQuestion } from '@/features/flag-quiz/types'
 import { getDebugSettings } from '@/lib/debug'
@@ -33,6 +34,7 @@ import {
   getGameStats,
   getPlayerId,
   recordRoundResult,
+  reserveFlagQuizCountries,
   setSoundEnabled,
   setLastDifficulty,
   useGameStats,
@@ -276,7 +278,20 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
       void primeSound()
     }
     setLastDifficulty(FLAG_QUIZ_GAME_ID, selectedDifficultyId)
-    setQuestions(generateFlagQuizRound(rule))
+    setQuestions(
+      buildFlagQuizRoundFromCountries(
+        rule,
+        reserveFlagQuizCountries(10).map((countryCode) => {
+          const question = flagQuestionBankByCode.get(countryCode)
+
+          if (!question) {
+            throw new Error(`Unknown flag quiz country code: ${countryCode}`)
+          }
+
+          return question
+        }),
+      ),
+    )
     setQuestionIndex(0)
     setScore(0)
     setCorrectAnswers(0)

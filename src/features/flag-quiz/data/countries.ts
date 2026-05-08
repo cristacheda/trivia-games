@@ -62,3 +62,7 @@ export const flagQuestionBank: CountryQuestionSource[] = countries
     }
   })
   .sort((left, right) => left.name.localeCompare(right.name))
+
+export const flagQuestionBankByCode = new Map(
+  flagQuestionBank.map((country) => [country.code, country] as const),
+)

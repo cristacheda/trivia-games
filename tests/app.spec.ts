@@ -193,6 +193,43 @@ test('replaying shows the previous high score', async ({ page }) => {
   )
 })
 
+test('starting new rounds advances the shared country deck across reloads and difficulty changes', async ({
+  page,
+}) => {
+  await enableDebugMode(page)
+  await useMobileViewport(page)
+  await page.goto('/games/flag-quiz')
+  await page.getByTestId('difficulty-level-1').click()
+  await page.getByTestId('start-round').click()
+
+  const firstDeck = await page.evaluate(() => {
+    const state = JSON.parse(
+      window.localStorage.getItem('atlas-of-answers:app-state') ?? '{}',
+    )
+
+    return state.games?.['flag-quiz']?.countryDeck
+  })
+
+  await page.reload()
+  await page.getByTestId('difficulty-level-3').click()
+  await page.getByTestId('start-round').click()
+
+  const secondDeck = await page.evaluate(() => {
+    const state = JSON.parse(
+      window.localStorage.getItem('atlas-of-answers:app-state') ?? '{}',
+    )
+
+    return state.games?.['flag-quiz']?.countryDeck
+  })
+
+  expect(firstDeck.nextIndex).toBe(10)
+  expect(secondDeck.nextIndex).toBe(20)
+  expect(secondDeck.orderedCountryCodes).toEqual(firstDeck.orderedCountryCodes)
+  expect(
+    new Set(secondDeck.orderedCountryCodes.slice(0, secondDeck.nextIndex)).size,
+  ).toBe(20)
+})
+
 test('beating the high score activates the long confetti celebration', async ({ page }) => {
   await page.addInitScript(() => {
     window.localStorage.setItem(

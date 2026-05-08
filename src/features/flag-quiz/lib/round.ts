@@ -5,7 +5,7 @@ import type {
   FlagQuizQuestion,
 } from '@/features/flag-quiz/types'
 
-function sampleWeightedUnique<T extends { weightModifier: number }>(
+export function sampleWeightedUnique<T extends { weightModifier: number }>(
   values: T[],
   count: number,
   random: () => number,
@@ -57,12 +57,18 @@ function buildOptions(
   return shuffle([country, ...distractors], random)
 }
 
-export function generateFlagQuizRound(
+export function buildFlagQuizQuestionDeck(
+  random: () => number = Math.random,
+): CountryQuestionSource[] {
+  return sampleWeightedUnique(flagQuestionBank, flagQuestionBank.length, random)
+}
+
+export function buildFlagQuizRoundFromCountries(
   difficulty: DifficultyRule,
-  totalQuestions = 10,
+  countries: CountryQuestionSource[],
   random: () => number = Math.random,
 ): FlagQuizQuestion[] {
-  return sampleWeightedUnique(flagQuestionBank, totalQuestions, random).map(
+  return countries.map(
     (country, index) => ({
       id: `${difficulty.id}-${country.code}-${index + 1}`,
       difficultyId: difficulty.id,
@@ -72,5 +78,17 @@ export function generateFlagQuizRound(
           ? []
           : buildOptions(country, difficulty.optionCount, random),
     }),
+  )
+}
+
+export function generateFlagQuizRound(
+  difficulty: DifficultyRule,
+  totalQuestions = 10,
+  random: () => number = Math.random,
+): FlagQuizQuestion[] {
+  return buildFlagQuizRoundFromCountries(
+    difficulty,
+    sampleWeightedUnique(flagQuestionBank, totalQuestions, random),
+    random,
   )
 }

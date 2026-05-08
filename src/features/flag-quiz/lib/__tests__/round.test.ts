@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { getDifficultyRule } from '@/features/flag-quiz/constants'
 import { computeSelectionWeight } from '@/features/flag-quiz/data/countries'
-import { generateFlagQuizRound } from '@/features/flag-quiz/lib/round'
+import {
+  buildFlagQuizRoundFromCountries,
+  generateFlagQuizRound,
+} from '@/features/flag-quiz/lib/round'
 import type { CountryQuestionSource } from '@/features/flag-quiz/types'
 
 const buildCountry = (
@@ -40,5 +43,25 @@ describe('generateFlagQuizRound', () => {
     expect(round).toHaveLength(10)
     expect(new Set(round.map((question) => question.country.code)).size).toBe(10)
     expect(round.every((question) => question.options.length === 5)).toBe(true)
+  })
+
+  it('builds a round from a provided country sequence', () => {
+    const countries = [
+      buildCountry('Brazil', 'Americas', 203_000_000, 8_515_767),
+      buildCountry('Japan', 'Asia', 123_000_000, 377_975),
+      buildCountry('Kenya', 'Africa', 55_000_000, 580_367),
+    ]
+
+    const round = buildFlagQuizRoundFromCountries(
+      getDifficultyRule('level-3'),
+      countries,
+      () => 0,
+    )
+
+    expect(round).toHaveLength(3)
+    expect(round.map((question) => question.country.code)).toEqual(
+      countries.map((country) => country.code),
+    )
+    expect(round.every((question) => question.options.length === 0)).toBe(true)
   })
 })

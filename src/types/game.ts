@@ -20,6 +20,11 @@ export interface HighScoreRecord {
   difficultyId: DifficultyId
 }
 
+export interface CountryDeckProgress {
+  orderedCountryCodes: string[]
+  nextIndex: number
+}
+
 export interface RoundResult {
   gameId: GameId
   difficultyId: DifficultyId
@@ -35,6 +40,7 @@ export interface GameLocalStats {
   highScore: HighScoreRecord | null
   recentResult: RoundResult | null
   lastDifficulty: DifficultyId | null
+  countryDeck: CountryDeckProgress | null
 }
 
 export interface AppPreferences {

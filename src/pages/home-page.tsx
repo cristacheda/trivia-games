@@ -39,7 +39,12 @@ export function HomePage() {
           comingSoon: true,
           teaser: '',
         },
-        stats: { highScore: null, recentResult: null, lastDifficulty: null },
+        stats: {
+          highScore: null,
+          recentResult: null,
+          lastDifficulty: null,
+          countryDeck: null,
+        },
       },
     ])
     .slice(0, 3)

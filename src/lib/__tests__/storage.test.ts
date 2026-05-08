@@ -1,10 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { flagQuestionBank } from '@/features/flag-quiz/data/countries'
 import {
   STORAGE_VERSION,
+  getFlagQuizCountryDeck,
   getAppPreferences,
   getGameStats,
   readAppState,
   recordRoundResult,
+  reserveFlagQuizCountries,
+  setFlagQuizCountryDeck,
   setSoundEnabled,
   setLastDifficulty,
 } from '@/lib/storage'
@@ -58,7 +62,57 @@ describe('storage', () => {
     expect(state.version).toBe(STORAGE_VERSION)
     expect(state.playerId).toBe('player-1')
     expect(state.games['flag-quiz']?.highScore?.score).toBe(12)
+    expect(state.games['flag-quiz']?.countryDeck).toEqual({
+      orderedCountryCodes: [],
+      nextIndex: 0,
+    })
     expect(state.preferences.soundEnabled).toBe(true)
+  })
+
+  it('migrates version 2 state and initializes flag quiz deck progress', () => {
+    window.localStorage.setItem(
+      'atlas-of-answers:app-state',
+      JSON.stringify({
+        version: 2,
+        playerId: 'player-2',
+        games: {
+          'flag-quiz': {
+            highScore: {
+              score: 15,
+              achievedAt: '2026-05-08T20:00:00.000Z',
+              difficultyId: 'level-3',
+            },
+            recentResult: {
+              gameId: 'flag-quiz',
+              difficultyId: 'level-3',
+              totalScore: 15,
+              correctAnswers: 5,
+              totalQuestions: 10,
+              completedAt: '2026-05-08T20:00:00.000Z',
+              previousBestScore: 10,
+              beatHighScore: true,
+            },
+            lastDifficulty: 'level-3',
+          },
+        },
+        preferences: {
+          soundEnabled: false,
+        },
+      }),
+    )
+
+    const state = readAppState()
+
+    expect(state.version).toBe(STORAGE_VERSION)
+    expect(state.playerId).toBe('player-2')
+    expect(state.games['flag-quiz']?.highScore?.score).toBe(15)
+    expect(state.games['flag-quiz']?.recentResult?.totalScore).toBe(15)
+    expect(state.games['flag-quiz']?.lastDifficulty).toBe('level-3')
+    expect(state.games['flag-quiz']?.countryDeck).toEqual({
+      orderedCountryCodes: [],
+      nextIndex: 0,
+    })
+    expect(state.preferences.soundEnabled).toBe(false)
   })
 
   it('stores last difficulty and high score', () => {
@@ -85,5 +139,47 @@ describe('storage', () => {
     setSoundEnabled(false)
 
     expect(getAppPreferences().soundEnabled).toBe(false)
+  })
+
+  it('reserves unique flag quiz countries across consecutive rounds', () => {
+    const orderedCountryCodes = flagQuestionBank.slice(0, 20).map((country) => country.code)
+
+    setFlagQuizCountryDeck({
+      orderedCountryCodes,
+      nextIndex: 0,
+    })
+
+    const firstRound = reserveFlagQuizCountries(10)
+    setLastDifficulty('flag-quiz', 'level-2')
+    const secondRound = reserveFlagQuizCountries(10)
+
+    expect(firstRound).toEqual(orderedCountryCodes.slice(0, 10))
+    expect(secondRound).toEqual(orderedCountryCodes.slice(10, 20))
+    expect(new Set([...firstRound, ...secondRound]).size).toBe(20)
+    expect(getFlagQuizCountryDeck()).toEqual({
+      orderedCountryCodes,
+      nextIndex: 20,
+    })
+  })
+
+  it('carries the remaining countries forward before resetting the deck', () => {
+    const orderedCountryCodes = flagQuestionBank.map((country) => country.code)
+
+    setFlagQuizCountryDeck({
+      orderedCountryCodes,
+      nextIndex: orderedCountryCodes.length - 5,
+    })
+
+    const nextRound = reserveFlagQuizCountries(10, () => 0)
+
+    expect(nextRound).toEqual([
+      ...orderedCountryCodes.slice(-5),
+      ...orderedCountryCodes.slice(0, 5),
+    ])
+    expect(new Set(nextRound).size).toBe(10)
+    expect(getFlagQuizCountryDeck()).toEqual({
+      orderedCountryCodes,
+      nextIndex: 5,
+    })
   })
 })

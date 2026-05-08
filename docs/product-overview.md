@@ -23,6 +23,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 
 - No account is required to play.
 - Preferences and scores are stored in the browser with `localStorage`.
+- Flag quiz country exposure is also tracked in `localStorage` so new rounds avoid repeating flags until a full country cycle has been used.
 - Cookies are not the default persistence mechanism.
 - Google and GitHub login are planned for cross-device sync later.
 - GDPR consent and analytics are planned but not fully implemented yet.
@@ -35,6 +36,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Prioritizes countries outside Europe.
 - Gives extra exposure to smaller or less familiar countries.
 - Runs in rounds of 10 questions.
+- Reuses as many unseen countries as possible across rounds before reshuffling into a new weighted cycle.
 - Plays subtle sounds for correct answers, wrong answers, round finish, and new high scores.
 
 ### Difficulty levels
