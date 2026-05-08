@@ -22,6 +22,7 @@
 - Flag quiz data and weighting live under `src/features/flag-quiz`
 - Capital quiz data, state/country mixing, and answer matching live under `src/features/guess-the-capital`
 - Outline quiz data, state/country mixing, SVG shapes, and answer matching live under `src/features/outline-quiz`
+- Outline quiz rendering preserves the raw bundled SVG path geometry instead of smoothing corners in the renderer
 - Flag quiz rounds reserve country codes from a persisted weighted deck before building question objects
 - Capital quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Outline quiz rounds reserve country and state subjects from persisted decks before building question objects

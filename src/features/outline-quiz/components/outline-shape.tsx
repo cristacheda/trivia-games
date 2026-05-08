@@ -16,10 +16,6 @@ export function OutlineShape({ className, subject }: OutlineShapeProps) {
       <path
         d={subject.outlinePath}
         fill="currentColor"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={0.8}
       />
     </svg>
   )
