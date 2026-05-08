@@ -8,17 +8,26 @@ import {
 import { capitalCountryQuestionBank } from '@/features/guess-the-capital/data/countries'
 import { capitalStateQuestionBank } from '@/features/guess-the-capital/data/states'
 import {
+  OUTLINE_QUIZ_COUNTRIES_PER_ROUND,
+  OUTLINE_QUIZ_STATES_PER_ROUND,
+} from '@/features/outline-quiz/constants'
+import { outlineCountryQuestionBank } from '@/features/outline-quiz/data/countries'
+import { outlineStateQuestionBank } from '@/features/outline-quiz/data/states'
+import {
   STORAGE_VERSION,
   getFlagQuizCountryDeck,
   getGuessTheCapitalDeck,
+  getOutlineQuizDeck,
   getAppPreferences,
   getGameStats,
   readAppState,
   recordRoundResult,
   reserveFlagQuizCountries,
   reserveGuessTheCapitalSubjects,
+  reserveOutlineQuizSubjects,
   setFlagQuizCountryDeck,
   setGuessTheCapitalDeck,
+  setOutlineQuizDeck,
   setSoundEnabled,
   setLastDifficulty,
 } from '@/lib/storage'
@@ -77,6 +86,7 @@ describe('storage', () => {
       nextIndex: 0,
     })
     expect(state.games['flag-quiz']?.capitalDeck).toBeNull()
+    expect(state.games['flag-quiz']?.outlineDeck).toBeNull()
     expect(state.preferences.soundEnabled).toBe(true)
   })
 
@@ -124,6 +134,7 @@ describe('storage', () => {
       nextIndex: 0,
     })
     expect(state.games['flag-quiz']?.capitalDeck).toBeNull()
+    expect(state.games['flag-quiz']?.outlineDeck).toBeNull()
     expect(state.preferences.soundEnabled).toBe(false)
   })
 
@@ -155,6 +166,42 @@ describe('storage', () => {
     expect(state.version).toBe(STORAGE_VERSION)
     expect(state.games['guess-the-capital']?.highScore?.score).toBe(22)
     expect(state.games['guess-the-capital']?.capitalDeck).toEqual({
+      orderedCountryCodes: [],
+      nextCountryIndex: 0,
+      orderedStateCodes: [],
+      nextStateIndex: 0,
+    })
+    expect(state.games['guess-the-capital']?.outlineDeck).toBeNull()
+  })
+
+  it('migrates version 4 state and initializes outline deck progress', () => {
+    window.localStorage.setItem(
+      'atlas-of-answers:app-state',
+      JSON.stringify({
+        version: 4,
+        playerId: 'player-4',
+        games: {
+          'outline-quiz': {
+            highScore: {
+              score: 19,
+              achievedAt: '2026-05-08T20:00:00.000Z',
+              difficultyId: 'level-2',
+            },
+            recentResult: null,
+            lastDifficulty: 'level-2',
+          },
+        },
+        preferences: {
+          soundEnabled: true,
+        },
+      }),
+    )
+
+    const state = readAppState()
+
+    expect(state.version).toBe(STORAGE_VERSION)
+    expect(state.games['outline-quiz']?.highScore?.score).toBe(19)
+    expect(state.games['outline-quiz']?.outlineDeck).toEqual({
       orderedCountryCodes: [],
       nextCountryIndex: 0,
       orderedStateCodes: [],
@@ -207,6 +254,27 @@ describe('storage', () => {
     expect(stats.lastDifficulty).toBe('level-2')
     expect(stats.highScore?.score).toBe(24)
     expect(stats.recentResult?.totalScore).toBe(24)
+  })
+
+  it('stores outline game results and high score', () => {
+    setLastDifficulty('outline-quiz', 'level-2')
+    const saved = recordRoundResult({
+      gameId: 'outline-quiz',
+      difficultyId: 'level-2',
+      totalScore: 27,
+      correctAnswers: 13,
+      totalQuestions:
+        OUTLINE_QUIZ_COUNTRIES_PER_ROUND + OUTLINE_QUIZ_STATES_PER_ROUND,
+      completedAt: '2026-05-08T20:00:00.000Z',
+    })
+
+    const stats = getGameStats('outline-quiz')
+
+    expect(saved.previousBestScore).toBeNull()
+    expect(saved.beatHighScore).toBe(true)
+    expect(stats.lastDifficulty).toBe('level-2')
+    expect(stats.highScore?.score).toBe(27)
+    expect(stats.recentResult?.totalScore).toBe(27)
   })
 
   it('reserves unique flag quiz countries across consecutive rounds', () => {
@@ -314,6 +382,58 @@ describe('storage', () => {
       nextCountryIndex: GUESS_THE_CAPITAL_COUNTRIES_PER_ROUND * 2,
       orderedStateCodes,
       nextStateIndex: GUESS_THE_CAPITAL_STATES_PER_ROUND * 2,
+    })
+  })
+
+  it('reserves unique outline quiz countries and states across consecutive rounds', () => {
+    const orderedCountryCodes = outlineCountryQuestionBank
+      .slice(0, OUTLINE_QUIZ_COUNTRIES_PER_ROUND * 2)
+      .map((country) => country.code)
+    const orderedStateCodes = outlineStateQuestionBank
+      .slice(0, OUTLINE_QUIZ_STATES_PER_ROUND * 2)
+      .map((state) => state.code)
+
+    setOutlineQuizDeck({
+      orderedCountryCodes,
+      nextCountryIndex: 0,
+      orderedStateCodes,
+      nextStateIndex: 0,
+    })
+
+    const firstRound = reserveOutlineQuizSubjects(
+      OUTLINE_QUIZ_COUNTRIES_PER_ROUND,
+      OUTLINE_QUIZ_STATES_PER_ROUND,
+      'level-2',
+    )
+    const secondRound = reserveOutlineQuizSubjects(
+      OUTLINE_QUIZ_COUNTRIES_PER_ROUND,
+      OUTLINE_QUIZ_STATES_PER_ROUND,
+      'level-3',
+    )
+
+    expect(firstRound.countries.map((country) => country.code)).toEqual(
+      orderedCountryCodes.slice(0, OUTLINE_QUIZ_COUNTRIES_PER_ROUND),
+    )
+    expect(firstRound.states.map((state) => state.code)).toEqual(
+      orderedStateCodes.slice(0, OUTLINE_QUIZ_STATES_PER_ROUND),
+    )
+    expect(secondRound.countries.map((country) => country.code)).toEqual(
+      orderedCountryCodes.slice(
+        OUTLINE_QUIZ_COUNTRIES_PER_ROUND,
+        OUTLINE_QUIZ_COUNTRIES_PER_ROUND * 2,
+      ),
+    )
+    expect(secondRound.states.map((state) => state.code)).toEqual(
+      orderedStateCodes.slice(
+        OUTLINE_QUIZ_STATES_PER_ROUND,
+        OUTLINE_QUIZ_STATES_PER_ROUND * 2,
+      ),
+    )
+    expect(getOutlineQuizDeck()).toEqual({
+      orderedCountryCodes,
+      nextCountryIndex: OUTLINE_QUIZ_COUNTRIES_PER_ROUND * 2,
+      orderedStateCodes,
+      nextStateIndex: OUTLINE_QUIZ_STATES_PER_ROUND * 2,
     })
   })
 })

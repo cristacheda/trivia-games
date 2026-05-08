@@ -35,12 +35,11 @@ export const gameCatalog: GameCatalogEntry[] = [
     id: 'outline-quiz',
     title: 'Name the Country by Its Outline',
     description:
-      'A shape-first challenge built for geography specialists and people who enjoy getting humbled.',
-    status: 'coming-soon',
-    offlineCapable: false,
+      'Spot country and state outlines quickly, with harder rounds leaning into smaller and less familiar geography.',
+    status: 'ready',
+    offlineCapable: true,
     difficultySet: ['level-1', 'level-2', 'level-3'],
-    comingSoon: true,
-    teaser: 'Coming after the flag quiz review cycle.',
+    comingSoon: false,
   },
 ]
 

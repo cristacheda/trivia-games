@@ -21,8 +21,10 @@
 - Game metadata comes from `src/config/site.ts`
 - Flag quiz data and weighting live under `src/features/flag-quiz`
 - Capital quiz data, state/country mixing, and answer matching live under `src/features/guess-the-capital`
+- Outline quiz data, state/country mixing, SVG shapes, and answer matching live under `src/features/outline-quiz`
 - Flag quiz rounds reserve country codes from a persisted weighted deck before building question objects
 - Capital quiz rounds reserve country and state subjects from persisted decks before building question objects
+- Outline quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Round results are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Integration hooks exist, but external providers are currently no-op
@@ -37,12 +39,13 @@
   - most recent round result
   - flag quiz country deck progress for cross-run non-repeating play
   - capital quiz country/state deck progress for cross-run non-repeating play
+  - outline quiz country/state deck progress for cross-run non-repeating play
   - app-level sound enabled preference
 
 ## Offline model
 
 - PWA build is enabled for production
-- The first game is intended to be playable after its initial assets are cached
+- The shipped games are intended to be playable after their initial assets are cached
 - Dev mode does not force PWA caching behavior
 
 ## Planned external integrations

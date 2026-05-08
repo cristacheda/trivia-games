@@ -52,6 +52,7 @@ export function HomePage() {
           lastDifficulty: null,
           countryDeck: null,
           capitalDeck: null,
+          outlineDeck: null,
         },
       },
     ])
@@ -71,7 +72,7 @@ export function HomePage() {
               </h1>
               <p className="max-w-xl text-base text-muted-foreground sm:text-xl">
                 {siteConfig.description} Start with fast flag reps now. Country
-                capitals are live, and country outlines are next.
+                capitals and outline rounds are live.
               </p>
             </div>
 
@@ -164,7 +165,9 @@ export function HomePage() {
                       <Trophy className="h-4 w-4" />
                       {game.id === 'flag-quiz'
                         ? 'Flag quiz high score'
-                        : 'Capital quiz high score'}
+                        : game.id === 'guess-the-capital'
+                          ? 'Capital quiz high score'
+                          : 'Outline quiz high score'}
                     </div>
                     <p className="mt-2 font-serif text-3xl font-semibold">
                       {statsByGame[game.id].highScore?.score ?? '—'}

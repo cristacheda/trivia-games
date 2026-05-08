@@ -32,6 +32,13 @@ export interface CapitalDeckProgress {
   nextStateIndex: number
 }
 
+export interface OutlineDeckProgress {
+  orderedCountryCodes: string[]
+  nextCountryIndex: number
+  orderedStateCodes: string[]
+  nextStateIndex: number
+}
+
 export interface RoundResult {
   gameId: GameId
   difficultyId: DifficultyId
@@ -49,6 +56,7 @@ export interface GameLocalStats {
   lastDifficulty: DifficultyId | null
   countryDeck: CountryDeckProgress | null
   capitalDeck: CapitalDeckProgress | null
+  outlineDeck: OutlineDeckProgress | null
 }
 
 export interface AppPreferences {

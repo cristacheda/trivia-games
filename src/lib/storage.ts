@@ -12,6 +12,16 @@ import {
   capitalStateQuestionBankByCode,
 } from '@/features/guess-the-capital/data/states'
 import { buildGuessTheCapitalDeck } from '@/features/guess-the-capital/lib/round'
+import { OUTLINE_QUIZ_GAME_ID } from '@/features/outline-quiz/constants'
+import {
+  outlineCountryQuestionBank,
+  outlineCountryQuestionBankByCode,
+} from '@/features/outline-quiz/data/countries'
+import {
+  outlineStateQuestionBank,
+  outlineStateQuestionBankByCode,
+} from '@/features/outline-quiz/data/states'
+import { buildOutlineQuizDeck } from '@/features/outline-quiz/lib/round'
 import type {
   AppPreferences,
   CapitalDeckProgress,
@@ -19,13 +29,14 @@ import type {
   DifficultyId,
   GameId,
   GameLocalStats,
+  OutlineDeckProgress,
   PersistedAppState,
   RoundResult,
 } from '@/types/game'
 
 const STORAGE_KEY = 'atlas-of-answers:app-state'
 const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
-export const STORAGE_VERSION = 4
+export const STORAGE_VERSION = 5
 
 type RoundResultInput = Omit<RoundResult, 'previousBestScore' | 'beatHighScore'>
 
@@ -37,6 +48,15 @@ function createDefaultCountryDeck(): CountryDeckProgress {
 }
 
 function createDefaultCapitalDeck(): CapitalDeckProgress {
+  return {
+    orderedCountryCodes: [],
+    nextCountryIndex: 0,
+    orderedStateCodes: [],
+    nextStateIndex: 0,
+  }
+}
+
+function createDefaultOutlineDeck(): OutlineDeckProgress {
   return {
     orderedCountryCodes: [],
     nextCountryIndex: 0,
@@ -58,6 +78,7 @@ function createDefaultStats(): GameLocalStats {
     lastDifficulty: null,
     countryDeck: null,
     capitalDeck: null,
+    outlineDeck: null,
   }
 }
 
@@ -111,6 +132,10 @@ function normalizeGameStats(
       gameId === GUESS_THE_CAPITAL_GAME_ID
         ? normalizeCapitalDeck(stats.capitalDeck)
         : null,
+    outlineDeck:
+      gameId === OUTLINE_QUIZ_GAME_ID
+        ? normalizeOutlineDeck(stats.outlineDeck)
+        : null,
   }
 }
 
@@ -126,8 +151,8 @@ function normalizeGames(
           ),
         }
       : {}),
-    ...(games?.['outline-quiz']
-      ? { 'outline-quiz': normalizeGameStats('outline-quiz', games['outline-quiz']) }
+    ...(games?.[OUTLINE_QUIZ_GAME_ID]
+      ? { [OUTLINE_QUIZ_GAME_ID]: normalizeGameStats(OUTLINE_QUIZ_GAME_ID, games[OUTLINE_QUIZ_GAME_ID]) }
       : {}),
     ...(games?.[FLAG_QUIZ_GAME_ID]
       ? { [FLAG_QUIZ_GAME_ID]: normalizeGameStats(FLAG_QUIZ_GAME_ID, games[FLAG_QUIZ_GAME_ID]) }
@@ -159,7 +184,12 @@ function normalizeState(value: unknown): PersistedAppState {
     return createDefaultState()
   }
 
-  if (state.version === 1 || state.version === 2 || state.version === 3) {
+  if (
+    state.version === 1 ||
+    state.version === 2 ||
+    state.version === 3 ||
+    state.version === 4
+  ) {
     return {
       version: STORAGE_VERSION,
       playerId: state.playerId,
@@ -301,6 +331,54 @@ function normalizeCapitalDeck(value: unknown): CapitalDeckProgress {
     capitalCountryQuestionBank.map((country) => country.code),
   )
   const validStateCodes = new Set(capitalStateQuestionBank.map((state) => state.code))
+  const orderedCountryCodes = Array.isArray(deck.orderedCountryCodes)
+    ? Array.from(
+        new Set(
+          deck.orderedCountryCodes.filter(
+            (code): code is string =>
+              typeof code === 'string' && validCountryCodes.has(code),
+          ),
+        ),
+      )
+    : []
+  const orderedStateCodes = Array.isArray(deck.orderedStateCodes)
+    ? Array.from(
+        new Set(
+          deck.orderedStateCodes.filter(
+            (code): code is string =>
+              typeof code === 'string' && validStateCodes.has(code),
+          ),
+        ),
+      )
+    : []
+  const nextCountryIndex =
+    typeof deck.nextCountryIndex === 'number' &&
+    Number.isInteger(deck.nextCountryIndex)
+      ? Math.max(0, Math.min(deck.nextCountryIndex, orderedCountryCodes.length))
+      : 0
+  const nextStateIndex =
+    typeof deck.nextStateIndex === 'number' && Number.isInteger(deck.nextStateIndex)
+      ? Math.max(0, Math.min(deck.nextStateIndex, orderedStateCodes.length))
+      : 0
+
+  return {
+    orderedCountryCodes,
+    nextCountryIndex,
+    orderedStateCodes,
+    nextStateIndex,
+  }
+}
+
+function normalizeOutlineDeck(value: unknown): OutlineDeckProgress {
+  if (!value || typeof value !== 'object') {
+    return createDefaultOutlineDeck()
+  }
+
+  const deck = value as Partial<OutlineDeckProgress>
+  const validCountryCodes = new Set(
+    outlineCountryQuestionBank.map((country) => country.code),
+  )
+  const validStateCodes = new Set(outlineStateQuestionBank.map((state) => state.code))
   const orderedCountryCodes = Array.isArray(deck.orderedCountryCodes)
     ? Array.from(
         new Set(
@@ -518,6 +596,135 @@ export function reserveGuessTheCapitalSubjects(
 
       if (!state) {
         throw new Error(`Unknown capital quiz state code: ${code}`)
+      }
+
+      return state
+    }),
+  }
+}
+
+export function getOutlineQuizDeck(): OutlineDeckProgress {
+  return getGameStats(OUTLINE_QUIZ_GAME_ID).outlineDeck ?? createDefaultOutlineDeck()
+}
+
+export function setOutlineQuizDeck(outlineDeck: OutlineDeckProgress) {
+  const state = readAppState()
+
+  writeAppState({
+    ...state,
+    games: {
+      ...state.games,
+      [OUTLINE_QUIZ_GAME_ID]: {
+        ...createDefaultStats(),
+        ...state.games[OUTLINE_QUIZ_GAME_ID],
+        outlineDeck: normalizeOutlineDeck(outlineDeck),
+      },
+    },
+  })
+}
+
+function reserveOutlineCountryCodes(
+  totalQuestions: number,
+  currentDeck: OutlineDeckProgress,
+  difficultyId: DifficultyId,
+  random: () => number,
+) {
+  let orderedCountryCodes = [...currentDeck.orderedCountryCodes]
+  let nextCountryIndex = currentDeck.nextCountryIndex
+  const selectedCodes: string[] = []
+
+  while (selectedCodes.length < totalQuestions) {
+    if (orderedCountryCodes.length === 0 || nextCountryIndex >= orderedCountryCodes.length) {
+      orderedCountryCodes = buildOutlineQuizDeck(
+        'country',
+        difficultyId,
+        random,
+      ).map((country) => country.code)
+      nextCountryIndex = 0
+    }
+
+    const remainingSlots = totalQuestions - selectedCodes.length
+    const remainingCodes = orderedCountryCodes.slice(nextCountryIndex)
+    const nextCodes = remainingCodes.slice(0, remainingSlots)
+
+    selectedCodes.push(...nextCodes)
+    nextCountryIndex += nextCodes.length
+  }
+
+  return { orderedCountryCodes, nextCountryIndex, selectedCodes }
+}
+
+function reserveOutlineStateCodes(
+  totalQuestions: number,
+  currentDeck: OutlineDeckProgress,
+  difficultyId: DifficultyId,
+  random: () => number,
+) {
+  let orderedStateCodes = [...currentDeck.orderedStateCodes]
+  let nextStateIndex = currentDeck.nextStateIndex
+  const selectedCodes: string[] = []
+
+  while (selectedCodes.length < totalQuestions) {
+    if (orderedStateCodes.length === 0 || nextStateIndex >= orderedStateCodes.length) {
+      orderedStateCodes = buildOutlineQuizDeck(
+        'state',
+        difficultyId,
+        random,
+      ).map((state) => state.code)
+      nextStateIndex = 0
+    }
+
+    const remainingSlots = totalQuestions - selectedCodes.length
+    const remainingCodes = orderedStateCodes.slice(nextStateIndex)
+    const nextCodes = remainingCodes.slice(0, remainingSlots)
+
+    selectedCodes.push(...nextCodes)
+    nextStateIndex += nextCodes.length
+  }
+
+  return { orderedStateCodes, nextStateIndex, selectedCodes }
+}
+
+export function reserveOutlineQuizSubjects(
+  totalCountries: number,
+  totalStates: number,
+  difficultyId: DifficultyId,
+  random: () => number = Math.random,
+) {
+  const currentDeck = getOutlineQuizDeck()
+  const {
+    orderedCountryCodes,
+    nextCountryIndex,
+    selectedCodes: countryCodes,
+  } = reserveOutlineCountryCodes(totalCountries, currentDeck, difficultyId, random)
+  const {
+    orderedStateCodes,
+    nextStateIndex,
+    selectedCodes: stateCodes,
+  } = reserveOutlineStateCodes(totalStates, currentDeck, difficultyId, random)
+
+  setOutlineQuizDeck({
+    orderedCountryCodes,
+    nextCountryIndex,
+    orderedStateCodes,
+    nextStateIndex,
+  })
+
+  return {
+    countries: countryCodes.map((code) => {
+      const country = outlineCountryQuestionBankByCode.get(code)
+
+      if (!country) {
+        throw new Error(`Unknown outline quiz country code: ${code}`)
+      }
+
+      return country
+    }),
+    states: stateCodes.map((code) => {
+      const state = outlineStateQuestionBankByCode.get(code)
+
+      if (!state) {
+        throw new Error(`Unknown outline quiz state code: ${code}`)
       }
 
       return state

@@ -44,6 +44,7 @@ test('homepage renders the game shelf and offline badge on mobile', async ({ pag
     }),
   ).toBeVisible()
   await expect(page.getByTestId('offline-badge-flag-quiz')).toBeVisible()
+  await expect(page.getByTestId('offline-badge-outline-quiz')).toBeVisible()
   await expect(page.getByText('Atlas of Answers')).toBeVisible()
   await expect(page.getByRole('button', { name: /menu/i })).toBeVisible()
 
@@ -89,6 +90,19 @@ test('each capital-game difficulty can start a round', async ({ page }) => {
   }
 })
 
+test('each outline-game difficulty can start a round', async ({ page }) => {
+  await enableDebugMode(page)
+
+  for (const difficultyId of ['level-1', 'level-2', 'level-3']) {
+    await page.goto('/games/outline-quiz')
+    await page.getByTestId(`difficulty-${difficultyId}`).click()
+    await page.getByTestId('start-round').click()
+    await expect(page.getByTestId('question-progress')).toContainText(
+      `Question 1 / ${QUESTIONS_PER_ROUND}`,
+    )
+  }
+})
+
 test('untimed level 1 shows learning mode without a countdown', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/flag-quiz')
@@ -119,6 +133,22 @@ test('timer expiry advances to the next question on timed difficulties', async (
 test('capital game timer expiry advances to the next question', async ({ page }) => {
   await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
   await page.goto('/games/guess-the-capital')
+  await page.getByTestId('difficulty-level-2').click()
+  await page.getByTestId('start-round').click()
+
+  await expect(page.getByTestId('question-progress')).toContainText(
+    `Question 1 / ${QUESTIONS_PER_ROUND}`,
+  )
+  await expect
+    .poll(async () => page.getByTestId('question-progress').textContent(), {
+      timeout: 5000,
+    })
+    .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
+})
+
+test('outline game timer expiry advances to the next question', async ({ page }) => {
+  await enableDebugMode(page, { timerScale: 0.01, revealAnswers: false })
+  await page.goto('/games/outline-quiz')
   await page.getByTestId('difficulty-level-2').click()
   await page.getByTestId('start-round').click()
 
@@ -364,7 +394,7 @@ test('capital game replaying shows the previous high score', async ({ page }) =>
     window.localStorage.setItem(
       'atlas-of-answers:app-state',
       JSON.stringify({
-        version: 4,
+        version: 5,
         playerId: 'e2e-player',
         games: {
           'guess-the-capital': {
@@ -427,6 +457,107 @@ test('starting new capital rounds advances the shared country and state decks ac
     )
 
     return state.games?.['guess-the-capital']?.capitalDeck
+  })
+
+  expect(firstDeck.nextCountryIndex).toBe(18)
+  expect(firstDeck.nextStateIndex).toBe(2)
+  expect(secondDeck.nextCountryIndex).toBe(36)
+  expect(secondDeck.nextStateIndex).toBe(4)
+  expect(secondDeck.orderedCountryCodes).toEqual(firstDeck.orderedCountryCodes)
+  expect(secondDeck.orderedStateCodes).toEqual(firstDeck.orderedStateCodes)
+})
+
+test('outline game free-text input autofocuses and reveals the correct place', async ({
+  page,
+}) => {
+  await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
+  await useMobileViewport(page)
+  await page.goto('/games/outline-quiz')
+  await page.getByTestId('difficulty-level-3').click()
+  await page.getByTestId('start-round').click()
+
+  await expect(page.locator('#outline-answer')).toBeFocused()
+
+  const correctAnswer = await page.locator('#outline-answer').getAttribute('data-answer')
+  await page.locator('#outline-answer').fill('Definitely not the correct place')
+  await page.getByRole('button', { name: 'Lock answer' }).click()
+
+  await expect(page.getByTestId('revealed-correct-answer')).toContainText(
+    `Correct answer: ${correctAnswer}`,
+  )
+})
+
+test('outline game replaying shows the previous high score', async ({ page }) => {
+  test.setTimeout(45000)
+
+  await page.addInitScript(() => {
+    window.localStorage.setItem(
+      'atlas-of-answers:app-state',
+      JSON.stringify({
+        version: 5,
+        playerId: 'e2e-player',
+        games: {
+          'outline-quiz': {
+            highScore: {
+              score: 8,
+              achievedAt: '2026-05-08T20:00:00.000Z',
+              difficultyId: 'level-1',
+            },
+            recentResult: null,
+            lastDifficulty: 'level-1',
+            countryDeck: null,
+            capitalDeck: null,
+            outlineDeck: null,
+          },
+        },
+        preferences: {
+          soundEnabled: true,
+        },
+      }),
+    )
+    window.localStorage.setItem(
+      'atlas-of-answers:debug',
+      JSON.stringify({ timerScale: 0.01, revealAnswers: false }),
+    )
+  })
+  await page.goto('/games/outline-quiz')
+  await page.getByTestId('difficulty-level-2').click()
+  await page.getByTestId('start-round').click()
+
+  await expect(page.getByTestId('result-score')).toContainText('0 points', {
+    timeout: 30000,
+  })
+  await expect(page.getByText('Previous best')).toBeVisible()
+  await expect(page.getByText('8', { exact: true })).toBeVisible()
+})
+
+test('starting new outline rounds advances the shared country and state decks across reloads', async ({
+  page,
+}) => {
+  await enableDebugMode(page)
+  await useMobileViewport(page)
+  await page.goto('/games/outline-quiz')
+  await page.getByTestId('difficulty-level-2').click()
+  await page.getByTestId('start-round').click()
+
+  const firstDeck = await page.evaluate(() => {
+    const state = JSON.parse(
+      window.localStorage.getItem('atlas-of-answers:app-state') ?? '{}',
+    )
+
+    return state.games?.['outline-quiz']?.outlineDeck
+  })
+
+  await page.reload()
+  await page.getByTestId('difficulty-level-3').click()
+  await page.getByTestId('start-round').click()
+
+  const secondDeck = await page.evaluate(() => {
+    const state = JSON.parse(
+      window.localStorage.getItem('atlas-of-answers:app-state') ?? '{}',
+    )
+
+    return state.games?.['outline-quiz']?.outlineDeck
   })
 
   expect(firstDeck.nextCountryIndex).toBe(18)

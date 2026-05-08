@@ -13,8 +13,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 ## Current MVP
 
 - Homepage with a grid of games
-- Two playable games: `Name the Country Flag` and `Guess the Capital`
-- One teaser card for the upcoming outline game
+- Three playable games: `Name the Country Flag`, `Guess the Capital`, and `Name the Country by Its Outline`
 - Local-first score and preference storage
 - Subtle in-game sound cues with a local mute toggle
 - Offline-capable playable games after the initial asset load
@@ -54,10 +53,18 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 2`: 5 options, 15 seconds, 2 points, stronger bias away from Europe.
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance plus common capital variants.
 
+### Name the Country by Its Outline
+
+- Uses all UN member countries plus the 50 US states.
+- Runs in rounds of 20 questions: 18 countries and 2 states.
+- Reuses as many unseen countries and states as possible across rounds before reshuffling into a new weighted cycle.
+- `Level 1`: 3 options, no time limit, 1 point.
+- `Level 2`: 5 options, 15 seconds, 2 points, stronger bias toward smaller and less familiar geography.
+- `Level 3`: free text, no time limit, 3 points, light misspelling tolerance.
+
 ## Near-term roadmap
 
 - Gather feedback on the homepage and first game
-- Add the outline game
 - Add login and score sync with Supabase
 - Add privacy/consent UX
 - Add analytics events after consent design is finalized
