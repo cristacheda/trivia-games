@@ -42,6 +42,21 @@ Attach the production domain:
 
 - `triviagames.cristache.net`
 
+### Preview domain
+
+Attach the preview domain:
+
+- `triviagames-preview.cristache.net`
+
+After the first successful deployment from the `preview` branch:
+
+1. Open the `trivia-games` Pages project.
+2. Add the custom domain `triviagames-preview.cristache.net`.
+3. In Cloudflare DNS, point that hostname to the Pages branch alias target:
+   - `preview.trivia-games.pages.dev`
+
+This follows Cloudflare's branch-alias custom domain model for Pages preview branches.
+
 ### API token
 
 Create a Cloudflare API token with permissions sufficient to deploy Pages projects for the target account.
@@ -55,9 +70,10 @@ Copy the Cloudflare account ID for the account that owns the Pages project and a
 1. Push a branch.
 2. Open a pull request.
 3. Let CI pass.
-4. Merge to `main`.
-5. GitHub Actions runs `.github/workflows/deploy-cloudflare-pages.yml`.
-6. Cloudflare Pages receives the built `dist` folder.
+4. Push to `preview` if you want to test on the preview environment.
+5. Merge to `main` when the change is ready for production.
+6. GitHub Actions runs `.github/workflows/deploy-cloudflare-pages.yml`.
+7. Cloudflare Pages receives the built `dist` folder.
 
 ## If the Pages project name changes
 

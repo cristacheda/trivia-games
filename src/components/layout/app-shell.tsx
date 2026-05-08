@@ -31,8 +31,13 @@ export function AppShell({ children }: AppShellProps) {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
               <Link className="inline-flex items-center gap-3" to="/">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-primary-foreground shadow-lg shadow-primary/20">
-                  A
+                <div className="h-11 w-11 overflow-hidden rounded-2xl shadow-lg shadow-primary/20 ring-1 ring-black/5">
+                  <img
+                    alt={`${siteConfig.title} logo`}
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                    src="/atlas.png"
+                  />
                 </div>
                 <div>
                   <p className="font-serif text-2xl font-semibold tracking-tight">

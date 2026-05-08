@@ -41,8 +41,16 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 ### Workflow
 
 - CI runs on pull requests and pushes.
-- Deployment runs on pushes to `main`.
+- Deployment runs on pushes to `main` and `preview`.
 - The deploy workflow uploads the `dist` directory to the Cloudflare Pages project named `trivia-games`.
+- `main` is the production branch.
+- `preview` is the long-lived preview branch.
+
+### Branch behavior
+
+- Pushes to `main` deploy the production site.
+- Pushes to `preview` deploy a Pages preview branch deployment.
+- The workflow uses the current GitHub branch name as the Pages branch value.
 
 ## Vercel fallback
 
