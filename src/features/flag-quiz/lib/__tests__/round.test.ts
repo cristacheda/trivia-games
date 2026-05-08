@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { getDifficultyRule } from '@/features/flag-quiz/constants'
+import {
+  FLAG_QUIZ_QUESTIONS_PER_ROUND,
+  getDifficultyRule,
+} from '@/features/flag-quiz/constants'
 import { computeSelectionWeight } from '@/features/flag-quiz/data/countries'
 import {
   buildFlagQuizRoundFromCountries,
@@ -37,12 +40,14 @@ describe('computeSelectionWeight', () => {
 })
 
 describe('generateFlagQuizRound', () => {
-  it('creates ten unique questions for level 1', () => {
+  it('creates twenty unique questions for level 1', () => {
     const round = generateFlagQuizRound(getDifficultyRule('level-1'))
 
-    expect(round).toHaveLength(10)
-    expect(new Set(round.map((question) => question.country.code)).size).toBe(10)
-    expect(round.every((question) => question.options.length === 5)).toBe(true)
+    expect(round).toHaveLength(FLAG_QUIZ_QUESTIONS_PER_ROUND)
+    expect(new Set(round.map((question) => question.country.code)).size).toBe(
+      FLAG_QUIZ_QUESTIONS_PER_ROUND,
+    )
+    expect(round.every((question) => question.options.length === 3)).toBe(true)
   })
 
   it('builds a round from a provided country sequence', () => {

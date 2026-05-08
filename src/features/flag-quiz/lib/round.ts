@@ -1,4 +1,5 @@
 import type { DifficultyRule } from '@/types/game'
+import { FLAG_QUIZ_QUESTIONS_PER_ROUND } from '@/features/flag-quiz/constants'
 import { flagQuestionBank } from '@/features/flag-quiz/data/countries'
 import type {
   CountryQuestionSource,
@@ -83,7 +84,7 @@ export function buildFlagQuizRoundFromCountries(
 
 export function generateFlagQuizRound(
   difficulty: DifficultyRule,
-  totalQuestions = 10,
+  totalQuestions = FLAG_QUIZ_QUESTIONS_PER_ROUND,
   random: () => number = Math.random,
 ): FlagQuizQuestion[] {
   return buildFlagQuizRoundFromCountries(

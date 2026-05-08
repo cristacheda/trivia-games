@@ -35,15 +35,15 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Uses UN member countries.
 - Prioritizes countries outside Europe.
 - Gives extra exposure to smaller or less familiar countries.
-- Runs in rounds of 10 questions.
+- Runs in rounds of 20 questions.
 - Reuses as many unseen countries as possible across rounds before reshuffling into a new weighted cycle.
 - Plays subtle sounds for correct answers, wrong answers, round finish, and new high scores.
 
 ### Difficulty levels
 
-- `Level 1`: 5 options, no time limit, 1 point
-- `Level 2`: 3 options, 10 seconds, 2 points
-- `Level 3`: free text, 15 seconds, 3 points, light misspelling tolerance
+- `Level 1`: 3 options, no time limit, 1 point
+- `Level 2`: 5 options, 10 seconds, 2 points
+- `Level 3`: free text, no time limit, 3 points, light misspelling tolerance
 
 ## Near-term roadmap
 

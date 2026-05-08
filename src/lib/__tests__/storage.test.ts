@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
+import { FLAG_QUIZ_QUESTIONS_PER_ROUND } from '@/features/flag-quiz/constants'
 import { flagQuestionBank } from '@/features/flag-quiz/data/countries'
 import {
   STORAGE_VERSION,
@@ -122,7 +123,7 @@ describe('storage', () => {
       difficultyId: 'level-3',
       totalScore: 17,
       correctAnswers: 7,
-      totalQuestions: 10,
+      totalQuestions: FLAG_QUIZ_QUESTIONS_PER_ROUND,
       completedAt: '2026-05-08T20:00:00.000Z',
     })
 
@@ -142,23 +143,34 @@ describe('storage', () => {
   })
 
   it('reserves unique flag quiz countries across consecutive rounds', () => {
-    const orderedCountryCodes = flagQuestionBank.slice(0, 20).map((country) => country.code)
+    const orderedCountryCodes = flagQuestionBank
+      .slice(0, FLAG_QUIZ_QUESTIONS_PER_ROUND * 2)
+      .map((country) => country.code)
 
     setFlagQuizCountryDeck({
       orderedCountryCodes,
       nextIndex: 0,
     })
 
-    const firstRound = reserveFlagQuizCountries(10)
+    const firstRound = reserveFlagQuizCountries(FLAG_QUIZ_QUESTIONS_PER_ROUND)
     setLastDifficulty('flag-quiz', 'level-2')
-    const secondRound = reserveFlagQuizCountries(10)
+    const secondRound = reserveFlagQuizCountries(FLAG_QUIZ_QUESTIONS_PER_ROUND)
 
-    expect(firstRound).toEqual(orderedCountryCodes.slice(0, 10))
-    expect(secondRound).toEqual(orderedCountryCodes.slice(10, 20))
-    expect(new Set([...firstRound, ...secondRound]).size).toBe(20)
+    expect(firstRound).toEqual(
+      orderedCountryCodes.slice(0, FLAG_QUIZ_QUESTIONS_PER_ROUND),
+    )
+    expect(secondRound).toEqual(
+      orderedCountryCodes.slice(
+        FLAG_QUIZ_QUESTIONS_PER_ROUND,
+        FLAG_QUIZ_QUESTIONS_PER_ROUND * 2,
+      ),
+    )
+    expect(new Set([...firstRound, ...secondRound]).size).toBe(
+      FLAG_QUIZ_QUESTIONS_PER_ROUND * 2,
+    )
     expect(getFlagQuizCountryDeck()).toEqual({
       orderedCountryCodes,
-      nextIndex: 20,
+      nextIndex: FLAG_QUIZ_QUESTIONS_PER_ROUND * 2,
     })
   })
 
@@ -170,16 +182,19 @@ describe('storage', () => {
       nextIndex: orderedCountryCodes.length - 5,
     })
 
-    const nextRound = reserveFlagQuizCountries(10, () => 0)
+    const nextRound = reserveFlagQuizCountries(
+      FLAG_QUIZ_QUESTIONS_PER_ROUND,
+      () => 0,
+    )
 
     expect(nextRound).toEqual([
       ...orderedCountryCodes.slice(-5),
-      ...orderedCountryCodes.slice(0, 5),
+      ...orderedCountryCodes.slice(0, FLAG_QUIZ_QUESTIONS_PER_ROUND - 5),
     ])
-    expect(new Set(nextRound).size).toBe(10)
+    expect(new Set(nextRound).size).toBe(FLAG_QUIZ_QUESTIONS_PER_ROUND)
     expect(getFlagQuizCountryDeck()).toEqual({
       orderedCountryCodes,
-      nextIndex: 5,
+      nextIndex: FLAG_QUIZ_QUESTIONS_PER_ROUND - 5,
     })
   })
 })

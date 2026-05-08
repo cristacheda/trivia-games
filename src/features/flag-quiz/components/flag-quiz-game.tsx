@@ -21,7 +21,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ConfettiLayer } from '@/features/flag-quiz/components/confetti-layer'
-import { difficultyRules, FLAG_QUIZ_GAME_ID, getDifficultyRule } from '@/features/flag-quiz/constants'
+import {
+  difficultyRules,
+  FLAG_QUIZ_GAME_ID,
+  FLAG_QUIZ_QUESTIONS_PER_ROUND,
+  getDifficultyRule,
+} from '@/features/flag-quiz/constants'
 import { flagQuestionBankByCode } from '@/features/flag-quiz/data/countries'
 import { isAcceptableCountryAnswer } from '@/features/flag-quiz/lib/match'
 import { buildFlagQuizRoundFromCountries } from '@/features/flag-quiz/lib/round'
@@ -281,7 +286,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
     setQuestions(
       buildFlagQuizRoundFromCountries(
         rule,
-        reserveFlagQuizCountries(10).map((countryCode) => {
+        reserveFlagQuizCountries(FLAG_QUIZ_QUESTIONS_PER_ROUND).map((countryCode) => {
           const question = flagQuestionBankByCode.get(countryCode)
 
           if (!question) {
@@ -351,7 +356,9 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
           <CardHeader className="gap-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="success">Playable today</Badge>
-              <Badge variant="outline">10 flags per round</Badge>
+              <Badge variant="outline">
+                {FLAG_QUIZ_QUESTIONS_PER_ROUND} flags per round
+              </Badge>
               <Badge variant="outline">Anonymous progress saved locally</Badge>
             </div>
             <CardTitle>Choose a pace and jump in</CardTitle>
