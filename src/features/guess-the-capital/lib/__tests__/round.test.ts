@@ -84,6 +84,36 @@ describe('buildGuessTheCapitalRound', () => {
     )
   })
 
+  it('uses only state capitals as options for state questions', () => {
+    const stateCapitalSet = new Set(
+      capitalStateQuestionBank.map((state) => state.capital),
+    )
+    const subjects = [
+      buildSubject('US-AK', 'Alaska', 'state', 'Americas', 0, 0, 'Juneau'),
+      buildSubject('US-HI', 'Hawaii', 'state', 'Americas', 0, 0, 'Honolulu'),
+      buildSubject('US-CA', 'California', 'state', 'Americas', 0, 0, 'Sacramento'),
+      buildSubject('US-CO', 'Colorado', 'state', 'Americas', 0, 0, 'Denver'),
+      buildSubject('US-OR', 'Oregon', 'state', 'Americas', 0, 0, 'Salem'),
+    ]
+
+    const round = buildGuessTheCapitalRound(
+      getGuessTheCapitalDifficultyRule('level-2'),
+      subjects,
+      () => 0,
+    )
+
+    expect(round).toHaveLength(subjects.length)
+    expect(round.every((question) => question.options.length === 5)).toBe(true)
+    expect(round.every((question) => question.options.includes(question.subject.capital))).toBe(
+      true,
+    )
+    expect(
+      round.every((question) =>
+        question.options.every((option) => stateCapitalSet.has(option)),
+      ),
+    ).toBe(true)
+  })
+
   it('creates free-text rounds without options', () => {
     const subjects = capitalStateQuestionBank.slice(0, 3)
 

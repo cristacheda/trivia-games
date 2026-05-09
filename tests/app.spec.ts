@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test'
+import { capitalStateQuestionBank } from '@/features/guess-the-capital/data/states'
 
 const QUESTIONS_PER_ROUND = 20
+const US_STATE_CAPITALS = new Set(
+  capitalStateQuestionBank.map((state) => state.capital),
+)
 
 async function enableDebugMode(
   page: import('@playwright/test').Page,
@@ -178,6 +182,42 @@ test('capital game timer expiry advances to the next question', async ({ page })
       timeout: 7000,
     })
     .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
+})
+
+test('capital game state questions only show US state capitals as options', async ({
+  page,
+}) => {
+  await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
+  await page.goto('/games/guess-the-capital')
+  await dismissPrivacyPromptIfVisible(page)
+  await page.getByTestId('difficulty-level-2').click()
+  await page.getByTestId('start-round').click()
+
+  let foundStateQuestion = false
+
+  for (let index = 0; index < QUESTIONS_PER_ROUND; index += 1) {
+    if ((await page.getByText('US state', { exact: true }).count()) > 0) {
+      foundStateQuestion = true
+      const optionTexts = await page
+        .locator('[data-testid^="answer-"]')
+        .allTextContents()
+
+      expect(optionTexts).toHaveLength(5)
+      expect(optionTexts.every((option) => US_STATE_CAPITALS.has(option.trim()))).toBe(
+        true,
+      )
+      break
+    }
+
+    await page.locator('[data-correct="true"]').first().click()
+    await expect
+      .poll(async () => page.getByTestId('question-progress').textContent(), {
+        timeout: 5000,
+      })
+      .toContain(`Question ${index + 2} / ${QUESTIONS_PER_ROUND}`)
+  }
+
+  expect(foundStateQuestion).toBe(true)
 })
 
 test('outline game timer expiry advances to the next question', async ({ page }) => {

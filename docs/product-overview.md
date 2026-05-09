@@ -52,6 +52,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Uses UN member countries plus the 50 US states.
 - Runs in rounds of 20 questions: 18 countries and 2 states.
 - Reuses as many unseen countries and states as possible across rounds before reshuffling into a new weighted cycle.
+- When the prompt is a US state on multiple-choice difficulties, the answer list uses only US state capitals.
 - `Level 1`: 3 options, no time limit, 1 point.
 - `Level 2`: 5 options, 15 seconds, 2 points, stronger bias away from Europe.
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance plus common capital variants.

@@ -61,9 +61,9 @@ function applyDifficultyWeight(
 
 function buildOptionPool(subject: CapitalQuestionSource) {
   const bank =
-    subject.kind === 'country'
-      ? [...capitalCountryQuestionBank, ...capitalStateQuestionBank]
-      : [...capitalStateQuestionBank, ...capitalCountryQuestionBank]
+    subject.kind === 'state'
+      ? capitalStateQuestionBank
+      : [...capitalCountryQuestionBank, ...capitalStateQuestionBank]
 
   return bank.filter(
     (candidate) =>
