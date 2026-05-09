@@ -67,7 +67,7 @@ For UI changes, verify the experience at a mobile viewport before shipping. Trea
 - The production app is built in GitHub Actions before the static `dist` directory is uploaded to Cloudflare Pages.
 - Cloudflare Pages Functions are deployed from the repo-root `functions/` directory alongside the static build output, using `wrangler.jsonc` as the Pages configuration source of truth.
 - Client-side `VITE_*` variables must therefore be configured in GitHub Actions secrets or variables for the build step, not only in the Cloudflare Pages dashboard.
-- The deploy workflow uploads the `dist` directory to the Cloudflare Pages project named `trivia-games`.
+- The deploy workflow runs `wrangler pages deploy dist --project-name trivia-games --branch <branch>` so the built asset directory stays explicit for the Wrangler version currently used in CI.
 - Production deploys can optionally purge the root HTML, compatibility service worker, and manifest when `CLOUDFLARE_ZONE_ID` is available in GitHub Actions secrets.
 - `main` is the production branch.
 - `preview` is the long-lived preview branch.
