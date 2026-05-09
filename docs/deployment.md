@@ -19,6 +19,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - `index.html`, `sw.js`, `sw-*.js`, and `manifest.webmanifest` are configured for revalidation instead of long-lived caching.
 - `public/_headers` is the source of truth for production CSP and cache-related response headers on Cloudflare Pages.
 - The production CSP must stay aligned with Cloudflare-injected scripts and app features that rely on `blob:` images or workers.
+- If Cloudflare Web Analytics is enabled, include `https://cloudflareinsights.com` in CSP `connect-src` so the RUM beacon endpoint (`/cdn-cgi/rum`) is not blocked.
 
 ## Release flow
 
