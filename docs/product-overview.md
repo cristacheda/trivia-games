@@ -74,7 +74,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 1`: 3 options, no time limit, 1 point.
 - `Level 2`: 5 options, 15 seconds, 2 points, stronger bias toward less obvious artists.
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance for artist names.
-- Catalog updates skip ambiguous entries until explicitly confirmed. Current skipped examples: `Bob Sinclair`, `Florence`, `HUNTR/X`, and `E-An-Na`.
+- Catalog updates skip ambiguous entries until explicitly confirmed. Current skipped examples: `Bob Sinclair`, `Florence`, and `HUNTR/X`.
 
 ## Near-term roadmap
 
