@@ -7,7 +7,7 @@
     "prepare": "npm run hooks:install",
     "dev": "vite",
     "check": "npm run lint && npm test && npm run build",
-    "build": "tsc -b && vite build && npm run build:verify-cache",
+    "build": "npm run build:sitemap && tsc -b && vite build && npm run build:verify-cache",
     "build:verify-cache": "node scripts/verify-cache-artifacts.mjs",
     "docs:check": "node scripts/check-docs-sync.mjs --staged",
     "docs:check:ci": "node scripts/check-docs-sync.mjs",
@@ -19,7 +19,8 @@
     "test:e2e": "playwright test",
     "release:patch": "npm version patch",
     "release:minor": "npm version minor",
-    "release:major": "npm version major"
+    "release:major": "npm version major",
+    "build:sitemap": "node scripts/generate-sitemap.mjs"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.2.9",

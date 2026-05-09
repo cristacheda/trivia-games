@@ -15,10 +15,12 @@
 - `src/lib`: shared utilities and persistence
 - `src/config`: metadata and game catalog configuration
 - `src/integrations`: future external-service contracts and no-op implementations
+- `src/components/seo`: route-aware document metadata updates
 
 ## Current data flow
 
 - Game metadata comes from `src/config/site.ts`
+- Route-level SEO metadata (title and meta description) comes from `src/config/seo.ts`
 - Flag quiz data and weighting live under `src/features/flag-quiz`
 - Capital quiz data, state/country mixing, and answer matching live under `src/features/guess-the-capital`
 - Outline quiz data, state/country mixing, SVG shapes, and answer matching live under `src/features/outline-quiz`
@@ -31,6 +33,7 @@
 - Round results are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Analytics runs through `src/integrations`, while auth and score sync providers remain no-op placeholders
+- The browser document title and description meta tag are updated on route changes by `src/components/seo/route-seo.tsx`
 
 ## Persistence
 

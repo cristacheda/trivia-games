@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AppProviders } from '@/app/app-providers'
 import { AppShell } from '@/components/layout/app-shell'
+import { RouteSeo } from '@/components/seo/route-seo'
 
 const HomePage = lazy(async () => {
   const module = await import('@/pages/home-page')
@@ -32,6 +33,7 @@ export default function App() {
   return (
     <AppProviders>
       <BrowserRouter>
+        <RouteSeo />
         <AppShell>
           <Suspense fallback={<div className="min-h-[40vh]" />}>
             <Routes>

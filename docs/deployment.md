@@ -14,6 +14,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - Each build also exposes the current commit SHA.
 - The PWA cache id includes the app version.
 - The generated offline service worker filename includes the current build id.
+- `public/sitemap.xml` is generated during build from `scripts/generate-sitemap.mjs`.
 - `public/sw.js` is kept as a compatibility worker that unregisters stale legacy service workers and clears old app caches.
 - Built assets use Vite content hashes.
 - `index.html`, `sw.js`, `sw-*.js`, and `manifest.webmanifest` are configured for revalidation instead of long-lived caching.
@@ -37,6 +38,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - `npm run lint`
 - `npm test`
 - `npm run build`
+- `npm run build:sitemap`
 - `npm run test:e2e`
 - `npm run check`
 - `npm run docs:check` for the staged pre-commit docs guard
