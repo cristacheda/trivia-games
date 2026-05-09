@@ -1,8 +1,24 @@
 import posthog from 'posthog-js'
 import type { AnalyticsProvider } from '@/integrations/contracts'
 
+declare global {
+  interface Window {
+    __atlasAnalyticsDebug?: {
+      captureTestEvent: (eventName?: string) => void
+      getStatus: () => {
+        apiHost: string
+        hasToken: boolean
+        initialized: boolean
+        optedIn: boolean
+      }
+      posthog: PostHogAnalyticsClient
+    }
+  }
+}
+
 interface PostHogAnalyticsClient {
   capture: (eventName: string, properties?: Record<string, unknown>) => void
+  debug?: (debug?: boolean) => void
   init: (
     token: string,
     config?: Record<string, unknown>,
@@ -57,6 +73,33 @@ export function createPostHogAnalyticsProvider({
     activeClientToken = trimmedToken
     activeClientHost = trimmedApiHost
     isPostHogInitialized = true
+
+    if (window.location.search.includes('__posthog_debug=true')) {
+      client.debug?.(true)
+    }
+
+    window.__atlasAnalyticsDebug = {
+      captureTestEvent(eventName = 'atlas_debug_event') {
+        if (!ensureReady()) {
+          return
+        }
+
+        client.capture(eventName, {
+          debug_source: 'window.__atlasAnalyticsDebug',
+          path: window.location.pathname,
+          timestamp: new Date().toISOString(),
+        })
+      },
+      getStatus() {
+        return {
+          apiHost: trimmedApiHost,
+          hasToken: trimmedToken.length > 0,
+          initialized: isPostHogInitialized,
+          optedIn: isPostHogOptedIn,
+        }
+      },
+      posthog: client,
+    }
   }
 
   function syncConsentState(trackingAllowed: boolean) {

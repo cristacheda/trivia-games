@@ -26,6 +26,7 @@
 - Flag quiz rounds reserve country codes from a persisted weighted deck before building question objects
 - Capital quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Outline quiz rounds reserve country and state subjects from persisted decks before building question objects
+- Question transition timing is shared through `src/lib/gameplay.ts`; future games should reuse those constants so wrong and timeout answers keep the global 5-second reveal delay
 - Round results are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Analytics runs through `src/integrations`, while auth and score sync providers remain no-op placeholders
@@ -64,6 +65,7 @@
 - Free-text answer contents are intentionally excluded from analytics payloads.
 - Consent gating is implemented through a local in-app privacy control that auto-opens on first visit while consent is still unknown.
 - Optional analytics remain off until the player explicitly allows them.
+- For verification, `?__posthog_debug=true` enables PostHog debug logging, and `window.__atlasAnalyticsDebug.captureTestEvent()` can send a manual test event from the browser console.
 
 ## Constraints
 
