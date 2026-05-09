@@ -21,6 +21,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - `public/_headers` is the source of truth for production CSP and cache-related response headers on Cloudflare Pages.
 - The production CSP must stay aligned with Cloudflare-injected scripts and app features that rely on `blob:` images or workers.
 - If Cloudflare Web Analytics is enabled, include `https://cloudflareinsights.com` in CSP `connect-src` so the RUM beacon endpoint (`/cdn-cgi/rum`) is not blocked.
+- If PostHog EU analytics is enabled, include `https://eu.i.posthog.com` in CSP `connect-src` for event ingestion and `https://eu-assets.i.posthog.com` in both `script-src` and `connect-src` for PostHog remote config and extension assets.
 
 ## Release flow
 
