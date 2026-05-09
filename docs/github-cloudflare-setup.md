@@ -80,7 +80,7 @@ Copy the Cloudflare account ID for the account that owns the Pages project and a
 4. Push to `preview` if you want to test on the preview environment.
 5. Merge to `main` when the change is ready for production.
 6. GitHub Actions runs `.github/workflows/deploy-cloudflare-pages.yml`.
-7. Cloudflare Pages receives the built `dist` folder and the repo-root `functions/` directory defined by `wrangler.jsonc`, with the deploy workflow explicitly passing `dist` to `wrangler pages deploy`.
+7. Cloudflare Pages receives the built `dist` folder and the repo-root `functions/` directory defined by `wrangler.jsonc`, with the deploy workflow explicitly passing `dist` to `wrangler pages deploy`, pinning the Wrangler CLI version in CI, and allowing build-generated dirty state during deploy.
 
 ## Local Pages testing
 

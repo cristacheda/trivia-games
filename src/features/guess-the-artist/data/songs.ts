@@ -47,8 +47,6 @@ const songSeeds: SongSeed[] = [
   { id: 'vamos-a-la-playa', songTitle: 'Vamos a la Playa', artistName: 'Righeira', aliases: ['Righeira'], era: '1980s', region: 'Europe', popularityTier: 'obscure' },
   { id: 'paroles-paroles', songTitle: 'Paroles, paroles', artistName: 'Dalida', aliases: ['Dalida'], era: '1970s', region: 'Europe', popularityTier: 'obscure' },
   { id: 'je-taime-moi-non-plus', songTitle: "Je t'aime... moi non plus", artistName: 'Serge Gainsbourg', aliases: ['Serge Gainsbourg'], era: '1960s', region: 'Europe', popularityTier: 'obscure' },
-  { id: 'sukiyaki', songTitle: 'Sukiyaki', artistName: 'Kyu Sakamoto', aliases: ['Kyu Sakamoto'], era: '1960s', region: 'Asia', popularityTier: 'global' },
-  { id: 'shinunoga-e-wa', songTitle: 'Shinunoga E-Wa', artistName: 'Fujii Kaze', aliases: ['Fujii Kaze'], era: '2020s', region: 'Asia', popularityTier: 'global' },
   { id: 'night-dancer', songTitle: 'Night Dancer', artistName: 'imase', aliases: ['imase'], era: '2020s', region: 'Asia', popularityTier: 'global' },
   { id: 'believer', songTitle: 'Believer', artistName: 'Imagine Dragons', aliases: ['Imagine Dragons'], era: '2010s', region: 'Americas', popularityTier: 'popular' },
   { id: 'skyfall', songTitle: 'Skyfall', artistName: 'Adele', aliases: ['Adele'], era: '2010s', region: 'Europe', popularityTier: 'popular' },
