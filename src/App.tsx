@@ -23,6 +23,10 @@ const OutlineQuizPage = lazy(async () => {
   const module = await import('@/pages/outline-quiz-page')
   return { default: module.OutlineQuizPage }
 })
+const GuessTheArtistPage = lazy(async () => {
+  const module = await import('@/pages/guess-the-artist-page')
+  return { default: module.GuessTheArtistPage }
+})
 
 const NotFoundPage = lazy(async () => {
   const module = await import('@/pages/not-found-page')
@@ -44,6 +48,10 @@ export default function App() {
                 element={<GuessTheCapitalPage />}
               />
               <Route path="/games/outline-quiz" element={<OutlineQuizPage />} />
+              <Route
+                path="/games/guess-the-artist"
+                element={<GuessTheArtistPage />}
+              />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>

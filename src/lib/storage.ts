@@ -3,6 +3,12 @@ import { FLAG_QUIZ_GAME_ID } from '@/features/flag-quiz/constants'
 import { flagQuestionBank } from '@/features/flag-quiz/data/countries'
 import { buildFlagQuizQuestionDeck } from '@/features/flag-quiz/lib/round'
 import { GUESS_THE_CAPITAL_GAME_ID } from '@/features/guess-the-capital/constants'
+import { GUESS_THE_ARTIST_GAME_ID } from '@/features/guess-the-artist/constants'
+import {
+  songQuestionBank,
+  songQuestionBankById,
+} from '@/features/guess-the-artist/data/songs'
+import { buildGuessTheArtistDeck } from '@/features/guess-the-artist/lib/round'
 import {
   capitalCountryQuestionBank,
   capitalCountryQuestionBankByCode,
@@ -29,6 +35,7 @@ import type {
   DifficultyId,
   GameId,
   GameLocalStats,
+  ArtistDeckProgress,
   OutlineDeckProgress,
   PersistedAppState,
   RoundResult,
@@ -37,7 +44,7 @@ import type {
 
 const STORAGE_KEY = 'atlas-of-answers:app-state'
 const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
-export const STORAGE_VERSION = 6
+export const STORAGE_VERSION = 7
 
 type RoundResultInput = Omit<RoundResult, 'previousBestScore' | 'beatHighScore'>
 
@@ -66,6 +73,13 @@ function createDefaultOutlineDeck(): OutlineDeckProgress {
   }
 }
 
+function createDefaultArtistDeck(): ArtistDeckProgress {
+  return {
+    orderedSongIds: [],
+    nextIndex: 0,
+  }
+}
+
 function createDefaultPreferences(): AppPreferences {
   return {
     soundEnabled: true,
@@ -85,6 +99,7 @@ function createDefaultStats(): GameLocalStats {
     countryDeck: null,
     capitalDeck: null,
     outlineDeck: null,
+    artistDeck: null,
   }
 }
 
@@ -142,6 +157,10 @@ function normalizeGameStats(
       gameId === OUTLINE_QUIZ_GAME_ID
         ? normalizeOutlineDeck(stats.outlineDeck)
         : null,
+    artistDeck:
+      gameId === GUESS_THE_ARTIST_GAME_ID
+        ? normalizeArtistDeck(stats.artistDeck)
+        : null,
   }
 }
 
@@ -159,6 +178,14 @@ function normalizeGames(
       : {}),
     ...(games?.[OUTLINE_QUIZ_GAME_ID]
       ? { [OUTLINE_QUIZ_GAME_ID]: normalizeGameStats(OUTLINE_QUIZ_GAME_ID, games[OUTLINE_QUIZ_GAME_ID]) }
+      : {}),
+    ...(games?.[GUESS_THE_ARTIST_GAME_ID]
+      ? {
+          [GUESS_THE_ARTIST_GAME_ID]: normalizeGameStats(
+            GUESS_THE_ARTIST_GAME_ID,
+            games[GUESS_THE_ARTIST_GAME_ID],
+          ),
+        }
       : {}),
     ...(games?.['guess-the-currency']
       ? {
@@ -211,7 +238,8 @@ function normalizeState(value: unknown): PersistedAppState {
     state.version === 2 ||
     state.version === 3 ||
     state.version === 4 ||
-    state.version === 5
+    state.version === 5 ||
+    state.version === 6
   ) {
     return {
       version: STORAGE_VERSION,
@@ -458,6 +486,34 @@ function normalizeOutlineDeck(value: unknown): OutlineDeckProgress {
   }
 }
 
+function normalizeArtistDeck(value: unknown): ArtistDeckProgress {
+  if (!value || typeof value !== 'object') {
+    return createDefaultArtistDeck()
+  }
+
+  const deck = value as Partial<ArtistDeckProgress>
+  const validSongIds = new Set(songQuestionBank.map((song) => song.id))
+  const orderedSongIds = Array.isArray(deck.orderedSongIds)
+    ? Array.from(
+        new Set(
+          deck.orderedSongIds.filter(
+            (songId): songId is string =>
+              typeof songId === 'string' && validSongIds.has(songId),
+          ),
+        ),
+      )
+    : []
+  const nextIndex =
+    typeof deck.nextIndex === 'number' && Number.isInteger(deck.nextIndex)
+      ? Math.max(0, Math.min(deck.nextIndex, orderedSongIds.length))
+      : 0
+
+  return {
+    orderedSongIds,
+    nextIndex,
+  }
+}
+
 export function getFlagQuizCountryDeck(): CountryDeckProgress {
   return getGameStats(FLAG_QUIZ_GAME_ID).countryDeck ?? createDefaultCountryDeck()
 }
@@ -661,6 +717,68 @@ export function setOutlineQuizDeck(outlineDeck: OutlineDeckProgress) {
         outlineDeck: normalizeOutlineDeck(outlineDeck),
       },
     },
+  })
+}
+
+export function getGuessTheArtistDeck(): ArtistDeckProgress {
+  return getGameStats(GUESS_THE_ARTIST_GAME_ID).artistDeck ?? createDefaultArtistDeck()
+}
+
+export function setGuessTheArtistDeck(artistDeck: ArtistDeckProgress) {
+  const state = readAppState()
+
+  writeAppState({
+    ...state,
+    games: {
+      ...state.games,
+      [GUESS_THE_ARTIST_GAME_ID]: {
+        ...createDefaultStats(),
+        ...state.games[GUESS_THE_ARTIST_GAME_ID],
+        artistDeck: normalizeArtistDeck(artistDeck),
+      },
+    },
+  })
+}
+
+export function reserveGuessTheArtistSongs(
+  totalQuestions: number,
+  difficultyId: DifficultyId,
+  random: () => number = Math.random,
+) {
+  const currentDeck = getGuessTheArtistDeck()
+  let orderedSongIds = [...currentDeck.orderedSongIds]
+  let nextIndex = currentDeck.nextIndex
+  const selectedSongIds: string[] = []
+
+  while (selectedSongIds.length < totalQuestions) {
+    if (orderedSongIds.length === 0 || nextIndex >= orderedSongIds.length) {
+      orderedSongIds = buildGuessTheArtistDeck(random, difficultyId).map(
+        (song) => song.id,
+      )
+      nextIndex = 0
+    }
+
+    const remainingSlots = totalQuestions - selectedSongIds.length
+    const remainingSongIds = orderedSongIds.slice(nextIndex)
+    const nextSongIds = remainingSongIds.slice(0, remainingSlots)
+
+    selectedSongIds.push(...nextSongIds)
+    nextIndex += nextSongIds.length
+  }
+
+  setGuessTheArtistDeck({
+    orderedSongIds,
+    nextIndex,
+  })
+
+  return selectedSongIds.map((songId) => {
+    const song = songQuestionBankById.get(songId)
+
+    if (!song) {
+      throw new Error(`Unknown artist quiz song id: ${songId}`)
+    }
+
+    return song
   })
 }
 

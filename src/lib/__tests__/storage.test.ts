@@ -14,8 +14,15 @@ import {
 import { outlineCountryQuestionBank } from '@/features/outline-quiz/data/countries'
 import { outlineStateQuestionBank } from '@/features/outline-quiz/data/states'
 import {
+  GUESS_THE_ARTIST_QUESTIONS_PER_ROUND,
+} from '@/features/guess-the-artist/constants'
+import {
+  songQuestionBank,
+} from '@/features/guess-the-artist/data/songs'
+import {
   STORAGE_VERSION,
   getFlagQuizCountryDeck,
+  getGuessTheArtistDeck,
   getGuessTheCapitalDeck,
   getOutlineQuizDeck,
   getAppPreferences,
@@ -24,9 +31,11 @@ import {
   readAppState,
   recordRoundResult,
   reserveFlagQuizCountries,
+  reserveGuessTheArtistSongs,
   reserveGuessTheCapitalSubjects,
   reserveOutlineQuizSubjects,
   setFlagQuizCountryDeck,
+  setGuessTheArtistDeck,
   setGuessTheCapitalDeck,
   setOutlineQuizDeck,
   setTrackingConsent,
@@ -286,6 +295,26 @@ describe('storage', () => {
     expect(stats.recentResult?.totalScore).toBe(27)
   })
 
+  it('stores artist game results and high score', () => {
+    setLastDifficulty('guess-the-artist', 'level-2')
+    const saved = recordRoundResult({
+      gameId: 'guess-the-artist',
+      difficultyId: 'level-2',
+      totalScore: 28,
+      correctAnswers: 14,
+      totalQuestions: GUESS_THE_ARTIST_QUESTIONS_PER_ROUND,
+      completedAt: '2026-05-08T20:00:00.000Z',
+    })
+
+    const stats = getGameStats('guess-the-artist')
+
+    expect(saved.previousBestScore).toBeNull()
+    expect(saved.beatHighScore).toBe(true)
+    expect(stats.lastDifficulty).toBe('level-2')
+    expect(stats.highScore?.score).toBe(28)
+    expect(stats.recentResult?.totalScore).toBe(28)
+  })
+
   it('reserves unique flag quiz countries across consecutive rounds', () => {
     const orderedCountryCodes = flagQuestionBank
       .slice(0, FLAG_QUIZ_QUESTIONS_PER_ROUND * 2)
@@ -315,6 +344,43 @@ describe('storage', () => {
     expect(getFlagQuizCountryDeck()).toEqual({
       orderedCountryCodes,
       nextIndex: FLAG_QUIZ_QUESTIONS_PER_ROUND * 2,
+    })
+  })
+
+  it('reserves unique artist quiz songs across consecutive rounds', () => {
+    const orderedSongIds = songQuestionBank
+      .slice(0, GUESS_THE_ARTIST_QUESTIONS_PER_ROUND * 2)
+      .map((song) => song.id)
+
+    setGuessTheArtistDeck({
+      orderedSongIds,
+      nextIndex: 0,
+    })
+
+    const firstRound = reserveGuessTheArtistSongs(
+      GUESS_THE_ARTIST_QUESTIONS_PER_ROUND,
+      'level-2',
+    ).map((song) => song.id)
+    const secondRound = reserveGuessTheArtistSongs(
+      GUESS_THE_ARTIST_QUESTIONS_PER_ROUND,
+      'level-2',
+    ).map((song) => song.id)
+
+    expect(firstRound).toEqual(
+      orderedSongIds.slice(0, GUESS_THE_ARTIST_QUESTIONS_PER_ROUND),
+    )
+    expect(secondRound).toEqual(
+      orderedSongIds.slice(
+        GUESS_THE_ARTIST_QUESTIONS_PER_ROUND,
+        GUESS_THE_ARTIST_QUESTIONS_PER_ROUND * 2,
+      ),
+    )
+    expect(new Set([...firstRound, ...secondRound]).size).toBe(
+      GUESS_THE_ARTIST_QUESTIONS_PER_ROUND * 2,
+    )
+    expect(getGuessTheArtistDeck()).toEqual({
+      orderedSongIds,
+      nextIndex: GUESS_THE_ARTIST_QUESTIONS_PER_ROUND * 2,
     })
   })
 

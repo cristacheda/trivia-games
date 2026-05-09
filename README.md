@@ -1,6 +1,6 @@
 # Atlas of Answers
 
-Atlas of Answers is a static-first trivia training app for quiz and geography players.
+Atlas of Answers is a static-first trivia training app for quiz players, with geography and music rounds.
 
 ## Documentation
 

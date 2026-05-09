@@ -28,6 +28,11 @@ export const routeSeo: Record<string, RouteSeo> = {
     description:
       'Identify countries and states by outline through escalating quiz modes designed for rapid practice.',
   },
+  '/games/guess-the-artist': {
+    title: 'Guess the Artist by Song | Atlas of Answers',
+    description:
+      'Identify song artists across multiple-choice and free-text rounds with local score tracking.',
+  },
   '*': {
     title: `Page Not Found | ${siteConfig.title}`,
     description: defaultDescription,

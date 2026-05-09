@@ -13,7 +13,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 ## Current MVP
 
 - Homepage with a grid of games
-- Three playable games: `Name the Country Flag`, `Guess the Capital`, and `Name the Country by Its Outline`
+- Four playable games: `Name the Country Flag`, `Guess the Capital`, `Name the Country by Its Outline`, and `Guess the Artist by Song`
 - Two upcoming teaser cards: `Guess the Currency` and `Guess the Official Language`
 - Local-first score and preference storage
 - Subtle in-game sound cues with a local mute toggle
@@ -65,6 +65,15 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 1`: 3 options, no time limit, 1 point.
 - `Level 2`: 5 options, 15 seconds, 2 points, stronger bias toward smaller and less familiar geography.
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance.
+
+### Guess the Artist by Song
+
+- Uses a curated static song catalog.
+- Runs in rounds of 20 questions.
+- Reuses as many unseen songs as possible across rounds before reshuffling into a new weighted cycle.
+- `Level 1`: 3 options, no time limit, 1 point.
+- `Level 2`: 5 options, 15 seconds, 2 points, stronger bias toward less obvious artists.
+- `Level 3`: free text, no time limit, 3 points, light misspelling tolerance for artist names.
 
 ## Near-term roadmap
 

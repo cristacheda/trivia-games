@@ -2,6 +2,7 @@ export type GameId =
   | 'flag-quiz'
   | 'guess-the-capital'
   | 'outline-quiz'
+  | 'guess-the-artist'
   | 'guess-the-currency'
   | 'guess-the-official-language'
 
@@ -45,6 +46,11 @@ export interface OutlineDeckProgress {
   nextStateIndex: number
 }
 
+export interface ArtistDeckProgress {
+  orderedSongIds: string[]
+  nextIndex: number
+}
+
 export interface RoundResult {
   gameId: GameId
   difficultyId: DifficultyId
@@ -63,6 +69,7 @@ export interface GameLocalStats {
   countryDeck: CountryDeckProgress | null
   capitalDeck: CapitalDeckProgress | null
   outlineDeck: OutlineDeckProgress | null
+  artistDeck: ArtistDeckProgress | null
 }
 
 export interface AppPreferences {

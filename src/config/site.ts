@@ -42,6 +42,16 @@ export const gameCatalog: GameCatalogEntry[] = [
     comingSoon: false,
   },
   {
+    id: 'guess-the-artist',
+    title: 'Guess the Artist by Song',
+    description:
+      'Read a song title and identify the artist, with harder rounds shifting toward less obvious global tracks.',
+    status: 'ready',
+    offlineCapable: true,
+    difficultySet: ['level-1', 'level-2', 'level-3'],
+    comingSoon: false,
+  },
+  {
     id: 'guess-the-currency',
     title: 'Guess the Currency',
     description:

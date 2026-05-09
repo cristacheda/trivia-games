@@ -7,7 +7,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useGameStats } from '@/lib/storage'
 import type { GameId } from '@/types/game'
 
-const playableGameIds = ['flag-quiz', 'guess-the-capital', 'outline-quiz'] as const
+const playableGameIds = [
+  'flag-quiz',
+  'guess-the-capital',
+  'outline-quiz',
+  'guess-the-artist',
+] as const
 
 function hasPlayableStats(
   gameId: GameId,
@@ -19,16 +24,19 @@ export function HomePage() {
   const flagStats = useGameStats('flag-quiz')
   const capitalStats = useGameStats('guess-the-capital')
   const outlineStats = useGameStats('outline-quiz')
+  const artistStats = useGameStats('guess-the-artist')
   const { analytics } = useAppServices()
   const statsByGame = {
     'flag-quiz': flagStats,
     'guess-the-capital': capitalStats,
     'outline-quiz': outlineStats,
+    'guess-the-artist': artistStats,
   } as const
   const recentGames = [
     { game: gameCatalog[0], stats: flagStats },
     { game: gameCatalog[1], stats: capitalStats },
     { game: gameCatalog[2], stats: outlineStats },
+    { game: gameCatalog[3], stats: artistStats },
   ]
     .sort((left, right) => {
       const leftTime = left.stats.recentResult
@@ -90,6 +98,8 @@ export function HomePage() {
                           ? 'Flag quiz high score'
                           : game.id === 'guess-the-capital'
                             ? 'Capital quiz high score'
+                            : game.id === 'guess-the-artist'
+                              ? 'Artist quiz high score'
                             : 'Outline quiz high score'}
                       </div>
                       <p className="mt-2 font-serif text-3xl font-semibold">
