@@ -21,6 +21,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - The production CSP must stay aligned with Cloudflare-injected scripts and app features that rely on `blob:` images or workers.
 - If Cloudflare Web Analytics is enabled, include `https://cloudflareinsights.com` in CSP `connect-src` so the RUM beacon endpoint (`/cdn-cgi/rum`) is not blocked.
 - If PostHog EU analytics is enabled, include `https://eu.i.posthog.com` in CSP `connect-src` for event ingestion and `https://eu-assets.i.posthog.com` in both `script-src` and `connect-src` for PostHog remote config and extension assets.
+- The artist quiz preview proxy runs through a Cloudflare Pages Function, so browser CSP only needs the Apple artwork CDNs in `img-src` and `https://audio-ssl.itunes.apple.com` in `media-src`; `itunes.apple.com` is only contacted server-side.
 
 ## Release flow
 
@@ -47,6 +48,16 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 
 For UI changes, verify the experience at a mobile viewport before shipping. Treat mobile layout and interaction as required validation, not optional spot-checking.
 
+## Local function testing
+
+- Use `npm run build` first so Pages local dev serves the current static output.
+- Run `npx wrangler@latest pages dev dist --ip 0.0.0.0 --port 4173` to serve both the built app and the repo-root `functions/` directory locally.
+- Open `http://127.0.0.1:4173` on desktop.
+- For device testing on the same network, open `http://<your-mac-lan-ip>:4173` on the phone.
+- The artist preview proxy can be checked directly with:
+  - `curl "http://127.0.0.1:4173/api/artist-preview?songTitle=Believer&artistName=Imagine%20Dragons"`
+- `npm run dev` does not run Cloudflare Pages Functions; use `wrangler pages dev` whenever a change depends on `/api/*`.
+
 ## Cloudflare Pages
 
 ### Workflow
@@ -54,6 +65,7 @@ For UI changes, verify the experience at a mobile viewport before shipping. Trea
 - CI runs on pull requests and pushes.
 - Deployment runs on pushes to `main` and `preview`.
 - The production app is built in GitHub Actions before the static `dist` directory is uploaded to Cloudflare Pages.
+- Cloudflare Pages Functions are deployed from the repo-root `functions/` directory alongside the static build output, using `wrangler.jsonc` as the Pages configuration source of truth.
 - Client-side `VITE_*` variables must therefore be configured in GitHub Actions secrets or variables for the build step, not only in the Cloudflare Pages dashboard.
 - The deploy workflow uploads the `dist` directory to the Cloudflare Pages project named `trivia-games`.
 - Production deploys can optionally purge the root HTML, compatibility service worker, and manifest when `CLOUDFLARE_ZONE_ID` is available in GitHub Actions secrets.

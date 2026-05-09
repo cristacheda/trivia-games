@@ -80,7 +80,14 @@ Copy the Cloudflare account ID for the account that owns the Pages project and a
 4. Push to `preview` if you want to test on the preview environment.
 5. Merge to `main` when the change is ready for production.
 6. GitHub Actions runs `.github/workflows/deploy-cloudflare-pages.yml`.
-7. Cloudflare Pages receives the built `dist` folder.
+7. Cloudflare Pages receives the built `dist` folder and the repo-root `functions/` directory defined by `wrangler.jsonc`.
+
+## Local Pages testing
+
+- Build the app with `npm run build`.
+- Start local Pages + Functions with `npx wrangler@latest pages dev dist --ip 0.0.0.0 --port 4173`.
+- Use `http://127.0.0.1:4173` locally, or `http://<your-mac-lan-ip>:4173` from a phone on the same network.
+- This is required for testing repo-root `functions/`; plain `npm run dev` only runs Vite and will not serve the Pages proxy endpoints.
 
 ## If the Pages project name changes
 
