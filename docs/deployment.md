@@ -13,11 +13,10 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - The app version comes from `package.json`.
 - Each build also exposes the current commit SHA.
 - The PWA cache id includes the app version.
-- The generated offline service worker filename includes the current build id.
+- The generated offline service worker stays at `/sw.js` so already-installed clients can revalidate the same URL on later refreshes.
 - `public/sitemap.xml` is generated during build from `scripts/generate-sitemap.mjs`.
-- `public/sw.js` is kept as a compatibility worker that unregisters stale legacy service workers and clears old app caches.
 - Built assets use Vite content hashes.
-- `index.html`, `sw.js`, `sw-*.js`, and `manifest.webmanifest` are configured for revalidation instead of long-lived caching.
+- `index.html`, `sw.js`, and `manifest.webmanifest` are configured for revalidation instead of long-lived caching.
 - `public/_headers` is the source of truth for production CSP and cache-related response headers on Cloudflare Pages.
 - The production CSP must stay aligned with Cloudflare-injected scripts and app features that rely on `blob:` images or workers.
 - If Cloudflare Web Analytics is enabled, include `https://cloudflareinsights.com` in CSP `connect-src` so the RUM beacon endpoint (`/cdn-cgi/rum`) is not blocked.

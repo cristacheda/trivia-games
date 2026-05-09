@@ -7,7 +7,14 @@ declare const __APP_BUILD_ID__: string
 declare module 'virtual:pwa-register/react' {
   export function useRegisterSW(options?: {
     immediate?: boolean
+    onNeedReload?: () => void
+    onNeedRefresh?: () => void
+    onOfflineReady?: () => void
     onRegistered?: (registration?: ServiceWorkerRegistration) => void
+    onRegisteredSW?: (
+      swScriptUrl: string,
+      registration?: ServiceWorkerRegistration,
+    ) => void
     onRegisterError?: (error: Error) => void
   }): {
     needRefresh: [boolean, (value: boolean) => void]

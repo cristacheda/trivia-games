@@ -21,24 +21,11 @@ function assertContains(content, expected, label) {
 
 const headersContent = readFile(headersPath)
 const indexContent = readFile(indexPath)
-const swFiles = fs
-  .readdirSync(distDir)
-  .filter((entry) => /^sw-.+\.js$/.test(entry))
-
-if (swFiles.length !== 1) {
-  throw new Error(
-    `Expected exactly one versioned service worker in dist/, found ${swFiles.length}: ${swFiles.join(', ')}`,
-  )
-}
+const swPath = path.join(distDir, 'sw.js')
 
 assertContains(
   headersContent,
   '/sw.js\n  Cache-Control: public, max-age=0, must-revalidate',
-  'dist/_headers',
-)
-assertContains(
-  headersContent,
-  '/sw-*.js\n  Cache-Control: public, max-age=0, must-revalidate',
   'dist/_headers',
 )
 assertContains(
@@ -48,10 +35,9 @@ assertContains(
 )
 assertContains(indexContent, '/manifest.webmanifest', 'dist/index.html')
 
-const swPath = path.join(distDir, swFiles[0])
 const swContent = readFile(swPath)
 
-assertContains(swContent, 'index.html', swFiles[0])
-assertContains(swContent, 'manifest.webmanifest', swFiles[0])
+assertContains(swContent, 'index.html', 'dist/sw.js')
+assertContains(swContent, 'manifest.webmanifest', 'dist/sw.js')
 
-console.log(`Verified cache-sensitive artifacts for ${swFiles[0]}`)
+console.log('Verified cache-sensitive artifacts for sw.js')

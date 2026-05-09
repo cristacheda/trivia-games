@@ -15,7 +15,7 @@ const appCommitSha =
   process.env.GITHUB_SHA ||
   'local'
 const appBuildId = `${appVersion}-${appCommitSha.slice(0, 7)}`
-const serviceWorkerFilename = `sw-${appBuildId}.js`
+const serviceWorkerFilename = 'sw.js'
 
 // https://vite.dev/config/
 export default defineConfig({
