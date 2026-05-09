@@ -33,6 +33,7 @@ import { buildFlagQuizRoundFromCountries } from '@/features/flag-quiz/lib/round'
 import { scoreAnswer } from '@/features/flag-quiz/lib/scoring'
 import type { FlagQuizQuestion } from '@/features/flag-quiz/types'
 import { getDebugSettings } from '@/lib/debug'
+import { getAnswerAdvanceDelayMs } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import {
   getAppPreferences,
@@ -228,7 +229,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
 
       advanceTimeoutRef.current = window.setTimeout(() => {
         goToNextQuestion(nextScore, nextCorrectAnswers)
-      }, 900)
+      }, getAnswerAdvanceDelayMs(isCorrect))
     },
     [
       analytics,

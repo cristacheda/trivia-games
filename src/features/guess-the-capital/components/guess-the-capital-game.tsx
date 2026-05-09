@@ -30,6 +30,7 @@ import { isAcceptableCapitalAnswer } from '@/features/guess-the-capital/lib/matc
 import { buildGuessTheCapitalRound } from '@/features/guess-the-capital/lib/round'
 import type { GuessTheCapitalQuestion } from '@/features/guess-the-capital/types'
 import { getDebugSettings } from '@/lib/debug'
+import { getAnswerAdvanceDelayMs } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import {
   getAppPreferences,
@@ -227,7 +228,7 @@ export function GuessTheCapitalGame({
 
       advanceTimeoutRef.current = window.setTimeout(() => {
         goToNextQuestion(nextScore, nextCorrectAnswers)
-      }, 900)
+      }, getAnswerAdvanceDelayMs(isCorrect))
     },
     [
       analytics,

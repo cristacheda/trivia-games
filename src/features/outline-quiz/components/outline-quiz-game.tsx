@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ConfettiLayer } from '@/features/flag-quiz/components/confetti-layer'
 import { getDebugSettings } from '@/lib/debug'
+import { getAnswerAdvanceDelayMs } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import {
   getAppPreferences,
@@ -249,7 +250,7 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
 
       advanceTimeoutRef.current = window.setTimeout(() => {
         goToNextQuestion(nextScore, nextCorrectAnswers)
-      }, 900)
+      }, getAnswerAdvanceDelayMs(isCorrect))
     },
     [
       analytics,

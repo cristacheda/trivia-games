@@ -158,7 +158,7 @@ test('timer expiry advances to the next question on timed difficulties', async (
   )
   await expect
     .poll(async () => page.getByTestId('question-progress').textContent(), {
-      timeout: 5000,
+      timeout: 7000,
     })
     .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
 })
@@ -175,7 +175,7 @@ test('capital game timer expiry advances to the next question', async ({ page })
   )
   await expect
     .poll(async () => page.getByTestId('question-progress').textContent(), {
-      timeout: 5000,
+      timeout: 7000,
     })
     .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
 })
@@ -192,7 +192,7 @@ test('outline game timer expiry advances to the next question', async ({ page })
   )
   await expect
     .poll(async () => page.getByTestId('question-progress').textContent(), {
-      timeout: 5000,
+      timeout: 7000,
     })
     .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
 })
@@ -263,7 +263,7 @@ test('correct multiple-choice answer triggers success feedback and advances', as
 })
 
 test('replaying shows the previous high score', async ({ page }) => {
-  test.setTimeout(45000)
+  test.setTimeout(150000)
 
   await page.addInitScript(() => {
     window.localStorage.setItem(
@@ -295,7 +295,7 @@ test('replaying shows the previous high score', async ({ page }) => {
   await page.getByTestId('start-round').click()
 
   await expect(page.getByTestId('result-score')).toContainText('0 points', {
-    timeout: 30000,
+    timeout: 130000,
   })
   await expect(page.getByText('Previous best')).toBeVisible()
   await expect(page.getByText('10', { exact: true })).toBeVisible()
@@ -381,7 +381,7 @@ test('beating the high score activates the long confetti celebration', async ({ 
     if (index < QUESTIONS_PER_ROUND - 1) {
       await expect
         .poll(async () => page.getByTestId('question-progress').textContent(), {
-          timeout: 8000,
+          timeout: 12000,
         })
         .toContain(`Question ${index + 2} / ${QUESTIONS_PER_ROUND}`)
     }
@@ -432,7 +432,7 @@ test('capital game free-text input autofocuses and reveals the correct capital',
 })
 
 test('capital game replaying shows the previous high score', async ({ page }) => {
-  test.setTimeout(45000)
+  test.setTimeout(150000)
 
   await page.addInitScript(() => {
     window.localStorage.setItem(
@@ -469,7 +469,7 @@ test('capital game replaying shows the previous high score', async ({ page }) =>
   await page.getByTestId('start-round').click()
 
   await expect(page.getByTestId('result-score')).toContainText('0 points', {
-    timeout: 30000,
+    timeout: 130000,
   })
   await expect(page.getByText('Previous best')).toBeVisible()
   await expect(page.getByText('8', { exact: true })).toBeVisible()
@@ -536,7 +536,7 @@ test('outline game free-text input autofocuses and reveals the correct place', a
 })
 
 test('outline game replaying shows the previous high score', async ({ page }) => {
-  test.setTimeout(45000)
+  test.setTimeout(150000)
 
   await page.addInitScript(() => {
     window.localStorage.setItem(
@@ -574,7 +574,7 @@ test('outline game replaying shows the previous high score', async ({ page }) =>
   await page.getByTestId('start-round').click()
 
   await expect(page.getByTestId('result-score')).toContainText('0 points', {
-    timeout: 30000,
+    timeout: 130000,
   })
   await expect(page.getByText('Previous best')).toBeVisible()
   await expect(page.getByText('8', { exact: true })).toBeVisible()

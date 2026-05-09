@@ -27,6 +27,7 @@
 - Capital quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Outline quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Question transition timing is shared through `src/lib/gameplay.ts`; future games should reuse those constants so wrong and timeout answers keep the global 5-second reveal delay
+- Current global defaults are `900ms` after correct answers and `5000ms` after wrong or timeout outcomes
 - Round results are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Analytics runs through `src/integrations`, while auth and score sync providers remain no-op placeholders
