@@ -65,7 +65,7 @@ export function createPostHogAnalyticsProvider({
     client.init(trimmedToken, {
       api_host: trimmedApiHost,
       autocapture: false,
-      capture_pageleave: false,
+      capture_pageleave: 'if_capture_pageview',
       capture_pageview: false,
       persistence: 'localStorage+cookie',
     })

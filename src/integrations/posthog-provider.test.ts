@@ -44,7 +44,7 @@ describe('createPostHogAnalyticsProvider', () => {
     expect(client.init).toHaveBeenCalledWith('phc_test_token', {
       api_host: 'https://us.i.posthog.com',
       autocapture: false,
-      capture_pageleave: false,
+      capture_pageleave: 'if_capture_pageview',
       capture_pageview: false,
       persistence: 'localStorage+cookie',
     })

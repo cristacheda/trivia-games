@@ -52,6 +52,8 @@ For UI changes, verify the experience at a mobile viewport before shipping. Trea
 
 - CI runs on pull requests and pushes.
 - Deployment runs on pushes to `main` and `preview`.
+- The production app is built in GitHub Actions before the static `dist` directory is uploaded to Cloudflare Pages.
+- Client-side `VITE_*` variables must therefore be configured in GitHub Actions secrets or variables for the build step, not only in the Cloudflare Pages dashboard.
 - The deploy workflow uploads the `dist` directory to the Cloudflare Pages project named `trivia-games`.
 - Production deploys can optionally purge the root HTML, compatibility service worker, and manifest when `CLOUDFLARE_ZONE_ID` is available in GitHub Actions secrets.
 - `main` is the production branch.
