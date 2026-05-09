@@ -33,7 +33,7 @@ import { buildFlagQuizRoundFromCountries } from '@/features/flag-quiz/lib/round'
 import { scoreAnswer } from '@/features/flag-quiz/lib/scoring'
 import type { FlagQuizQuestion } from '@/features/flag-quiz/types'
 import { getDebugSettings } from '@/lib/debug'
-import { getAnswerAdvanceDelayMs } from '@/lib/gameplay'
+import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import {
   getAppPreferences,
@@ -98,6 +98,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
   const advanceTimeoutRef = useRef<number | null>(null)
   const roundStartedAtRef = useRef<number | null>(null)
   const timeoutCountRef = useRef(0)
+  const lastWarningSecondRef = useRef<number | null>(null)
   const { analytics, scoreSync } = useAppServices()
   const difficulty = useMemo(
     () => getDifficultyRule(selectedDifficultyId),
@@ -162,6 +163,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
       setTextAnswer('')
       roundStartedAtRef.current = null
       timeoutCountRef.current = 0
+      lastWarningSecondRef.current = null
     },
     [analytics, difficulty.answerMode, questions.length, scoreSync, selectedDifficultyId],
   )
@@ -182,6 +184,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
       setResolution('idle')
       setSelectedOptionCode(null)
       setTextAnswer('')
+      lastWarningSecondRef.current = null
     },
     [difficulty.timeLimitSeconds, finishRound, questionIndex, questions.length, timerScale],
   )
@@ -270,6 +273,18 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
     const interval = window.setInterval(() => {
       const nextRemaining = Math.max(0, deadline - Date.now())
       setRemainingMs(nextRemaining)
+      const warningSecond = getNextTimeWarningSecond({
+        hasTimeLimit: difficulty.timeLimitSeconds !== null,
+        soundEnabled,
+        resolution,
+        remainingMs: nextRemaining,
+        lastWarningSecond: lastWarningSecondRef.current,
+      })
+
+      if (warningSecond !== null) {
+        lastWarningSecondRef.current = warningSecond
+        void playSoundCue('time-warning')
+      }
 
       if (nextRemaining <= 0) {
         window.clearInterval(interval)
@@ -285,6 +300,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
     handleAnswer,
     phase,
     resolution,
+    soundEnabled,
     timerScale,
   ])
 
@@ -329,6 +345,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
     setPhase('question')
     roundStartedAtRef.current = Date.now()
     timeoutCountRef.current = 0
+    lastWarningSecondRef.current = null
 
     analytics.trackEvent('round_started', {
       answer_mode: rule.answerMode,

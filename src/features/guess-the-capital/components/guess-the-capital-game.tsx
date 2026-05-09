@@ -30,7 +30,7 @@ import { isAcceptableCapitalAnswer } from '@/features/guess-the-capital/lib/matc
 import { buildGuessTheCapitalRound } from '@/features/guess-the-capital/lib/round'
 import type { GuessTheCapitalQuestion } from '@/features/guess-the-capital/types'
 import { getDebugSettings } from '@/lib/debug'
-import { getAnswerAdvanceDelayMs } from '@/lib/gameplay'
+import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import {
   getAppPreferences,
@@ -101,6 +101,7 @@ export function GuessTheCapitalGame({
   const advanceTimeoutRef = useRef<number | null>(null)
   const roundStartedAtRef = useRef<number | null>(null)
   const timeoutCountRef = useRef(0)
+  const lastWarningSecondRef = useRef<number | null>(null)
   const { analytics, scoreSync } = useAppServices()
   const difficulty = getGuessTheCapitalDifficultyRule(selectedDifficultyId)
   const currentQuestion = questions[questionIndex]
@@ -162,6 +163,7 @@ export function GuessTheCapitalGame({
       setTextAnswer('')
       roundStartedAtRef.current = null
       timeoutCountRef.current = 0
+      lastWarningSecondRef.current = null
     },
     [analytics, difficulty.answerMode, questions.length, scoreSync, selectedDifficultyId],
   )
@@ -182,6 +184,7 @@ export function GuessTheCapitalGame({
       setResolution('idle')
       setSelectedOption(null)
       setTextAnswer('')
+      lastWarningSecondRef.current = null
     },
     [difficulty.timeLimitSeconds, finishRound, questionIndex, questions.length, timerScale],
   )
@@ -269,6 +272,18 @@ export function GuessTheCapitalGame({
     const interval = window.setInterval(() => {
       const nextRemaining = Math.max(0, deadline - Date.now())
       setRemainingMs(nextRemaining)
+      const warningSecond = getNextTimeWarningSecond({
+        hasTimeLimit: difficulty.timeLimitSeconds !== null,
+        soundEnabled,
+        resolution,
+        remainingMs: nextRemaining,
+        lastWarningSecond: lastWarningSecondRef.current,
+      })
+
+      if (warningSecond !== null) {
+        lastWarningSecondRef.current = warningSecond
+        void playSoundCue('time-warning')
+      }
 
       if (nextRemaining <= 0) {
         window.clearInterval(interval)
@@ -284,6 +299,7 @@ export function GuessTheCapitalGame({
     handleAnswer,
     phase,
     resolution,
+    soundEnabled,
     timerScale,
   ])
 
@@ -329,6 +345,7 @@ export function GuessTheCapitalGame({
     setPhase('question')
     roundStartedAtRef.current = Date.now()
     timeoutCountRef.current = 0
+    lastWarningSecondRef.current = null
 
     analytics.trackEvent('round_started', {
       answer_mode: rule.answerMode,

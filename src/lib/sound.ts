@@ -1,4 +1,9 @@
-type SoundCue = 'correct' | 'wrong' | 'finish' | 'high-score'
+type SoundCue =
+  | 'correct'
+  | 'wrong'
+  | 'finish'
+  | 'high-score'
+  | 'time-warning'
 
 let audioContext: AudioContext | null = null
 
@@ -115,6 +120,17 @@ function playCue(context: AudioContext, cue: SoundCue) {
       duration: 0.24,
       type: 'sine',
       peakGain: 0.045,
+    })
+    return
+  }
+
+  if (cue === 'time-warning') {
+    playTone(context, {
+      startTime,
+      frequency: 622.25,
+      duration: 0.08,
+      type: 'sine',
+      peakGain: 0.02,
     })
     return
   }

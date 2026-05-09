@@ -30,6 +30,7 @@
 - Outline quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Question transition timing is shared through `src/lib/gameplay.ts`; future games should reuse those constants so wrong and timeout answers keep the global 5-second reveal delay
 - Current global defaults are `1000ms` after correct answers and `4000ms` after wrong or timeout outcomes
+- Timed low-time warning dispatch is also shared through `src/lib/gameplay.ts` and triggers once per second at 4, 3, 2, and 1 seconds remaining
 - Round results are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Analytics runs through `src/integrations`, while auth and score sync providers remain no-op placeholders

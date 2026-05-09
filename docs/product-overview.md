@@ -18,6 +18,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Local-first score and preference storage
 - Subtle in-game sound cues with a local mute toggle
 - Offline-capable playable games after the initial asset load
+- Timed rounds play a subtle low-time warning tone once per second at 4, 3, 2, and 1 seconds remaining
 
 ## Core product decisions
 
@@ -38,7 +39,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Gives extra exposure to smaller or less familiar countries.
 - Runs in rounds of 20 questions.
 - Reuses as many unseen countries as possible across rounds before reshuffling into a new weighted cycle.
-- Plays subtle sounds for correct answers, wrong answers, round finish, and new high scores.
+- Plays subtle sounds for correct answers, wrong answers, low-time warning in timed rounds, round finish, and new high scores.
 
 ### Difficulty levels
 

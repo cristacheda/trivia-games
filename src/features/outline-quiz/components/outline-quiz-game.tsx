@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ConfettiLayer } from '@/features/flag-quiz/components/confetti-layer'
 import { getDebugSettings } from '@/lib/debug'
-import { getAnswerAdvanceDelayMs } from '@/lib/gameplay'
+import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import {
   getAppPreferences,
@@ -119,6 +119,7 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
   const advanceTimeoutRef = useRef<number | null>(null)
   const roundStartedAtRef = useRef<number | null>(null)
   const timeoutCountRef = useRef(0)
+  const lastWarningSecondRef = useRef<number | null>(null)
   const { analytics, scoreSync } = useAppServices()
   const difficulty = useMemo(
     () => getOutlineQuizDifficultyRule(selectedDifficultyId),
@@ -183,6 +184,7 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
       setTextAnswer('')
       roundStartedAtRef.current = null
       timeoutCountRef.current = 0
+      lastWarningSecondRef.current = null
     },
     [analytics, difficulty.answerMode, questions.length, scoreSync, selectedDifficultyId],
   )
@@ -203,6 +205,7 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
       setResolution('idle')
       setSelectedOptionCode(null)
       setTextAnswer('')
+      lastWarningSecondRef.current = null
     },
     [difficulty.timeLimitSeconds, finishRound, questionIndex, questions.length, timerScale],
   )
@@ -291,6 +294,18 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
     const interval = window.setInterval(() => {
       const nextRemaining = Math.max(0, deadline - Date.now())
       setRemainingMs(nextRemaining)
+      const warningSecond = getNextTimeWarningSecond({
+        hasTimeLimit: difficulty.timeLimitSeconds !== null,
+        soundEnabled,
+        resolution,
+        remainingMs: nextRemaining,
+        lastWarningSecond: lastWarningSecondRef.current,
+      })
+
+      if (warningSecond !== null) {
+        lastWarningSecondRef.current = warningSecond
+        void playSoundCue('time-warning')
+      }
 
       if (nextRemaining <= 0) {
         window.clearInterval(interval)
@@ -306,6 +321,7 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
     handleAnswer,
     phase,
     resolution,
+    soundEnabled,
     timerScale,
   ])
 
@@ -351,6 +367,7 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
     setPhase('question')
     roundStartedAtRef.current = Date.now()
     timeoutCountRef.current = 0
+    lastWarningSecondRef.current = null
 
     analytics.trackEvent('round_started', {
       answer_mode: rule.answerMode,
