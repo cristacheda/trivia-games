@@ -10,6 +10,14 @@ describe('buildGuessTheArtistDeck', () => {
     expect(deck).toHaveLength(songQuestionBank.length)
     expect(new Set(deck.map((song) => song.id)).size).toBe(songQuestionBank.length)
   })
+
+  it('keeps song title + artist pairs unique in the catalog', () => {
+    const uniquePairs = new Set(
+      songQuestionBank.map((song) => `${song.songTitle}::${song.artistName}`),
+    )
+
+    expect(uniquePairs.size).toBe(songQuestionBank.length)
+  })
 })
 
 describe('buildGuessTheArtistRound', () => {
@@ -33,5 +41,13 @@ describe('buildGuessTheArtistRound', () => {
     )
 
     expect(round[0].options).toHaveLength(5)
+  })
+
+  it('includes newly added songs in weighted deck generation', () => {
+    const deckIds = new Set(buildGuessTheArtistDeck(() => 0, 'level-2').map((song) => song.id))
+
+    expect(deckIds.has('galvanize')).toBe(true)
+    expect(deckIds.has('gives-you-hell')).toBe(true)
+    expect(deckIds.has('day-o')).toBe(true)
   })
 })
