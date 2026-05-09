@@ -20,6 +20,7 @@ coverage
 .env.*
 !.env.example
 private/tmp
+private/artist-catalog-reports/
 dev-dist
 .playwright-mcp
 
@@ -33,3 +34,5 @@ dev-dist
 *.njsproj
 *.sln
 *.sw?
+
+bulk_list.txt

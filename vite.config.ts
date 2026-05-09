@@ -82,6 +82,7 @@ export default defineConfig({
       'src/**/__tests__/**/*.{test,spec}.{ts,tsx}',
       'src/**/*.{test,spec}.{ts,tsx}',
       'functions/**/*.{test,spec}.{ts,tsx}',
+      'scripts/**/*.{test,spec}.{js,mjs}',
     ],
     exclude: ['tests/**'],
   },

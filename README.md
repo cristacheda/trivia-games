@@ -7,6 +7,7 @@ Atlas of Answers is a static-first trivia training app for quiz players, with ge
 - [Product overview](docs/product-overview.md)
 - [Architecture notes](docs/architecture.md)
 - [Deployment notes](docs/deployment.md)
+- [Artist catalog CLI](docs/artist-catalog-cli.md)
 - [Privacy notes](docs/privacy.md)
 - [GitHub and Cloudflare setup](docs/github-cloudflare-setup.md)
 - [Contribution guide](CONTRIBUTING.md)
