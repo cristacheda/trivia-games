@@ -22,6 +22,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - The production CSP must stay aligned with Cloudflare-injected scripts and app features that rely on `blob:` images or workers.
 - If Cloudflare Web Analytics is enabled, include `https://cloudflareinsights.com` in CSP `connect-src` so the RUM beacon endpoint (`/cdn-cgi/rum`) is not blocked.
 - If PostHog EU analytics is enabled, include `https://eu.i.posthog.com` in CSP `connect-src` for event ingestion and `https://eu-assets.i.posthog.com` in both `script-src` and `connect-src` for PostHog remote config and extension assets.
+- If the artist quiz uses Apple preview lookup, include `https://itunes.apple.com` in CSP `connect-src`, Apple artwork CDNs in `img-src`, and `https://audio-ssl.itunes.apple.com` in `media-src` so cover art and 30-second previews are not blocked.
 
 ## Release flow
 
