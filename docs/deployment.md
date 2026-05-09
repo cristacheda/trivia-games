@@ -30,6 +30,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
    - `npm run release:patch`
    - `npm run release:minor`
    - `npm run release:major`
+   - Or run `npm version <x.y.z> --no-git-tag-version` when you need to set an exact version while keeping `package.json` and `package-lock.json` aligned.
 3. Push the branch and open a pull request.
 4. Merge to `main`.
 5. GitHub Actions deploys the new build.
