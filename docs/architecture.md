@@ -28,7 +28,7 @@
 - Outline quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Round results are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
-- Integration hooks exist, but external providers are currently no-op
+- Analytics runs through `src/integrations`, while auth and score sync providers remain no-op placeholders
 
 ## Persistence
 
@@ -54,17 +54,16 @@
 
 - Supabase for auth and sync
 - Consent manager for GDPR-sensitive tracking
-- Analytics provider after consent behavior is defined
+- Additional analytics destinations if the product outgrows the current PostHog setup
 
 ## Current analytics
 
-- GA4 is initialized through `src/integrations/ga4-provider.ts` when `VITE_ANALYTICS_MEASUREMENT_ID` is set.
-- SPA pageviews are emitted from the shared app shell instead of relying on GA automatic pageviews.
+- PostHog is initialized through `src/integrations/posthog-provider.ts` when `VITE_POSTHOG_KEY` is set.
+- SPA pageviews are emitted from the shared app shell instead of relying on PostHog automatic pageviews.
 - Custom game analytics include game views, difficulty selection, round start, question answers, round completion, homepage game-entry clicks, and high-score beats.
 - Free-text answer contents are intentionally excluded from analytics payloads.
 - Consent gating is implemented through a local in-app privacy control that auto-opens on first visit while consent is still unknown.
 - Optional analytics remain off until the player explicitly allows them.
-- Free-text answer contents remain excluded from analytics payloads.
 
 ## Constraints
 

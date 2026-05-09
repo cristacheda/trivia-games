@@ -70,4 +70,4 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Build the currency and official-language games now teased on the homepage
 - Add login and score sync with Supabase
 - Refine privacy onboarding and consent copy
-- Add analytics events after consent design is finalized
+- Review PostHog event quality and expand game-specific reporting where useful

@@ -7,13 +7,13 @@ import type {
   ConsentProvider,
   ScoreSyncProvider,
 } from '@/integrations/contracts'
-import { createGa4AnalyticsProvider } from '@/integrations/ga4-provider'
 import { createLocalConsentProvider } from '@/integrations/local-consent-provider'
 import {
   noopAnalyticsProvider,
   noopAuthProvider,
   noopScoreSyncProvider,
 } from '@/integrations/noop-providers'
+import { createPostHogAnalyticsProvider } from '@/integrations/posthog-provider'
 
 interface AppServices {
   auth: AuthProvider
@@ -30,10 +30,11 @@ export function AppProviders({ children }: PropsWithChildren) {
     () => ({
       auth: noopAuthProvider,
       scoreSync: noopScoreSyncProvider,
-      analytics: env.analyticsMeasurementId
-        ? createGa4AnalyticsProvider({
+      analytics: env.posthogKey
+        ? createPostHogAnalyticsProvider({
+            apiHost: env.posthogHost,
             canTrack: () => consent.canTrackAnalytics(),
-            measurementId: env.analyticsMeasurementId,
+            token: env.posthogKey,
           })
         : noopAnalyticsProvider,
       consent,
