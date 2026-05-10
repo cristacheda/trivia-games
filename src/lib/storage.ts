@@ -9,6 +9,12 @@ import {
   songQuestionBankById,
 } from '@/features/guess-the-artist/data/songs'
 import { buildGuessTheArtistDeck } from '@/features/guess-the-artist/lib/round'
+import { GUESS_THE_CURRENCY_GAME_ID } from '@/features/guess-the-currency/constants'
+import {
+  currencyQuestionBank,
+  currencyQuestionBankByCode,
+} from '@/features/guess-the-currency/data/countries'
+import { buildGuessTheCurrencyDeck } from '@/features/guess-the-currency/lib/round'
 import {
   capitalCountryQuestionBank,
   capitalCountryQuestionBankByCode,
@@ -32,6 +38,7 @@ import type {
   AppPreferences,
   CapitalDeckProgress,
   CountryDeckProgress,
+  CurrencyDeckProgress,
   DifficultyId,
   GameId,
   GameLocalStats,
@@ -44,7 +51,7 @@ import type {
 
 const STORAGE_KEY = 'atlas-of-answers:app-state'
 const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
-export const STORAGE_VERSION = 7
+export const STORAGE_VERSION = 8
 
 type RoundResultInput = Omit<RoundResult, 'previousBestScore' | 'beatHighScore'>
 
@@ -80,6 +87,13 @@ function createDefaultArtistDeck(): ArtistDeckProgress {
   }
 }
 
+function createDefaultCurrencyDeck(): CurrencyDeckProgress {
+  return {
+    orderedCountryCodes: [],
+    nextIndex: 0,
+  }
+}
+
 function createDefaultPreferences(): AppPreferences {
   return {
     soundEnabled: true,
@@ -100,6 +114,7 @@ function createDefaultStats(): GameLocalStats {
     capitalDeck: null,
     outlineDeck: null,
     artistDeck: null,
+    currencyDeck: null,
   }
 }
 
@@ -160,6 +175,10 @@ function normalizeGameStats(
     artistDeck:
       gameId === GUESS_THE_ARTIST_GAME_ID
         ? normalizeArtistDeck(stats.artistDeck)
+        : null,
+    currencyDeck:
+      gameId === GUESS_THE_CURRENCY_GAME_ID
+        ? normalizeCurrencyDeck(stats.currencyDeck)
         : null,
   }
 }
@@ -239,7 +258,8 @@ function normalizeState(value: unknown): PersistedAppState {
     state.version === 3 ||
     state.version === 4 ||
     state.version === 5 ||
-    state.version === 6
+    state.version === 6 ||
+    state.version === 7
   ) {
     return {
       version: STORAGE_VERSION,
@@ -514,6 +534,31 @@ function normalizeArtistDeck(value: unknown): ArtistDeckProgress {
   }
 }
 
+function normalizeCurrencyDeck(value: unknown): CurrencyDeckProgress {
+  if (!value || typeof value !== 'object') {
+    return createDefaultCurrencyDeck()
+  }
+
+  const deck = value as Partial<CurrencyDeckProgress>
+  const validCodes = new Set(currencyQuestionBank.map((country) => country.code))
+  const orderedCountryCodes = Array.isArray(deck.orderedCountryCodes)
+    ? Array.from(
+        new Set(
+          deck.orderedCountryCodes.filter(
+            (code): code is string =>
+              typeof code === 'string' && validCodes.has(code),
+          ),
+        ),
+      )
+    : []
+  const nextIndex =
+    typeof deck.nextIndex === 'number' && Number.isInteger(deck.nextIndex)
+      ? Math.max(0, Math.min(deck.nextIndex, orderedCountryCodes.length))
+      : 0
+
+  return { orderedCountryCodes, nextIndex }
+}
+
 export function getFlagQuizCountryDeck(): CountryDeckProgress {
   return getGameStats(FLAG_QUIZ_GAME_ID).countryDeck ?? createDefaultCountryDeck()
 }
@@ -779,6 +824,65 @@ export function reserveGuessTheArtistSongs(
     }
 
     return song
+  })
+}
+
+export function getGuessTheCurrencyDeck(): CurrencyDeckProgress {
+  return getGameStats(GUESS_THE_CURRENCY_GAME_ID).currencyDeck ?? createDefaultCurrencyDeck()
+}
+
+export function setGuessTheCurrencyDeck(currencyDeck: CurrencyDeckProgress) {
+  const state = readAppState()
+
+  writeAppState({
+    ...state,
+    games: {
+      ...state.games,
+      [GUESS_THE_CURRENCY_GAME_ID]: {
+        ...createDefaultStats(),
+        ...state.games[GUESS_THE_CURRENCY_GAME_ID],
+        currencyDeck: normalizeCurrencyDeck(currencyDeck),
+      },
+    },
+  })
+}
+
+export function reserveGuessTheCurrencyCountries(
+  totalQuestions: number,
+  difficultyId: DifficultyId,
+  random: () => number = Math.random,
+) {
+  const currentDeck = getGuessTheCurrencyDeck()
+  let orderedCountryCodes = [...currentDeck.orderedCountryCodes]
+  let nextIndex = currentDeck.nextIndex
+  const selectedCodes: string[] = []
+
+  while (selectedCodes.length < totalQuestions) {
+    if (orderedCountryCodes.length === 0 || nextIndex >= orderedCountryCodes.length) {
+      orderedCountryCodes = buildGuessTheCurrencyDeck(random, difficultyId).map(
+        (country) => country.code,
+      )
+      nextIndex = 0
+    }
+
+    const remainingSlots = totalQuestions - selectedCodes.length
+    const remainingCodes = orderedCountryCodes.slice(nextIndex)
+    const nextCodes = remainingCodes.slice(0, remainingSlots)
+
+    selectedCodes.push(...nextCodes)
+    nextIndex += nextCodes.length
+  }
+
+  setGuessTheCurrencyDeck({ orderedCountryCodes, nextIndex })
+
+  return selectedCodes.map((code) => {
+    const country = currencyQuestionBankByCode.get(code)
+
+    if (!country) {
+      throw new Error(`Unknown currency quiz country code: ${code}`)
+    }
+
+    return country
   })
 }
 

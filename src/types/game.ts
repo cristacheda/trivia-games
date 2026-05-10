@@ -51,6 +51,11 @@ export interface ArtistDeckProgress {
   nextIndex: number
 }
 
+export interface CurrencyDeckProgress {
+  orderedCountryCodes: string[]
+  nextIndex: number
+}
+
 export interface RoundResult {
   gameId: GameId
   difficultyId: DifficultyId
@@ -70,6 +75,7 @@ export interface GameLocalStats {
   capitalDeck: CapitalDeckProgress | null
   outlineDeck: OutlineDeckProgress | null
   artistDeck: ArtistDeckProgress | null
+  currencyDeck: CurrencyDeckProgress | null
 }
 
 export interface AppPreferences {

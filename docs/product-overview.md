@@ -13,8 +13,8 @@ Atlas of Answers is a collection of web games designed to help players train for
 ## Current MVP
 
 - Homepage with a grid of games
-- Four playable games: `Name the Country Flag`, `Guess the Capital`, `Name the Country by Its Outline`, and `Guess the Artist by Song`
-- Two upcoming teaser cards: `Guess the Currency` and `Guess the Official Language`
+- Five playable games: `Name the Country Flag`, `Guess the Capital`, `Name the Country by Its Outline`, `Guess the Artist by Song`, and `Guess the Currency`
+- One upcoming teaser card: `Guess the Official Language`
 - Local-first score and preference storage
 - Subtle in-game sound cues with a local mute toggle
 - Offline-capable playable games after the initial asset load
@@ -76,10 +76,20 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance for artist names.
 - Catalog updates skip ambiguous entries until explicitly confirmed. Current skipped examples: `Bob Sinclair`, `Florence`, and `HUNTR/X`.
 
+### Guess the Currency
+
+- Uses all UN member countries with currency data (193 countries; Micronesia excluded for lacking currency data).
+- Prioritises countries outside Europe; higher difficulties further boost small, exotic, and less-known nations.
+- Distractor options never include countries that share the same primary currency code (e.g. EUR, XOF, XCD, USD) to keep every question unambiguous.
+- Runs in rounds of 20 questions.
+- Reuses as many unseen countries as possible across rounds before reshuffling into a new weighted cycle.
+- `Level 1`: 3 options, no time limit, 1 point. Shows full currency name and ISO code (e.g. "Romanian leu (RON)").
+- `Level 2`: 5 options, 15 seconds, 2 points. Shows only the ISO code during the question; reveals the full name after the player answers.
+- `Level 3`: free text, no time limit, 3 points, light misspelling tolerance for country names. Shows only the ISO code.
+
 ## Near-term roadmap
 
-- Gather feedback on the homepage and first game
-- Build the currency and official-language games now teased on the homepage
+- Build the official-language game now teased on the homepage
 - Add login and score sync with Supabase
 - Refine privacy onboarding and consent copy
 - Review PostHog event quality and expand game-specific reporting where useful

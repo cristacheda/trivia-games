@@ -55,12 +55,11 @@ export const gameCatalog: GameCatalogEntry[] = [
     id: 'guess-the-currency',
     title: 'Guess the Currency',
     description:
-      'Match countries to the currencies they actually use, including the rounds where more than one answer is right.',
-    status: 'coming-soon',
-    offlineCapable: false,
+      'Match countries to the currencies they actually use, with rounds that bias toward smaller and less-known nations.',
+    status: 'ready',
+    offlineCapable: true,
     difficultySet: ['level-1', 'level-2', 'level-3'],
-    comingSoon: true,
-    teaser: 'Multi-currency edge cases are up next.',
+    comingSoon: false,
   },
   {
     id: 'guess-the-official-language',

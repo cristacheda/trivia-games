@@ -25,11 +25,15 @@
 - Capital quiz data, state/country mixing, and answer matching live under `src/features/guess-the-capital`
 - Outline quiz data, state/country mixing, SVG shapes, and answer matching live under `src/features/outline-quiz`
 - Artist quiz data, song weighting, and answer matching live under `src/features/guess-the-artist`
+- Currency quiz data, country weighting, and answer matching live under `src/features/guess-the-currency`
 - Outline quiz rendering preserves the raw bundled SVG path geometry instead of smoothing corners in the renderer
 - Flag quiz rounds reserve country codes from a persisted weighted deck before building question objects
 - Capital quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Outline quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Artist quiz rounds reserve songs from a persisted deck before building question objects
+- Currency quiz rounds reserve country codes from a persisted weighted deck before building question objects
+- Currency quiz distractor options exclude countries that share the same primary currency code to prevent ambiguous multiple-choice questions (e.g. EUR shared by 25 countries, XOF by 8)
+- Currency quiz level 1 shows the full currency name and ISO code; level 2 shows only the ISO code during the question then reveals the full name after the player answers; level 3 shows only the ISO code
 - Question transition timing is shared through `src/lib/gameplay.ts`; future games should reuse those constants so wrong and timeout answers keep the global 5-second reveal delay
 - Current global defaults are `1000ms` after correct answers and `4000ms` after wrong or timeout outcomes
 - Timed low-time warning dispatch is also shared through `src/lib/gameplay.ts` and triggers once per second at 4, 3, 2, and 1 seconds remaining
@@ -50,6 +54,7 @@
   - capital quiz country/state deck progress for cross-run non-repeating play
   - outline quiz country/state deck progress for cross-run non-repeating play
   - artist quiz song deck progress for cross-run non-repeating play
+  - currency quiz country deck progress for cross-run non-repeating play
   - app-level sound enabled preference
   - app-level tracking consent preference
 

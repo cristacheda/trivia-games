@@ -33,6 +33,11 @@ export const routeSeo: Record<string, RouteSeo> = {
     description:
       'Identify song artists across multiple-choice and free-text rounds with local score tracking.',
   },
+  '/games/guess-the-currency': {
+    title: 'Guess the Currency | Atlas of Answers',
+    description:
+      'Match currencies to the countries that use them across timed and untimed rounds with local score tracking.',
+  },
   '*': {
     title: `Page Not Found | ${siteConfig.title}`,
     description: defaultDescription,
