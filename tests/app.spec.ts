@@ -1,41 +1,15 @@
 import { expect, test } from '@playwright/test'
 import { capitalStateQuestionBank } from '@/features/guess-the-capital/data/states'
+import {
+  QUESTIONS_PER_ROUND,
+  dismissPrivacyPromptIfVisible,
+  enableDebugMode,
+  useMobileViewport,
+} from './helpers'
 
-const QUESTIONS_PER_ROUND = 20
 const US_STATE_CAPITALS = new Set(
   capitalStateQuestionBank.map((state) => state.capital),
 )
-
-async function enableDebugMode(
-  page: import('@playwright/test').Page,
-  overrides?: Partial<{ timerScale: number; revealAnswers: boolean }>,
-) {
-  await page.addInitScript(() => {
-    window.localStorage.setItem('atlas-of-answers:debug', '__DEBUG__')
-  })
-  await page.addInitScript((settings) => {
-    window.localStorage.setItem(
-      'atlas-of-answers:debug',
-      JSON.stringify(settings),
-    )
-  }, { timerScale: 1, revealAnswers: true, ...overrides })
-}
-
-async function useMobileViewport(page: import('@playwright/test').Page) {
-  await page.setViewportSize({ width: 390, height: 844 })
-}
-
-async function dismissPrivacyPromptIfVisible(
-  page: import('@playwright/test').Page,
-) {
-  const denyButton = page.getByRole('button', {
-    name: 'Use only essential storage',
-  })
-
-  if (await denyButton.isVisible()) {
-    await denyButton.click()
-  }
-}
 
 test('homepage renders the game shelf and offline badge on mobile', async ({ page }) => {
   await enableDebugMode(page)

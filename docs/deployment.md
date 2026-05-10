@@ -42,11 +42,35 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - `npm run build`
 - `npm run build:sitemap`
 - `npm run test:e2e`
+- `npm run test:e2e:offline`
 - `npm run check`
 - `npm run docs:check` for the staged pre-commit docs guard
 - `curl -I https://triviagames.cristache.net/sw.js` after production deploys when checking a cache fix
 
 For UI changes, verify the experience at a mobile viewport before shipping. Treat mobile layout and interaction as required validation, not optional spot-checking.
+
+## Offline verification
+
+- Use `npm run test:e2e:offline` to verify offline playability against a production build served from `dist`.
+- This suite intentionally does not reuse the dev-server Playwright config because the production service worker and precache are the behavior under test.
+- The offline smoke path warms caches online first, then forces the browser offline and checks route reloads plus game-round startup and progression.
+- The cocktail round is covered by a dedicated image-loading check so any offline regression in its asset path stays visible separately from the rest of the suite.
+
+### Manual mobile QA
+
+1. Run `npm run build`.
+2. Run `npm run preview -- --host 127.0.0.1 --port 4173`.
+3. Open `http://127.0.0.1:4173` at a mobile viewport.
+4. While online, load `/` and open each offline-capable game route once.
+5. Disable network in the browser.
+6. Reload `/`.
+7. Start a short round in each game.
+8. Confirm:
+   - The app shell still renders and routes still open.
+   - Local score and progress continue updating.
+   - Timed modes continue counting down and advancing.
+   - The artist game still works without preview playback.
+   - The cocktail game result is recorded explicitly as pass or fail, not assumed.
 
 ## Local function testing
 
