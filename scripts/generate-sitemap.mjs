@@ -9,11 +9,22 @@ const baseUrl = process.env.VITE_APP_BASE_URL || 'https://triviagames.cristache.
 const normalizedBaseUrl = baseUrl.replace(/\/$/, '')
 const generatedAt = new Date().toISOString()
 
+const siteConfigSource = fs.readFileSync(path.join(repoRoot, 'src/config/site.ts'), 'utf8')
+
+// Extract ready game IDs from the catalog (skip coming-soon entries)
+const catalogBlocks = siteConfigSource.split(/(?=\s*\{[\s\S]*?id:)/)
+const gameIds = []
+for (const block of catalogBlocks) {
+  const idMatch = block.match(/id:\s*'([^']+)'/)
+  const statusMatch = block.match(/status:\s*'([^']+)'/)
+  if (idMatch && statusMatch && statusMatch[1] === 'ready') {
+    gameIds.push(idMatch[1])
+  }
+}
+
 const routes = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
-  { path: '/games/flag-quiz', changefreq: 'weekly', priority: '0.9' },
-  { path: '/games/guess-the-capital', changefreq: 'weekly', priority: '0.9' },
-  { path: '/games/outline-quiz', changefreq: 'weekly', priority: '0.9' },
+  ...gameIds.map((id) => ({ path: `/games/${id}`, changefreq: 'weekly', priority: '0.9' })),
 ]
 
 const urls = routes

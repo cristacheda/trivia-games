@@ -14,7 +14,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - Each build also exposes the current commit SHA.
 - The PWA cache id includes the app version.
 - The generated offline service worker stays at `/sw.js` so already-installed clients can revalidate the same URL on later refreshes.
-- `public/sitemap.xml` is generated during build from `scripts/generate-sitemap.mjs`.
+- `public/sitemap.xml` is generated during build from `scripts/generate-sitemap.mjs`, which reads `src/config/site.ts` and includes all games with `status: 'ready'` automatically — no manual route list to maintain.
 - Built assets use Vite content hashes.
 - `index.html`, `sw.js`, and `manifest.webmanifest` are configured for revalidation instead of long-lived caching.
 - `public/_headers` is the source of truth for production CSP and cache-related response headers on Cloudflare Pages.
