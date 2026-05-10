@@ -21,6 +21,7 @@
 
 - Game metadata comes from `src/config/site.ts`
 - The homepage sorts `src/config/site.ts` entries with `isNew` first, and `src/components/game-card.tsx` renders a `New!` badge for ready games flagged that way
+- `src/components/game-card.tsx` uses a full-height flex card layout so homepage CTA buttons stay anchored inside each card regardless of optional footer content
 - Route-level SEO metadata (title and meta description) comes from `src/config/seo.ts`
 - Flag quiz data and weighting live under `src/features/flag-quiz`
 - Capital quiz data, state/country mixing, and answer matching live under `src/features/guess-the-capital`
@@ -45,6 +46,7 @@
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Analytics runs through `src/integrations`, while auth and score sync providers remain no-op placeholders
 - The browser document title and description meta tag are updated on route changes by `src/components/seo/route-seo.tsx`
+- `src/components/layout/app-shell.tsx` owns the page-height shell, including the top inset around the app chrome and the footer flush alignment at the bottom edge
 
 ## Persistence
 

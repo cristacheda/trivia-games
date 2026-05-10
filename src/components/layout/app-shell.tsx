@@ -116,7 +116,7 @@ export function AppShell({ children }: AppShellProps) {
           />
         ) : null}
 
-        <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-3 py-2 sm:px-4 sm:py-3">
+        <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-3 pt-2 sm:px-4 sm:pt-3">
           {!hideHeader ? (
             <header
               className={cn(

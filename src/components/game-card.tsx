@@ -18,7 +18,7 @@ export function GameCard({ game, eyebrow, footer, onOpen }: GameCardProps) {
   const content = (
     <Card
       className={cn(
-        'group h-full border-white/70 transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_-52px_rgba(12,49,33,0.4)]',
+        'group flex h-full flex-col border-white/70 transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_90px_-52px_rgba(12,49,33,0.4)]',
         game.comingSoon && 'bg-secondary/30',
       )}
     >
@@ -43,7 +43,7 @@ export function GameCard({ game, eyebrow, footer, onOpen }: GameCardProps) {
         </CardTitle>
         <CardDescription>{game.description}</CardDescription>
       </CardHeader>
-      <CardContent className="flex h-full flex-col justify-between gap-5">
+      <CardContent className="flex flex-1 flex-col justify-between gap-5">
         {footer}
         {!game.comingSoon ? (
           <Button className="w-fit" variant="secondary">
@@ -61,7 +61,7 @@ export function GameCard({ game, eyebrow, footer, onOpen }: GameCardProps) {
   }
 
   return (
-    <Link onClick={onOpen} to={getGamePath(game.id)}>
+    <Link className="block h-full" onClick={onOpen} to={getGamePath(game.id)}>
       {content}
     </Link>
   )
