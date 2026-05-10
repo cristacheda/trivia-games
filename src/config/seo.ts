@@ -38,6 +38,11 @@ export const routeSeo: Record<string, RouteSeo> = {
     description:
       'Match currencies to the countries that use them across timed and untimed rounds with local score tracking.',
   },
+  '/games/guess-the-cocktail': {
+    title: 'Guess the Cocktail | Atlas of Answers',
+    description:
+      'Identify cocktails from photos across easy, medium, and hard difficulty levels with local score tracking.',
+  },
   '*': {
     title: `Page Not Found | ${siteConfig.title}`,
     description: defaultDescription,

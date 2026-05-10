@@ -4,18 +4,10 @@ import type { SongQuestionSource } from '@/features/guess-the-artist/types'
 type SongSeed = Omit<SongQuestionSource, 'weightModifier'>
 
 const songSeeds: SongSeed[] = [
-  { id: 'bohemian-rhapsody', songTitle: 'Bohemian Rhapsody', artistName: 'Queen', aliases: ['Queen'], era: '1970s', region: 'Europe', popularityTier: 'popular' },
-  { id: 'hotel-california', songTitle: 'Hotel California', artistName: 'Eagles', aliases: ['Eagles'], era: '1970s', region: 'Americas', popularityTier: 'popular' },
-  { id: 'smells-like-teen-spirit', songTitle: 'Smells Like Teen Spirit', artistName: 'Nirvana', aliases: ['Nirvana'], era: '1990s', region: 'Americas', popularityTier: 'popular' },
-  { id: 'rolling-in-the-deep', songTitle: 'Rolling in the Deep', artistName: 'Adele', aliases: ['Adele'], era: '2010s', region: 'Europe', popularityTier: 'popular' },
-  { id: 'shape-of-you', songTitle: 'Shape of You', artistName: 'Ed Sheeran', aliases: ['Ed Sheeran'], era: '2010s', region: 'Europe', popularityTier: 'popular' },
-  { id: 'blinding-lights', songTitle: 'Blinding Lights', artistName: 'The Weeknd', aliases: ['The Weeknd', 'Weeknd'], era: '2020s', region: 'Americas', popularityTier: 'popular' },
   { id: 'bad-guy', songTitle: 'bad guy', artistName: 'Billie Eilish', aliases: ['Billie Eilish'], era: '2010s', region: 'Americas', popularityTier: 'popular' },
   { id: 'hips-dont-lie', songTitle: "Hips Don't Lie", artistName: 'Shakira', aliases: ['Shakira'], era: '2000s', region: 'Americas', popularityTier: 'global' },
   { id: 'waka-waka', songTitle: 'Waka Waka (This Time for Africa)', artistName: 'Shakira', aliases: ['Shakira'], era: '2010s', region: 'Americas', popularityTier: 'global' },
-  { id: 'despacito', songTitle: 'Despacito', artistName: 'Luis Fonsi', aliases: ['Luis Fonsi', 'Fonsi'], era: '2010s', region: 'Americas', popularityTier: 'global' },
   { id: 'bailando', songTitle: 'Bailando', artistName: 'Enrique Iglesias', aliases: ['Enrique Iglesias'], era: '2010s', region: 'Europe', popularityTier: 'global' },
-  { id: 'gangnam-style', songTitle: 'Gangnam Style', artistName: 'PSY', aliases: ['Psy', 'PSY'], era: '2010s', region: 'Asia', popularityTier: 'global' },
   { id: 'dynamite', songTitle: 'Dynamite', artistName: 'BTS', aliases: ['BTS'], era: '2020s', region: 'Asia', popularityTier: 'global' },
   { id: 'how-you-like-that', songTitle: 'How You Like That', artistName: 'BLACKPINK', aliases: ['Blackpink', 'BLACKPINK'], era: '2020s', region: 'Asia', popularityTier: 'global' },
   { id: 'faded', songTitle: 'Faded', artistName: 'Alan Walker', aliases: ['Alan Walker'], era: '2010s', region: 'Europe', popularityTier: 'global' },
@@ -150,7 +142,6 @@ const songSeeds: SongSeed[] = [
   { id: 'mr-brightside', songTitle: 'Mr. Brightside', artistName: 'The Killers', aliases: ['The Killers'], era: '2000s', region: 'Americas', popularityTier: 'popular' },
   { id: 'somebody-told-me', songTitle: 'Somebody Told Me', artistName: 'The Killers', aliases: ['The Killers'], era: '2000s', region: 'Americas', popularityTier: 'popular' },
   { id: 'yellow', songTitle: 'Yellow', artistName: 'Coldplay', aliases: ['Coldplay'], era: '2000s', region: 'Europe', popularityTier: 'popular' },
-  { id: 'viva-la-vida', songTitle: 'Viva la Vida', artistName: 'Coldplay', aliases: ['Coldplay'], era: '2000s', region: 'Europe', popularityTier: 'popular' },
   { id: 'wonderwall', songTitle: 'Wonderwall', artistName: 'Oasis', aliases: ['Oasis'], era: '2000s', region: 'Europe', popularityTier: 'popular' },
   { id: 'song-2', songTitle: 'Song 2', artistName: 'Blur', aliases: ['Blur'], era: '2000s', region: 'Europe', popularityTier: 'popular' },
   { id: 'take-me-out', songTitle: 'Take Me Out', artistName: 'Franz Ferdinand', aliases: ['Franz Ferdinand'], era: '2000s', region: 'Europe', popularityTier: 'popular' },

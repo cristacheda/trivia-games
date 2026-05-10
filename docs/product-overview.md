@@ -13,7 +13,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 ## Current MVP
 
 - Homepage with a grid of games
-- Five playable games: `Name the Country Flag`, `Guess the Capital`, `Name the Country by Its Outline`, `Guess the Artist by Song`, and `Guess the Currency`
+- Six playable games: `Name the Country Flag`, `Guess the Capital`, `Name the Country by Its Outline`, `Guess the Artist by Song`, `Guess the Currency`, and `Guess the Cocktail`
 - One upcoming teaser card: `Guess the Official Language`
 - Local-first score and preference storage
 - Subtle in-game sound cues with a local mute toggle
@@ -86,6 +86,17 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 1`: 3 options, no time limit, 1 point. Shows full currency name and ISO code (e.g. "Romanian leu (RON)").
 - `Level 2`: 5 options, 15 seconds, 2 points. Shows only the ISO code during the question; reveals the full name after the player answers.
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance for country names. Shows only the ISO code.
+
+### Guess the Cocktail
+
+- Uses a curated catalog of 426 cocktails crawled from TheCocktailDB (alcoholic and non-alcoholic).
+- Cocktails are assigned a popularity tier: `popular` (52), `common` (243), or `obscure` (131).
+- Every round of 20 questions guarantees exactly 1 obscure cocktail; the remaining 19 draw from the popular and common pools with popular heavily weighted.
+- Reuses as many unseen cocktails as possible across rounds before reshuffling each pool independently.
+- Images are stored locally under `public/cocktails/` for offline play.
+- `Level 1`: 3 options, no time limit, 1 point. Shows an ingredient hint list below the cocktail photo.
+- `Level 2`: 5 options, 15 seconds, 2 points. No ingredient hint.
+- `Level 3`: free text, no time limit, 3 points, fuzzy matching with Levenshtein tolerance for spelling variants and common abbreviations.
 
 ## Near-term roadmap
 

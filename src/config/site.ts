@@ -62,6 +62,16 @@ export const gameCatalog: GameCatalogEntry[] = [
     comingSoon: false,
   },
   {
+    id: 'guess-the-cocktail',
+    title: 'Guess the Cocktail',
+    description:
+      'Look at the photo and name the cocktail — easier rounds stick to classics, harder ones reach for the obscure.',
+    status: 'ready',
+    offlineCapable: true,
+    difficultySet: ['level-1', 'level-2', 'level-3'],
+    comingSoon: false,
+  },
+  {
     id: 'guess-the-official-language',
     title: 'Guess the Official Language',
     description:

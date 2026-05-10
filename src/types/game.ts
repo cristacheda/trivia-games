@@ -4,6 +4,7 @@ export type GameId =
   | 'outline-quiz'
   | 'guess-the-artist'
   | 'guess-the-currency'
+  | 'guess-the-cocktail'
   | 'guess-the-official-language'
 
 export type DifficultyId = 'level-1' | 'level-2' | 'level-3'
@@ -56,6 +57,13 @@ export interface CurrencyDeckProgress {
   nextIndex: number
 }
 
+export interface CocktailDeckProgress {
+  orderedRegularIds: string[]
+  nextRegularIndex: number
+  orderedObscureIds: string[]
+  nextObscureIndex: number
+}
+
 export interface RoundResult {
   gameId: GameId
   difficultyId: DifficultyId
@@ -76,6 +84,7 @@ export interface GameLocalStats {
   outlineDeck: OutlineDeckProgress | null
   artistDeck: ArtistDeckProgress | null
   currencyDeck: CurrencyDeckProgress | null
+  cocktailDeck: CocktailDeckProgress | null
 }
 
 export interface AppPreferences {

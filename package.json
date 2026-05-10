@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "cocktails:fetch": "node scripts/cocktail-catalog-cli.mjs",
     "songs:check": "node scripts/artist-catalog-cli.mjs check",
     "songs:add": "node scripts/artist-catalog-cli.mjs add",
     "songs:bulk": "node scripts/artist-catalog-cli.mjs bulk",

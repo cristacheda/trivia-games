@@ -36,3 +36,4 @@ dev-dist
 *.sw?
 
 bulk_list.txt
+.playwright-cli/

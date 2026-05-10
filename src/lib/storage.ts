@@ -34,9 +34,23 @@ import {
   outlineStateQuestionBankByCode,
 } from '@/features/outline-quiz/data/states'
 import { buildOutlineQuizDeck } from '@/features/outline-quiz/lib/round'
+import {
+  GUESS_THE_COCKTAIL_GAME_ID,
+  GUESS_THE_COCKTAIL_REGULAR_PER_ROUND,
+  GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND,
+} from '@/features/guess-the-cocktail/constants'
+import {
+  cocktailQuestionBank,
+  cocktailQuestionBankById,
+} from '@/features/guess-the-cocktail/data/cocktails'
+import {
+  buildGuessTheCocktailRegularDeck,
+  buildGuessTheCocktailObscureDeck,
+} from '@/features/guess-the-cocktail/lib/round'
 import type {
   AppPreferences,
   CapitalDeckProgress,
+  CocktailDeckProgress,
   CountryDeckProgress,
   CurrencyDeckProgress,
   DifficultyId,
@@ -51,7 +65,7 @@ import type {
 
 const STORAGE_KEY = 'atlas-of-answers:app-state'
 const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
-export const STORAGE_VERSION = 8
+export const STORAGE_VERSION = 10
 
 type RoundResultInput = Omit<RoundResult, 'previousBestScore' | 'beatHighScore'>
 
@@ -94,6 +108,15 @@ function createDefaultCurrencyDeck(): CurrencyDeckProgress {
   }
 }
 
+function createDefaultCocktailDeck(): CocktailDeckProgress {
+  return {
+    orderedRegularIds: [],
+    nextRegularIndex: 0,
+    orderedObscureIds: [],
+    nextObscureIndex: 0,
+  }
+}
+
 function createDefaultPreferences(): AppPreferences {
   return {
     soundEnabled: true,
@@ -115,6 +138,7 @@ function createDefaultStats(): GameLocalStats {
     outlineDeck: null,
     artistDeck: null,
     currencyDeck: null,
+    cocktailDeck: null,
   }
 }
 
@@ -180,6 +204,10 @@ function normalizeGameStats(
       gameId === GUESS_THE_CURRENCY_GAME_ID
         ? normalizeCurrencyDeck(stats.currencyDeck)
         : null,
+    cocktailDeck:
+      gameId === GUESS_THE_COCKTAIL_GAME_ID
+        ? normalizeCocktailDeck(stats.cocktailDeck)
+        : null,
   }
 }
 
@@ -211,6 +239,14 @@ function normalizeGames(
           'guess-the-currency': normalizeGameStats(
             'guess-the-currency',
             games['guess-the-currency'],
+          ),
+        }
+      : {}),
+    ...(games?.['guess-the-cocktail']
+      ? {
+          'guess-the-cocktail': normalizeGameStats(
+            'guess-the-cocktail',
+            games['guess-the-cocktail'],
           ),
         }
       : {}),
@@ -259,7 +295,9 @@ function normalizeState(value: unknown): PersistedAppState {
     state.version === 4 ||
     state.version === 5 ||
     state.version === 6 ||
-    state.version === 7
+    state.version === 7 ||
+    state.version === 8 ||
+    state.version === 9
   ) {
     return {
       version: STORAGE_VERSION,
@@ -532,6 +570,45 @@ function normalizeArtistDeck(value: unknown): ArtistDeckProgress {
     orderedSongIds,
     nextIndex,
   }
+}
+
+function normalizeCocktailDeck(value: unknown): CocktailDeckProgress {
+  if (!value || typeof value !== 'object') {
+    return createDefaultCocktailDeck()
+  }
+
+  const deck = value as Partial<CocktailDeckProgress>
+  const validIds = new Set(cocktailQuestionBank.map((c) => c.id))
+
+  const orderedRegularIds = Array.isArray(deck.orderedRegularIds)
+    ? Array.from(
+        new Set(
+          deck.orderedRegularIds.filter(
+            (id): id is string => typeof id === 'string' && validIds.has(id),
+          ),
+        ),
+      )
+    : []
+  const nextRegularIndex =
+    typeof deck.nextRegularIndex === 'number' && Number.isInteger(deck.nextRegularIndex)
+      ? Math.max(0, Math.min(deck.nextRegularIndex, orderedRegularIds.length))
+      : 0
+
+  const orderedObscureIds = Array.isArray(deck.orderedObscureIds)
+    ? Array.from(
+        new Set(
+          deck.orderedObscureIds.filter(
+            (id): id is string => typeof id === 'string' && validIds.has(id),
+          ),
+        ),
+      )
+    : []
+  const nextObscureIndex =
+    typeof deck.nextObscureIndex === 'number' && Number.isInteger(deck.nextObscureIndex)
+      ? Math.max(0, Math.min(deck.nextObscureIndex, orderedObscureIds.length))
+      : 0
+
+  return { orderedRegularIds, nextRegularIndex, orderedObscureIds, nextObscureIndex }
 }
 
 function normalizeCurrencyDeck(value: unknown): CurrencyDeckProgress {
@@ -993,6 +1070,76 @@ export function reserveOutlineQuizSubjects(
       return state
     }),
   }
+}
+
+export function getGuessTheCocktailDeck(): CocktailDeckProgress {
+  return getGameStats(GUESS_THE_COCKTAIL_GAME_ID).cocktailDeck ?? createDefaultCocktailDeck()
+}
+
+export function setGuessTheCocktailDeck(cocktailDeck: CocktailDeckProgress) {
+  const state = readAppState()
+
+  writeAppState({
+    ...state,
+    games: {
+      ...state.games,
+      [GUESS_THE_COCKTAIL_GAME_ID]: {
+        ...createDefaultStats(),
+        ...state.games[GUESS_THE_COCKTAIL_GAME_ID],
+        cocktailDeck: normalizeCocktailDeck(cocktailDeck),
+      },
+    },
+  })
+}
+
+export function reserveGuessTheCocktailCocktails(
+  difficultyId: DifficultyId,
+  random: () => number = Math.random,
+) {
+  const currentDeck = getGuessTheCocktailDeck()
+
+  let orderedRegularIds = [...currentDeck.orderedRegularIds]
+  let nextRegularIndex = currentDeck.nextRegularIndex
+  const selectedRegularIds: string[] = []
+
+  while (selectedRegularIds.length < GUESS_THE_COCKTAIL_REGULAR_PER_ROUND) {
+    if (orderedRegularIds.length === 0 || nextRegularIndex >= orderedRegularIds.length) {
+      orderedRegularIds = buildGuessTheCocktailRegularDeck(random, difficultyId).map((c) => c.id)
+      nextRegularIndex = 0
+    }
+
+    const remainingSlots = GUESS_THE_COCKTAIL_REGULAR_PER_ROUND - selectedRegularIds.length
+    const nextIds = orderedRegularIds.slice(nextRegularIndex, nextRegularIndex + remainingSlots)
+    selectedRegularIds.push(...nextIds)
+    nextRegularIndex += nextIds.length
+  }
+
+  let orderedObscureIds = [...currentDeck.orderedObscureIds]
+  let nextObscureIndex = currentDeck.nextObscureIndex
+  const selectedObscureIds: string[] = []
+
+  while (selectedObscureIds.length < GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND) {
+    if (orderedObscureIds.length === 0 || nextObscureIndex >= orderedObscureIds.length) {
+      orderedObscureIds = buildGuessTheCocktailObscureDeck(random).map((c) => c.id)
+      nextObscureIndex = 0
+    }
+
+    const nextIds = orderedObscureIds.slice(nextObscureIndex, nextObscureIndex + GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND - selectedObscureIds.length)
+    selectedObscureIds.push(...nextIds)
+    nextObscureIndex += nextIds.length
+  }
+
+  setGuessTheCocktailDeck({ orderedRegularIds, nextRegularIndex, orderedObscureIds, nextObscureIndex })
+
+  return [...selectedRegularIds, ...selectedObscureIds].map((id) => {
+    const cocktail = cocktailQuestionBankById.get(id)
+
+    if (!cocktail) {
+      throw new Error(`Unknown cocktail quiz id: ${id}`)
+    }
+
+    return cocktail
+  })
 }
 
 export function useGameStats(gameId: GameId) {
