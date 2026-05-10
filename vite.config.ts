@@ -62,6 +62,19 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         navigateFallback: 'index.html',
         skipWaiting: true,
+        runtimeCaching: [
+          {
+            urlPattern: /\/cocktails\/.*\.jpg$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'cocktail-images',
+              expiration: {
+                maxEntries: 500,
+                maxAgeSeconds: 30 * 24 * 60 * 60,
+              },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: false,

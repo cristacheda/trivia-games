@@ -65,7 +65,7 @@
 ## Offline model
 
 - PWA build is enabled for production
-- The shipped games are intended to be playable after their initial assets are cached
+- The shipped games are intended to be playable offline after their initial assets are cached
 - Dev mode does not force PWA caching behavior
 
 ## Planned external integrations
