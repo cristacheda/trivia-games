@@ -28,6 +28,7 @@
 - Currency quiz data, country weighting, and answer matching live under `src/features/guess-the-currency`
 - Outline quiz rendering preserves the raw bundled SVG path geometry instead of smoothing corners in the renderer
 - Flag quiz rounds reserve country codes from a persisted weighted deck before building question objects
+- Flag images are sourced from `flag-icons` (npm) as raw SVG strings bundled at build time via `import.meta.glob`; `src/components/country-flag.tsx` renders them directly as `<img>` elements via blob URLs — no canvas rasterization
 - Capital quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Outline quiz rounds reserve country and state subjects from persisted decks before building question objects
 - Artist quiz rounds reserve songs from a persisted deck before building question objects

@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react'
-import * as FlagSvgs from 'country-flag-icons/string/3x2'
 import { cn } from '@/lib/utils'
 
 interface CountryFlagProps {
@@ -8,46 +6,30 @@ interface CountryFlagProps {
   className?: string
 }
 
-interface RasterizedFlagState {
-  countryCode: string
-  src: string
-}
+const flagModules = import.meta.glob<string>('/node_modules/flag-icons/flags/4x3/*.svg', {
+  query: '?raw',
+  eager: true,
+  import: 'default',
+})
 
-const FLAG_WIDTH = 640
-const FLAG_HEIGHT = Math.round((FLAG_WIDTH * 2) / 3)
-const flagPngCache = new Map<string, string>()
+const flagSvgMap: Record<string, string> = Object.fromEntries(
+  Object.entries(flagModules).map(([path, svg]) => {
+    const code = path.replace(/.*\/([a-z]+)\.svg$/, '$1').toUpperCase()
+    return [code, svg]
+  }),
+)
 
-function rasterizeFlagSvg(svgMarkup: string) {
-  return new Promise<string>((resolve, reject) => {
-    const image = new Image()
-    const canvas = document.createElement('canvas')
-    canvas.width = FLAG_WIDTH
-    canvas.height = FLAG_HEIGHT
+const blobUrlCache = new Map<string, string>()
 
-    const context = canvas.getContext('2d')
-
-    if (!context) {
-      reject(new Error('Unable to create a 2D context for flag rasterization.'))
-      return
-    }
-
-    const blob = new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' })
-    const objectUrl = URL.createObjectURL(blob)
-
-    image.onload = () => {
-      context.clearRect(0, 0, FLAG_WIDTH, FLAG_HEIGHT)
-      context.drawImage(image, 0, 0, FLAG_WIDTH, FLAG_HEIGHT)
-      URL.revokeObjectURL(objectUrl)
-      resolve(canvas.toDataURL('image/png'))
-    }
-
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl)
-      reject(new Error('Unable to load flag SVG for rasterization.'))
-    }
-
-    image.src = objectUrl
-  })
+function getFlagBlobUrl(countryCode: string): string | null {
+  const svg = flagSvgMap[countryCode]
+  if (!svg) return null
+  const cached = blobUrlCache.get(countryCode)
+  if (cached) return cached
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  blobUrlCache.set(countryCode, url)
+  return url
 }
 
 export function CountryFlag({
@@ -55,42 +37,9 @@ export function CountryFlag({
   label,
   className,
 }: CountryFlagProps) {
-  const svgMarkup = FlagSvgs[countryCode as keyof typeof FlagSvgs]
-  const [rasterizedFlag, setRasterizedFlag] =
-    useState<RasterizedFlagState | null>(null)
-  const cachedFlag = flagPngCache.get(countryCode) ?? null
-  const pngSrc =
-    cachedFlag ??
-    (rasterizedFlag?.countryCode === countryCode ? rasterizedFlag.src : null)
+  const blobUrl = getFlagBlobUrl(countryCode)
 
-  useEffect(() => {
-    let cancelled = false
-
-    if (!svgMarkup) {
-      return
-    }
-
-    if (cachedFlag) {
-      return
-    }
-
-    void rasterizeFlagSvg(svgMarkup)
-      .then((nextPngSrc) => {
-        if (cancelled) {
-          return
-        }
-
-        flagPngCache.set(countryCode, nextPngSrc)
-        setRasterizedFlag({ countryCode, src: nextPngSrc })
-      })
-      .catch(() => {})
-
-    return () => {
-      cancelled = true
-    }
-  }, [cachedFlag, countryCode, svgMarkup])
-
-  if (!svgMarkup || !pngSrc) {
+  if (!blobUrl) {
     return (
       <div
         aria-label={label}
@@ -108,9 +57,7 @@ export function CountryFlag({
     <img
       alt={label}
       className={cn('block aspect-[3/2] w-full rounded-2xl', className)}
-      height={FLAG_HEIGHT}
-      src={pngSrc}
-      width={FLAG_WIDTH}
+      src={blobUrl}
     />
   )
 }
