@@ -74,7 +74,7 @@
 
 - PostHog is initialized through `src/integrations/posthog-provider.ts` when `VITE_POSTHOG_KEY` is set.
 - SPA pageviews are emitted from the shared app shell instead of relying on PostHog automatic pageviews.
-- PostHog pageleave capture is enabled when pageviews are captured so Web Analytics bounce and session duration stay accurate.
+- PostHog pageleave capture is always enabled so Web Analytics bounce and session duration stay accurate regardless of pageview capture settings.
 - Custom game analytics include game views, difficulty selection, round start, question answers, round completion, homepage game-entry clicks, and high-score beats.
 - Free-text answer contents are intentionally excluded from analytics payloads.
 - Consent gating is implemented through a local in-app privacy control that auto-opens on first visit while consent is still unknown.
