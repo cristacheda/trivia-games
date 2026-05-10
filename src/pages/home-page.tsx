@@ -1,4 +1,5 @@
-import { Clock3, Trophy } from 'lucide-react'
+import type { ElementType } from 'react'
+import { Coins, Flag, GlassWater, Globe2, Music2, Trophy } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { gameCatalog, siteConfig } from '@/config/site'
 import { GameCard } from '@/components/game-card'
@@ -20,6 +21,29 @@ function hasPlayableStats(
   return playableGameIds.includes(gameId as (typeof playableGameIds)[number])
 }
 
+function IconTile({
+  icon: Icon,
+  delay,
+  label,
+}: {
+  icon: ElementType
+  delay: number
+  label: string
+}) {
+  return (
+    <div
+      aria-hidden="true"
+      className="animate-float flex flex-col items-center justify-center gap-2 rounded-[var(--radius)] border border-primary/10 bg-white/60 p-4 shadow-sm backdrop-blur-sm"
+      style={{ animationDelay: `${delay}s` }}
+    >
+      <Icon className="h-7 w-7 text-primary" strokeWidth={1.5} />
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </span>
+    </div>
+  )
+}
+
 export function HomePage() {
   const flagStats = useGameStats('flag-quiz')
   const capitalStats = useGameStats('guess-the-capital')
@@ -32,40 +56,45 @@ export function HomePage() {
     'outline-quiz': outlineStats,
     'guess-the-artist': artistStats,
   } as const
-  const recentGames = [
-    { game: gameCatalog[0], stats: flagStats },
-    { game: gameCatalog[1], stats: capitalStats },
-    { game: gameCatalog[2], stats: outlineStats },
-    { game: gameCatalog[3], stats: artistStats },
-  ]
-    .sort((left, right) => {
-      const leftTime = left.stats.recentResult
-        ? new Date(left.stats.recentResult.completedAt).getTime()
-        : 0
-      const rightTime = right.stats.recentResult
-        ? new Date(right.stats.recentResult.completedAt).getTime()
-        : 0
-      return rightTime - leftTime
-    })
-    .slice(0, 3)
+
+  const sortedCatalog = [...gameCatalog].sort((a, b) =>
+    a.isNew === b.isNew ? 0 : a.isNew ? -1 : 1,
+  )
 
   return (
     <div className="space-y-5 sm:space-y-7">
       <section>
         <Card className="overflow-hidden border-primary/10 bg-[linear-gradient(160deg,rgba(246,252,247,0.98)_0%,rgba(229,245,235,0.9)_56%,rgba(212,236,220,0.84)_100%)]">
           <CardContent className="p-4 sm:p-8">
-            <div className="max-w-2xl space-y-4">
-              <Badge className="w-fit" variant="success">
-                Modern trivia practice
-              </Badge>
-              <h1 className="font-serif text-2xl font-semibold leading-tight tracking-tight text-balance text-foreground sm:text-5xl lg:text-6xl">
-                Train like you are about to walk into the next quiz final.
-              </h1>
-              <p className="max-w-xl text-base text-muted-foreground sm:text-xl">
-                {siteConfig.description} Start with fast flag reps now. Country
-                capitals and outline rounds are live, with currency and
-                official language rounds next.
-              </p>
+            <div className="flex items-center gap-8 lg:gap-12">
+              <div className="flex-1 space-y-4">
+                <Badge className="w-fit" variant="success">
+                  Modern trivia practice
+                </Badge>
+                <h1 className="text-balance font-serif text-2xl font-semibold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+                  Train like you are about to walk into the next quiz final.
+                </h1>
+                <p className="max-w-xl text-base text-muted-foreground sm:text-xl">
+                  {siteConfig.description} Start with fast flag reps now. Country
+                  capitals and outline rounds are live, with currency and
+                  official language rounds next.
+                </p>
+              </div>
+
+              <div className="hidden shrink-0 lg:block">
+                <div className="flex gap-3">
+                  <div className="flex flex-col gap-3">
+                    <IconTile icon={Globe2} delay={0} label="Geography" />
+                    <IconTile icon={Flag} delay={1.0} label="Flags" />
+                    <IconTile icon={GlassWater} delay={2.0} label="Cocktails" />
+                  </div>
+                  <div className="mt-6 flex flex-col gap-3">
+                    <IconTile icon={Music2} delay={0.5} label="Music" />
+                    <IconTile icon={Coins} delay={1.5} label="Currency" />
+                    <IconTile icon={Globe2} delay={2.5} label="Languages" />
+                  </div>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -84,7 +113,7 @@ export function HomePage() {
         </div>
 
         <div className="grid gap-5 md:grid-cols-2">
-          {gameCatalog.map((game) => {
+          {sortedCatalog.map((game) => {
             const stats = hasPlayableStats(game.id) ? statsByGame[game.id] : null
 
             return (
@@ -100,7 +129,7 @@ export function HomePage() {
                             ? 'Capital quiz high score'
                             : game.id === 'guess-the-artist'
                               ? 'Artist quiz high score'
-                            : 'Outline quiz high score'}
+                              : 'Outline quiz high score'}
                       </div>
                       <p className="mt-2 font-serif text-3xl font-semibold">
                         {stats.highScore?.score ?? '—'}
@@ -116,44 +145,6 @@ export function HomePage() {
               />
             )
           })}
-        </div>
-      </section>
-
-      <section className="rounded-[30px] border border-white/65 bg-white/55 p-4 shadow-[0_24px_70px_-54px_rgba(12,49,33,0.55)] backdrop-blur sm:p-5">
-        <div className="mb-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
-              Recent activity
-            </p>
-            <h2 className="font-serif text-2xl font-semibold tracking-tight">
-              Pick up where you left off
-            </h2>
-          </div>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-3">
-          {recentGames.map(({ game, stats }, index) => (
-            <div
-              className="rounded-[24px] border border-white/70 bg-white/70 p-4"
-              key={`${game.id}-${index}`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="font-semibold">{game.title}</p>
-                {stats.recentResult ? (
-                  <Clock3 className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Trophy className="h-4 w-4 text-muted-foreground" />
-                )}
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {stats.recentResult
-                  ? `${stats.recentResult.totalScore} points on ${stats.recentResult.correctAnswers}/${stats.recentResult.totalQuestions}`
-                  : game.comingSoon
-                    ? 'Coming soon'
-                    : 'No rounds played yet'}
-              </p>
-            </div>
-          ))}
         </div>
       </section>
     </div>

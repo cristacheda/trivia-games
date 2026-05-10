@@ -24,6 +24,7 @@ export function GameCard({ game, eyebrow, footer, onOpen }: GameCardProps) {
     >
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
+          {game.isNew && !game.comingSoon ? <Badge variant="default">New!</Badge> : null}
           {eyebrow ? <Badge variant="outline">{eyebrow}</Badge> : null}
           {game.offlineCapable ? (
             <Badge data-testid={`offline-badge-${game.id}`} variant="success">

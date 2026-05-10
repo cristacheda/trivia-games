@@ -20,6 +20,7 @@
 ## Current data flow
 
 - Game metadata comes from `src/config/site.ts`
+- The homepage sorts `src/config/site.ts` entries with `isNew` first, and `src/components/game-card.tsx` renders a `New!` badge for ready games flagged that way
 - Route-level SEO metadata (title and meta description) comes from `src/config/seo.ts`
 - Flag quiz data and weighting live under `src/features/flag-quiz`
 - Capital quiz data, state/country mixing, and answer matching live under `src/features/guess-the-capital`

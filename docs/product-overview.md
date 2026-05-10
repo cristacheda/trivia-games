@@ -12,7 +12,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 
 ## Current MVP
 
-- Homepage with a grid of games
+- Homepage hero with a game shelf that pushes the newest live games to the top and labels them as new
 - Six playable games: `Name the Country Flag`, `Guess the Capital`, `Name the Country by Its Outline`, `Guess the Artist by Song`, `Guess the Currency`, and `Guess the Cocktail`
 - One upcoming teaser card: `Guess the Official Language`
 - Local-first score and preference storage

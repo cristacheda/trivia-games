@@ -60,6 +60,7 @@ export const gameCatalog: GameCatalogEntry[] = [
     offlineCapable: true,
     difficultySet: ['level-1', 'level-2', 'level-3'],
     comingSoon: false,
+    isNew: true,
   },
   {
     id: 'guess-the-cocktail',
@@ -70,6 +71,7 @@ export const gameCatalog: GameCatalogEntry[] = [
     offlineCapable: true,
     difficultySet: ['level-1', 'level-2', 'level-3'],
     comingSoon: false,
+    isNew: true,
   },
   {
     id: 'guess-the-official-language',

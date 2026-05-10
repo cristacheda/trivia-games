@@ -108,4 +108,5 @@ export interface GameCatalogEntry {
   difficultySet: DifficultyId[]
   comingSoon: boolean
   teaser?: string
+  isNew?: boolean
 }
