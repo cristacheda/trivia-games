@@ -37,9 +37,14 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 
 ## Validation commands
 
+- `npm run check:fast` for local iteration on changed files
 - `npm run lint`
-- `npm test`
+- `npm run test:unit`
+- `npm run test:unit:changed`
+- `npm run test:changed`
 - `npm run build`
+- `npm run test:e2e:smoke`
+- `npm run test:e2e:full`
 - `npm run build:sitemap`
 - `npm run test:e2e`
 - `npm run test:e2e:offline`

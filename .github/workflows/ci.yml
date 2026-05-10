@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - preview
 
 permissions:
   contents: read
@@ -40,7 +41,29 @@ jobs:
         run: npm run lint
 
       - name: Unit tests
-        run: npm test
+        if: github.event_name == 'pull_request'
+        run: npm run test:unit
 
-      - name: Build
+      - name: Changed test selection
+        if: github.event_name == 'pull_request'
+        run: npm run test:changed
+
+      - name: Browser smoke tests
+        if: github.event_name == 'pull_request'
+        run: npm run test:e2e:smoke
+
+      - name: Fast build validation
+        if: github.event_name == 'pull_request'
         run: npm run build
+
+      - name: Full validation
+        if: github.event_name == 'push'
+        run: npm run check
+
+      - name: Full browser suite
+        if: github.event_name == 'push'
+        run: npm run test:e2e:full
+
+      - name: Offline browser suite
+        if: github.event_name == 'push'
+        run: npm run test:e2e:offline

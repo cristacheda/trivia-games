@@ -54,3 +54,12 @@ export async function expectQuestionNumber(page: Page, questionNumber: number) {
     })
     .toContain(`Question ${questionNumber} / ${QUESTIONS_PER_ROUND}`)
 }
+
+export async function seedAppState(page: Page, state: unknown) {
+  await page.addInitScript((appState) => {
+    window.localStorage.setItem(
+      'atlas-of-answers:app-state',
+      JSON.stringify(appState),
+    )
+  }, state)
+}
