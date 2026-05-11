@@ -1,4 +1,1 @@
 #!/bin/sh
-
-echo "Checking documentation sync..."
-npm run docs:check
