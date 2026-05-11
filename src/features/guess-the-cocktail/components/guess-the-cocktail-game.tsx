@@ -31,12 +31,12 @@ import type { GuessTheCocktailQuestion } from '@/features/guess-the-cocktail/typ
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
+import { reserveGuessTheCocktailCocktails } from '@/lib/storage-decks'
 import {
   getAppPreferences,
   getGameStats,
   getPlayerId,
   recordRoundResult,
-  reserveGuessTheCocktailCocktails,
   setLastDifficulty,
   setSoundEnabled,
   useGameStats,
@@ -372,7 +372,6 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
     return (
       <Card className="border-primary/10">
         <CardHeader>
-          <Badge variant="success">20 cocktails per round</Badge>
           <CardTitle>Guess the cocktail from the photo</CardTitle>
           <CardDescription>
             Classic and global cocktails, with harder levels reaching for more obscure drinks.

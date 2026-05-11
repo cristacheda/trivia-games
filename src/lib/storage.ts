@@ -1,52 +1,10 @@
 import { useEffect, useState } from 'react'
 import { FLAG_QUIZ_GAME_ID } from '@/features/flag-quiz/constants'
-import { flagQuestionBank } from '@/features/flag-quiz/data/countries'
-import { buildFlagQuizQuestionDeck } from '@/features/flag-quiz/lib/round'
 import { GUESS_THE_CAPITAL_GAME_ID } from '@/features/guess-the-capital/constants'
 import { GUESS_THE_ARTIST_GAME_ID } from '@/features/guess-the-artist/constants'
-import {
-  songQuestionBank,
-  songQuestionBankById,
-} from '@/features/guess-the-artist/data/songs'
-import { buildGuessTheArtistDeck } from '@/features/guess-the-artist/lib/round'
 import { GUESS_THE_CURRENCY_GAME_ID } from '@/features/guess-the-currency/constants'
-import {
-  currencyQuestionBank,
-  currencyQuestionBankByCode,
-} from '@/features/guess-the-currency/data/countries'
-import { buildGuessTheCurrencyDeck } from '@/features/guess-the-currency/lib/round'
-import {
-  capitalCountryQuestionBank,
-  capitalCountryQuestionBankByCode,
-} from '@/features/guess-the-capital/data/countries'
-import {
-  capitalStateQuestionBank,
-  capitalStateQuestionBankByCode,
-} from '@/features/guess-the-capital/data/states'
-import { buildGuessTheCapitalDeck } from '@/features/guess-the-capital/lib/round'
 import { OUTLINE_QUIZ_GAME_ID } from '@/features/outline-quiz/constants'
-import {
-  outlineCountryQuestionBank,
-  outlineCountryQuestionBankByCode,
-} from '@/features/outline-quiz/data/countries'
-import {
-  outlineStateQuestionBank,
-  outlineStateQuestionBankByCode,
-} from '@/features/outline-quiz/data/states'
-import { buildOutlineQuizDeck } from '@/features/outline-quiz/lib/round'
-import {
-  GUESS_THE_COCKTAIL_GAME_ID,
-  GUESS_THE_COCKTAIL_REGULAR_PER_ROUND,
-  GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND,
-} from '@/features/guess-the-cocktail/constants'
-import {
-  cocktailQuestionBank,
-  cocktailQuestionBankById,
-} from '@/features/guess-the-cocktail/data/cocktails'
-import {
-  buildGuessTheCocktailRegularDeck,
-  buildGuessTheCocktailObscureDeck,
-} from '@/features/guess-the-cocktail/lib/round'
+import { GUESS_THE_COCKTAIL_GAME_ID } from '@/features/guess-the-cocktail/constants'
 import type {
   AppPreferences,
   CapitalDeckProgress,
@@ -68,6 +26,14 @@ const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
 export const STORAGE_VERSION = 10
 
 type RoundResultInput = Omit<RoundResult, 'previousBestScore' | 'beatHighScore'>
+
+function normalizeStringList(value: unknown): string[] {
+  return Array.isArray(value)
+    ? Array.from(
+        new Set(value.filter((entry): entry is string => typeof entry === 'string')),
+      )
+    : []
+}
 
 function createDefaultCountryDeck(): CountryDeckProgress {
   return {
@@ -142,23 +108,13 @@ function createDefaultStats(): GameLocalStats {
   }
 }
 
-function normalizeCountryDeck(value: unknown): CountryDeckProgress {
+export function normalizeCountryDeck(value: unknown): CountryDeckProgress {
   if (!value || typeof value !== 'object') {
     return createDefaultCountryDeck()
   }
 
   const deck = value as Partial<CountryDeckProgress>
-  const validCodes = new Set(flagQuestionBank.map((country) => country.code))
-  const orderedCountryCodes = Array.isArray(deck.orderedCountryCodes)
-    ? Array.from(
-        new Set(
-          deck.orderedCountryCodes.filter(
-            (code): code is string =>
-              typeof code === 'string' && validCodes.has(code),
-          ),
-        ),
-      )
-    : []
+  const orderedCountryCodes = normalizeStringList(deck.orderedCountryCodes)
   const nextIndex =
     typeof deck.nextIndex === 'number' && Number.isInteger(deck.nextIndex)
       ? Math.max(0, Math.min(deck.nextIndex, orderedCountryCodes.length))
@@ -448,36 +404,14 @@ export function recordRoundResult(result: RoundResultInput): RoundResult {
   return nextResult
 }
 
-function normalizeCapitalDeck(value: unknown): CapitalDeckProgress {
+export function normalizeCapitalDeck(value: unknown): CapitalDeckProgress {
   if (!value || typeof value !== 'object') {
     return createDefaultCapitalDeck()
   }
 
   const deck = value as Partial<CapitalDeckProgress>
-  const validCountryCodes = new Set(
-    capitalCountryQuestionBank.map((country) => country.code),
-  )
-  const validStateCodes = new Set(capitalStateQuestionBank.map((state) => state.code))
-  const orderedCountryCodes = Array.isArray(deck.orderedCountryCodes)
-    ? Array.from(
-        new Set(
-          deck.orderedCountryCodes.filter(
-            (code): code is string =>
-              typeof code === 'string' && validCountryCodes.has(code),
-          ),
-        ),
-      )
-    : []
-  const orderedStateCodes = Array.isArray(deck.orderedStateCodes)
-    ? Array.from(
-        new Set(
-          deck.orderedStateCodes.filter(
-            (code): code is string =>
-              typeof code === 'string' && validStateCodes.has(code),
-          ),
-        ),
-      )
-    : []
+  const orderedCountryCodes = normalizeStringList(deck.orderedCountryCodes)
+  const orderedStateCodes = normalizeStringList(deck.orderedStateCodes)
   const nextCountryIndex =
     typeof deck.nextCountryIndex === 'number' &&
     Number.isInteger(deck.nextCountryIndex)
@@ -496,36 +430,14 @@ function normalizeCapitalDeck(value: unknown): CapitalDeckProgress {
   }
 }
 
-function normalizeOutlineDeck(value: unknown): OutlineDeckProgress {
+export function normalizeOutlineDeck(value: unknown): OutlineDeckProgress {
   if (!value || typeof value !== 'object') {
     return createDefaultOutlineDeck()
   }
 
   const deck = value as Partial<OutlineDeckProgress>
-  const validCountryCodes = new Set(
-    outlineCountryQuestionBank.map((country) => country.code),
-  )
-  const validStateCodes = new Set(outlineStateQuestionBank.map((state) => state.code))
-  const orderedCountryCodes = Array.isArray(deck.orderedCountryCodes)
-    ? Array.from(
-        new Set(
-          deck.orderedCountryCodes.filter(
-            (code): code is string =>
-              typeof code === 'string' && validCountryCodes.has(code),
-          ),
-        ),
-      )
-    : []
-  const orderedStateCodes = Array.isArray(deck.orderedStateCodes)
-    ? Array.from(
-        new Set(
-          deck.orderedStateCodes.filter(
-            (code): code is string =>
-              typeof code === 'string' && validStateCodes.has(code),
-          ),
-        ),
-      )
-    : []
+  const orderedCountryCodes = normalizeStringList(deck.orderedCountryCodes)
+  const orderedStateCodes = normalizeStringList(deck.orderedStateCodes)
   const nextCountryIndex =
     typeof deck.nextCountryIndex === 'number' &&
     Number.isInteger(deck.nextCountryIndex)
@@ -544,23 +456,13 @@ function normalizeOutlineDeck(value: unknown): OutlineDeckProgress {
   }
 }
 
-function normalizeArtistDeck(value: unknown): ArtistDeckProgress {
+export function normalizeArtistDeck(value: unknown): ArtistDeckProgress {
   if (!value || typeof value !== 'object') {
     return createDefaultArtistDeck()
   }
 
   const deck = value as Partial<ArtistDeckProgress>
-  const validSongIds = new Set(songQuestionBank.map((song) => song.id))
-  const orderedSongIds = Array.isArray(deck.orderedSongIds)
-    ? Array.from(
-        new Set(
-          deck.orderedSongIds.filter(
-            (songId): songId is string =>
-              typeof songId === 'string' && validSongIds.has(songId),
-          ),
-        ),
-      )
-    : []
+  const orderedSongIds = normalizeStringList(deck.orderedSongIds)
   const nextIndex =
     typeof deck.nextIndex === 'number' && Number.isInteger(deck.nextIndex)
       ? Math.max(0, Math.min(deck.nextIndex, orderedSongIds.length))
@@ -572,37 +474,19 @@ function normalizeArtistDeck(value: unknown): ArtistDeckProgress {
   }
 }
 
-function normalizeCocktailDeck(value: unknown): CocktailDeckProgress {
+export function normalizeCocktailDeck(value: unknown): CocktailDeckProgress {
   if (!value || typeof value !== 'object') {
     return createDefaultCocktailDeck()
   }
 
   const deck = value as Partial<CocktailDeckProgress>
-  const validIds = new Set(cocktailQuestionBank.map((c) => c.id))
-
-  const orderedRegularIds = Array.isArray(deck.orderedRegularIds)
-    ? Array.from(
-        new Set(
-          deck.orderedRegularIds.filter(
-            (id): id is string => typeof id === 'string' && validIds.has(id),
-          ),
-        ),
-      )
-    : []
+  const orderedRegularIds = normalizeStringList(deck.orderedRegularIds)
   const nextRegularIndex =
     typeof deck.nextRegularIndex === 'number' && Number.isInteger(deck.nextRegularIndex)
       ? Math.max(0, Math.min(deck.nextRegularIndex, orderedRegularIds.length))
       : 0
 
-  const orderedObscureIds = Array.isArray(deck.orderedObscureIds)
-    ? Array.from(
-        new Set(
-          deck.orderedObscureIds.filter(
-            (id): id is string => typeof id === 'string' && validIds.has(id),
-          ),
-        ),
-      )
-    : []
+  const orderedObscureIds = normalizeStringList(deck.orderedObscureIds)
   const nextObscureIndex =
     typeof deck.nextObscureIndex === 'number' && Number.isInteger(deck.nextObscureIndex)
       ? Math.max(0, Math.min(deck.nextObscureIndex, orderedObscureIds.length))
@@ -611,535 +495,19 @@ function normalizeCocktailDeck(value: unknown): CocktailDeckProgress {
   return { orderedRegularIds, nextRegularIndex, orderedObscureIds, nextObscureIndex }
 }
 
-function normalizeCurrencyDeck(value: unknown): CurrencyDeckProgress {
+export function normalizeCurrencyDeck(value: unknown): CurrencyDeckProgress {
   if (!value || typeof value !== 'object') {
     return createDefaultCurrencyDeck()
   }
 
   const deck = value as Partial<CurrencyDeckProgress>
-  const validCodes = new Set(currencyQuestionBank.map((country) => country.code))
-  const orderedCountryCodes = Array.isArray(deck.orderedCountryCodes)
-    ? Array.from(
-        new Set(
-          deck.orderedCountryCodes.filter(
-            (code): code is string =>
-              typeof code === 'string' && validCodes.has(code),
-          ),
-        ),
-      )
-    : []
+  const orderedCountryCodes = normalizeStringList(deck.orderedCountryCodes)
   const nextIndex =
     typeof deck.nextIndex === 'number' && Number.isInteger(deck.nextIndex)
       ? Math.max(0, Math.min(deck.nextIndex, orderedCountryCodes.length))
       : 0
 
   return { orderedCountryCodes, nextIndex }
-}
-
-export function getFlagQuizCountryDeck(): CountryDeckProgress {
-  return getGameStats(FLAG_QUIZ_GAME_ID).countryDeck ?? createDefaultCountryDeck()
-}
-
-export function setFlagQuizCountryDeck(countryDeck: CountryDeckProgress) {
-  const state = readAppState()
-
-  writeAppState({
-    ...state,
-    games: {
-      ...state.games,
-      [FLAG_QUIZ_GAME_ID]: {
-        ...createDefaultStats(),
-        ...state.games[FLAG_QUIZ_GAME_ID],
-        countryDeck: normalizeCountryDeck(countryDeck),
-      },
-    },
-  })
-}
-
-export function reserveFlagQuizCountries(
-  totalQuestions: number,
-  random: () => number = Math.random,
-): string[] {
-  const currentDeck = getFlagQuizCountryDeck()
-  let orderedCountryCodes = [...currentDeck.orderedCountryCodes]
-  let nextIndex = currentDeck.nextIndex
-  const selectedCodes: string[] = []
-
-  while (selectedCodes.length < totalQuestions) {
-    if (orderedCountryCodes.length === 0 || nextIndex >= orderedCountryCodes.length) {
-      orderedCountryCodes = buildFlagQuizQuestionDeck(random).map(
-        (country) => country.code,
-      )
-      nextIndex = 0
-    }
-
-    const remainingSlots = totalQuestions - selectedCodes.length
-    const remainingCodes = orderedCountryCodes.slice(nextIndex)
-    const nextCodes = remainingCodes.slice(0, remainingSlots)
-
-    selectedCodes.push(...nextCodes)
-    nextIndex += nextCodes.length
-  }
-
-  setFlagQuizCountryDeck({
-    orderedCountryCodes,
-    nextIndex,
-  })
-
-  return selectedCodes
-}
-
-export function getGuessTheCapitalDeck(): CapitalDeckProgress {
-  return getGameStats(GUESS_THE_CAPITAL_GAME_ID).capitalDeck ?? createDefaultCapitalDeck()
-}
-
-export function setGuessTheCapitalDeck(capitalDeck: CapitalDeckProgress) {
-  const state = readAppState()
-
-  writeAppState({
-    ...state,
-    games: {
-      ...state.games,
-      [GUESS_THE_CAPITAL_GAME_ID]: {
-        ...createDefaultStats(),
-        ...state.games[GUESS_THE_CAPITAL_GAME_ID],
-        capitalDeck: normalizeCapitalDeck(capitalDeck),
-      },
-    },
-  })
-}
-
-function reserveCountryCodes(
-  totalQuestions: number,
-  currentDeck: CapitalDeckProgress,
-  difficultyId: DifficultyId,
-  random: () => number,
-) {
-  let orderedCountryCodes = [...currentDeck.orderedCountryCodes]
-  let nextCountryIndex = currentDeck.nextCountryIndex
-  const selectedCodes: string[] = []
-
-  while (selectedCodes.length < totalQuestions) {
-    if (orderedCountryCodes.length === 0 || nextCountryIndex >= orderedCountryCodes.length) {
-      orderedCountryCodes = buildGuessTheCapitalDeck(
-        'country',
-        random,
-        difficultyId,
-      ).map(
-        (country) => country.code,
-      )
-      nextCountryIndex = 0
-    }
-
-    const remainingSlots = totalQuestions - selectedCodes.length
-    const remainingCodes = orderedCountryCodes.slice(nextCountryIndex)
-    const nextCodes = remainingCodes.slice(0, remainingSlots)
-
-    selectedCodes.push(...nextCodes)
-    nextCountryIndex += nextCodes.length
-  }
-
-  return { orderedCountryCodes, nextCountryIndex, selectedCodes }
-}
-
-function reserveStateCodes(
-  totalQuestions: number,
-  currentDeck: CapitalDeckProgress,
-  difficultyId: DifficultyId,
-  random: () => number,
-) {
-  let orderedStateCodes = [...currentDeck.orderedStateCodes]
-  let nextStateIndex = currentDeck.nextStateIndex
-  const selectedCodes: string[] = []
-
-  while (selectedCodes.length < totalQuestions) {
-    if (orderedStateCodes.length === 0 || nextStateIndex >= orderedStateCodes.length) {
-      orderedStateCodes = buildGuessTheCapitalDeck(
-        'state',
-        random,
-        difficultyId,
-      ).map(
-        (state) => state.code,
-      )
-      nextStateIndex = 0
-    }
-
-    const remainingSlots = totalQuestions - selectedCodes.length
-    const remainingCodes = orderedStateCodes.slice(nextStateIndex)
-    const nextCodes = remainingCodes.slice(0, remainingSlots)
-
-    selectedCodes.push(...nextCodes)
-    nextStateIndex += nextCodes.length
-  }
-
-  return { orderedStateCodes, nextStateIndex, selectedCodes }
-}
-
-export function reserveGuessTheCapitalSubjects(
-  totalCountries: number,
-  totalStates: number,
-  difficultyId: DifficultyId,
-  random: () => number = Math.random,
-) {
-  const currentDeck = getGuessTheCapitalDeck()
-  const {
-    orderedCountryCodes,
-    nextCountryIndex,
-    selectedCodes: countryCodes,
-  } = reserveCountryCodes(totalCountries, currentDeck, difficultyId, random)
-  const {
-    orderedStateCodes,
-    nextStateIndex,
-    selectedCodes: stateCodes,
-  } = reserveStateCodes(totalStates, currentDeck, difficultyId, random)
-
-  setGuessTheCapitalDeck({
-    orderedCountryCodes,
-    nextCountryIndex,
-    orderedStateCodes,
-    nextStateIndex,
-  })
-
-  return {
-    countries: countryCodes.map((code) => {
-      const country = capitalCountryQuestionBankByCode.get(code)
-
-      if (!country) {
-        throw new Error(`Unknown capital quiz country code: ${code}`)
-      }
-
-      return country
-    }),
-    states: stateCodes.map((code) => {
-      const state = capitalStateQuestionBankByCode.get(code)
-
-      if (!state) {
-        throw new Error(`Unknown capital quiz state code: ${code}`)
-      }
-
-      return state
-    }),
-  }
-}
-
-export function getOutlineQuizDeck(): OutlineDeckProgress {
-  return getGameStats(OUTLINE_QUIZ_GAME_ID).outlineDeck ?? createDefaultOutlineDeck()
-}
-
-export function setOutlineQuizDeck(outlineDeck: OutlineDeckProgress) {
-  const state = readAppState()
-
-  writeAppState({
-    ...state,
-    games: {
-      ...state.games,
-      [OUTLINE_QUIZ_GAME_ID]: {
-        ...createDefaultStats(),
-        ...state.games[OUTLINE_QUIZ_GAME_ID],
-        outlineDeck: normalizeOutlineDeck(outlineDeck),
-      },
-    },
-  })
-}
-
-export function getGuessTheArtistDeck(): ArtistDeckProgress {
-  return getGameStats(GUESS_THE_ARTIST_GAME_ID).artistDeck ?? createDefaultArtistDeck()
-}
-
-export function setGuessTheArtistDeck(artistDeck: ArtistDeckProgress) {
-  const state = readAppState()
-
-  writeAppState({
-    ...state,
-    games: {
-      ...state.games,
-      [GUESS_THE_ARTIST_GAME_ID]: {
-        ...createDefaultStats(),
-        ...state.games[GUESS_THE_ARTIST_GAME_ID],
-        artistDeck: normalizeArtistDeck(artistDeck),
-      },
-    },
-  })
-}
-
-export function reserveGuessTheArtistSongs(
-  totalQuestions: number,
-  difficultyId: DifficultyId,
-  random: () => number = Math.random,
-) {
-  const currentDeck = getGuessTheArtistDeck()
-  let orderedSongIds = [...currentDeck.orderedSongIds]
-  let nextIndex = currentDeck.nextIndex
-  const selectedSongIds: string[] = []
-
-  while (selectedSongIds.length < totalQuestions) {
-    if (orderedSongIds.length === 0 || nextIndex >= orderedSongIds.length) {
-      orderedSongIds = buildGuessTheArtistDeck(random, difficultyId).map(
-        (song) => song.id,
-      )
-      nextIndex = 0
-    }
-
-    const remainingSlots = totalQuestions - selectedSongIds.length
-    const remainingSongIds = orderedSongIds.slice(nextIndex)
-    const nextSongIds = remainingSongIds.slice(0, remainingSlots)
-
-    selectedSongIds.push(...nextSongIds)
-    nextIndex += nextSongIds.length
-  }
-
-  setGuessTheArtistDeck({
-    orderedSongIds,
-    nextIndex,
-  })
-
-  return selectedSongIds.map((songId) => {
-    const song = songQuestionBankById.get(songId)
-
-    if (!song) {
-      throw new Error(`Unknown artist quiz song id: ${songId}`)
-    }
-
-    return song
-  })
-}
-
-export function getGuessTheCurrencyDeck(): CurrencyDeckProgress {
-  return getGameStats(GUESS_THE_CURRENCY_GAME_ID).currencyDeck ?? createDefaultCurrencyDeck()
-}
-
-export function setGuessTheCurrencyDeck(currencyDeck: CurrencyDeckProgress) {
-  const state = readAppState()
-
-  writeAppState({
-    ...state,
-    games: {
-      ...state.games,
-      [GUESS_THE_CURRENCY_GAME_ID]: {
-        ...createDefaultStats(),
-        ...state.games[GUESS_THE_CURRENCY_GAME_ID],
-        currencyDeck: normalizeCurrencyDeck(currencyDeck),
-      },
-    },
-  })
-}
-
-export function reserveGuessTheCurrencyCountries(
-  totalQuestions: number,
-  difficultyId: DifficultyId,
-  random: () => number = Math.random,
-) {
-  const currentDeck = getGuessTheCurrencyDeck()
-  let orderedCountryCodes = [...currentDeck.orderedCountryCodes]
-  let nextIndex = currentDeck.nextIndex
-  const selectedCodes: string[] = []
-
-  while (selectedCodes.length < totalQuestions) {
-    if (orderedCountryCodes.length === 0 || nextIndex >= orderedCountryCodes.length) {
-      orderedCountryCodes = buildGuessTheCurrencyDeck(random, difficultyId).map(
-        (country) => country.code,
-      )
-      nextIndex = 0
-    }
-
-    const remainingSlots = totalQuestions - selectedCodes.length
-    const remainingCodes = orderedCountryCodes.slice(nextIndex)
-    const nextCodes = remainingCodes.slice(0, remainingSlots)
-
-    selectedCodes.push(...nextCodes)
-    nextIndex += nextCodes.length
-  }
-
-  setGuessTheCurrencyDeck({ orderedCountryCodes, nextIndex })
-
-  return selectedCodes.map((code) => {
-    const country = currencyQuestionBankByCode.get(code)
-
-    if (!country) {
-      throw new Error(`Unknown currency quiz country code: ${code}`)
-    }
-
-    return country
-  })
-}
-
-function reserveOutlineCountryCodes(
-  totalQuestions: number,
-  currentDeck: OutlineDeckProgress,
-  difficultyId: DifficultyId,
-  random: () => number,
-) {
-  let orderedCountryCodes = [...currentDeck.orderedCountryCodes]
-  let nextCountryIndex = currentDeck.nextCountryIndex
-  const selectedCodes: string[] = []
-
-  while (selectedCodes.length < totalQuestions) {
-    if (orderedCountryCodes.length === 0 || nextCountryIndex >= orderedCountryCodes.length) {
-      orderedCountryCodes = buildOutlineQuizDeck(
-        'country',
-        difficultyId,
-        random,
-      ).map((country) => country.code)
-      nextCountryIndex = 0
-    }
-
-    const remainingSlots = totalQuestions - selectedCodes.length
-    const remainingCodes = orderedCountryCodes.slice(nextCountryIndex)
-    const nextCodes = remainingCodes.slice(0, remainingSlots)
-
-    selectedCodes.push(...nextCodes)
-    nextCountryIndex += nextCodes.length
-  }
-
-  return { orderedCountryCodes, nextCountryIndex, selectedCodes }
-}
-
-function reserveOutlineStateCodes(
-  totalQuestions: number,
-  currentDeck: OutlineDeckProgress,
-  difficultyId: DifficultyId,
-  random: () => number,
-) {
-  let orderedStateCodes = [...currentDeck.orderedStateCodes]
-  let nextStateIndex = currentDeck.nextStateIndex
-  const selectedCodes: string[] = []
-
-  while (selectedCodes.length < totalQuestions) {
-    if (orderedStateCodes.length === 0 || nextStateIndex >= orderedStateCodes.length) {
-      orderedStateCodes = buildOutlineQuizDeck(
-        'state',
-        difficultyId,
-        random,
-      ).map((state) => state.code)
-      nextStateIndex = 0
-    }
-
-    const remainingSlots = totalQuestions - selectedCodes.length
-    const remainingCodes = orderedStateCodes.slice(nextStateIndex)
-    const nextCodes = remainingCodes.slice(0, remainingSlots)
-
-    selectedCodes.push(...nextCodes)
-    nextStateIndex += nextCodes.length
-  }
-
-  return { orderedStateCodes, nextStateIndex, selectedCodes }
-}
-
-export function reserveOutlineQuizSubjects(
-  totalCountries: number,
-  totalStates: number,
-  difficultyId: DifficultyId,
-  random: () => number = Math.random,
-) {
-  const currentDeck = getOutlineQuizDeck()
-  const {
-    orderedCountryCodes,
-    nextCountryIndex,
-    selectedCodes: countryCodes,
-  } = reserveOutlineCountryCodes(totalCountries, currentDeck, difficultyId, random)
-  const {
-    orderedStateCodes,
-    nextStateIndex,
-    selectedCodes: stateCodes,
-  } = reserveOutlineStateCodes(totalStates, currentDeck, difficultyId, random)
-
-  setOutlineQuizDeck({
-    orderedCountryCodes,
-    nextCountryIndex,
-    orderedStateCodes,
-    nextStateIndex,
-  })
-
-  return {
-    countries: countryCodes.map((code) => {
-      const country = outlineCountryQuestionBankByCode.get(code)
-
-      if (!country) {
-        throw new Error(`Unknown outline quiz country code: ${code}`)
-      }
-
-      return country
-    }),
-    states: stateCodes.map((code) => {
-      const state = outlineStateQuestionBankByCode.get(code)
-
-      if (!state) {
-        throw new Error(`Unknown outline quiz state code: ${code}`)
-      }
-
-      return state
-    }),
-  }
-}
-
-export function getGuessTheCocktailDeck(): CocktailDeckProgress {
-  return getGameStats(GUESS_THE_COCKTAIL_GAME_ID).cocktailDeck ?? createDefaultCocktailDeck()
-}
-
-export function setGuessTheCocktailDeck(cocktailDeck: CocktailDeckProgress) {
-  const state = readAppState()
-
-  writeAppState({
-    ...state,
-    games: {
-      ...state.games,
-      [GUESS_THE_COCKTAIL_GAME_ID]: {
-        ...createDefaultStats(),
-        ...state.games[GUESS_THE_COCKTAIL_GAME_ID],
-        cocktailDeck: normalizeCocktailDeck(cocktailDeck),
-      },
-    },
-  })
-}
-
-export function reserveGuessTheCocktailCocktails(
-  difficultyId: DifficultyId,
-  random: () => number = Math.random,
-) {
-  const currentDeck = getGuessTheCocktailDeck()
-
-  let orderedRegularIds = [...currentDeck.orderedRegularIds]
-  let nextRegularIndex = currentDeck.nextRegularIndex
-  const selectedRegularIds: string[] = []
-
-  while (selectedRegularIds.length < GUESS_THE_COCKTAIL_REGULAR_PER_ROUND) {
-    if (orderedRegularIds.length === 0 || nextRegularIndex >= orderedRegularIds.length) {
-      orderedRegularIds = buildGuessTheCocktailRegularDeck(random, difficultyId).map((c) => c.id)
-      nextRegularIndex = 0
-    }
-
-    const remainingSlots = GUESS_THE_COCKTAIL_REGULAR_PER_ROUND - selectedRegularIds.length
-    const nextIds = orderedRegularIds.slice(nextRegularIndex, nextRegularIndex + remainingSlots)
-    selectedRegularIds.push(...nextIds)
-    nextRegularIndex += nextIds.length
-  }
-
-  let orderedObscureIds = [...currentDeck.orderedObscureIds]
-  let nextObscureIndex = currentDeck.nextObscureIndex
-  const selectedObscureIds: string[] = []
-
-  while (selectedObscureIds.length < GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND) {
-    if (orderedObscureIds.length === 0 || nextObscureIndex >= orderedObscureIds.length) {
-      orderedObscureIds = buildGuessTheCocktailObscureDeck(random).map((c) => c.id)
-      nextObscureIndex = 0
-    }
-
-    const nextIds = orderedObscureIds.slice(nextObscureIndex, nextObscureIndex + GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND - selectedObscureIds.length)
-    selectedObscureIds.push(...nextIds)
-    nextObscureIndex += nextIds.length
-  }
-
-  setGuessTheCocktailDeck({ orderedRegularIds, nextRegularIndex, orderedObscureIds, nextObscureIndex })
-
-  return [...selectedRegularIds, ...selectedObscureIds].map((id) => {
-    const cocktail = cocktailQuestionBankById.get(id)
-
-    if (!cocktail) {
-      throw new Error(`Unknown cocktail quiz id: ${id}`)
-    }
-
-    return cocktail
-  })
 }
 
 export function useGameStats(gameId: GameId) {

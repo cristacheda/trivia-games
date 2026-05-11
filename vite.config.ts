@@ -30,7 +30,7 @@ export default defineConfig({
     VitePWA({
       filename: serviceWorkerFilename,
       registerType: 'autoUpdate',
-      includeAssets: ['atlas.png', 'atlas-192.png', 'apple-touch-icon.png'],
+      includeAssets: ['atlas.png', 'atlas.webp', 'atlas-192.png', 'apple-touch-icon.png'],
       manifest: {
         name: 'Atlas of Answers',
         short_name: 'Atlas',
@@ -58,7 +58,7 @@ export default defineConfig({
         cacheId: `atlas-of-answers-${appVersion}`,
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         navigateFallback: 'index.html',
         skipWaiting: true,

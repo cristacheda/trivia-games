@@ -31,12 +31,12 @@ import type { GuessTheCurrencyQuestion } from '@/features/guess-the-currency/typ
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
+import { reserveGuessTheCurrencyCountries } from '@/lib/storage-decks'
 import {
   getAppPreferences,
   getGameStats,
   getPlayerId,
   recordRoundResult,
-  reserveGuessTheCurrencyCountries,
   setLastDifficulty,
   setSoundEnabled,
   useGameStats,
@@ -389,11 +389,6 @@ export function GuessTheCurrencyGame({
         />
         <Card className="border-primary/10">
           <CardHeader className="gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="success">Playable today</Badge>
-              <Badge variant="outline">20 currencies per round</Badge>
-              <Badge variant="outline">Anonymous progress saved locally</Badge>
-            </div>
             <CardTitle>Pick a difficulty and match the currencies</CardTitle>
             <CardDescription>
               Later levels lean harder into smaller countries, island nations, and

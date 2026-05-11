@@ -23,12 +23,12 @@ import { ConfettiLayer } from '@/features/flag-quiz/components/confetti-layer'
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
+import { reserveOutlineQuizSubjects } from '@/lib/storage-decks'
 import {
   getAppPreferences,
   getGameStats,
   getPlayerId,
   recordRoundResult,
-  reserveOutlineQuizSubjects,
   setLastDifficulty,
   setSoundEnabled,
   useGameStats,
@@ -417,14 +417,6 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
         />
         <Card className="border-primary/10">
           <CardHeader className="gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="success">Playable today</Badge>
-              <Badge variant="outline">
-                {OUTLINE_QUIZ_QUESTIONS_PER_ROUND} outlines per round
-              </Badge>
-              <Badge variant="outline">18 countries + 2 US states</Badge>
-              <Badge variant="outline">Anonymous progress saved locally</Badge>
-            </div>
             <CardTitle>Read the shape before the options read you</CardTitle>
             <CardDescription>
               Each round cycles through UN countries and US states without repeats,
