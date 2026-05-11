@@ -8,6 +8,7 @@ import {
 import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { ConfettiLayer } from '@/components/confetti-layer'
+import { CountryFlag } from '@/components/country-flag'
 import { GameScoreSummary } from '@/components/game-score-panels'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -650,6 +651,13 @@ export function GuessTheCapitalGame({
             <div className="space-y-4">
               <div className="rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.86)_0%,rgba(235,246,237,0.95)_100%)] p-5 shadow-inner sm:p-6">
                 <div className="rounded-[24px] border border-white/70 bg-white/85 p-5 shadow-[0_30px_60px_-35px_rgba(12,49,33,0.25)]">
+                  {currentQuestion.subject.kind === 'country' ? (
+                    <CountryFlag
+                      className="mb-4 w-full max-w-40"
+                      countryCode={currentQuestion.subject.code}
+                      label={`Flag of ${currentQuestion.subject.name}`}
+                    />
+                  ) : null}
                   <p className="text-sm font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     {subjectKindLabel}
                   </p>

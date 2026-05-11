@@ -43,6 +43,21 @@ afterEach(() => {
 })
 
 describe('GuessTheCapitalGame answer delay', () => {
+  it('shows the country flag for country questions', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <AppServicesContextForTests>
+        <GuessTheCapitalGame />
+      </AppServicesContextForTests>,
+    )
+
+    await user.click(screen.getByTestId('difficulty-level-1'))
+    await user.click(screen.getByTestId('start-round'))
+
+    expect(screen.getByAltText('Flag of Romania')).toBeInTheDocument()
+  })
+
   it('uses 900ms for correct multiple-choice answers', async () => {
     const user = userEvent.setup()
     const timeoutSpy = vi.spyOn(window, 'setTimeout')

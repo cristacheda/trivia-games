@@ -649,7 +649,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
             <div className="space-y-4">
               <div className="overflow-hidden rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.86)_0%,rgba(235,246,237,0.95)_100%)] p-4 shadow-inner sm:p-6">
                 <CountryFlag
-                  className="mx-auto max-w-xl shadow-[0_30px_60px_-35px_rgba(12,49,33,0.4)]"
+                  className="mx-auto max-w-xl"
                   countryCode={currentQuestion.country.code}
                   label={`${currentQuestion.country.name} flag`}
                 />

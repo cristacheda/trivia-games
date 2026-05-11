@@ -58,6 +58,49 @@ test('capital game state questions only show US state capitals as options', asyn
   expect(foundStateQuestion).toBe(true)
 })
 
+test('capital game shows flags for country questions and no flag for state questions', async ({
+  page,
+}) => {
+  await enableDebugMode(page, { timerScale: 1, revealAnswers: true })
+  await useMobileViewport(page)
+  await page.goto('/games/guess-the-capital')
+  await dismissPrivacyPromptIfVisible(page)
+  await startRound(page, 'level-2')
+
+  let sawCountryQuestion = false
+  let sawStateQuestion = false
+
+  for (let index = 0; index < QUESTIONS_PER_ROUND; index += 1) {
+    const isStateQuestion =
+      (await page.getByText('US state', { exact: true }).count()) > 0
+
+    if (isStateQuestion) {
+      sawStateQuestion = true
+      await expect(page.getByAltText(/^Flag of /)).toHaveCount(0)
+    } else {
+      sawCountryQuestion = true
+      await expect(page.getByAltText(/^Flag of /)).toBeVisible()
+    }
+
+    if (sawCountryQuestion && sawStateQuestion) {
+      break
+    }
+
+    await page.locator('[data-correct="true"]').first().click()
+
+    if (index < QUESTIONS_PER_ROUND - 1) {
+      await expect
+        .poll(async () => page.getByTestId('question-progress').textContent(), {
+          timeout: 5000,
+        })
+        .toContain(`Question ${index + 2} / ${QUESTIONS_PER_ROUND}`)
+    }
+  }
+
+  expect(sawCountryQuestion).toBe(true)
+  expect(sawStateQuestion).toBe(true)
+})
+
 test('capital game free-text input autofocuses and reveals the correct capital', async ({
   page,
 }) => {

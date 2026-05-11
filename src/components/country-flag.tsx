@@ -44,7 +44,7 @@ export function CountryFlag({
       <div
         aria-label={label}
         className={cn(
-          'flex aspect-[3/2] items-center justify-center rounded-2xl bg-secondary text-4xl',
+          'flex aspect-[3/2] items-center justify-center bg-secondary text-4xl',
           className,
         )}
       >
@@ -56,7 +56,7 @@ export function CountryFlag({
   return (
     <img
       alt={label}
-      className={cn('block aspect-[3/2] w-full rounded-2xl', className)}
+      className={cn('block aspect-[3/2] w-full', className)}
       src={blobUrl}
     />
   )
