@@ -525,7 +525,6 @@ export function GuessTheArtistGame({ onPhaseChange }: GuessTheArtistGameProps) {
     return (
       <Card className="border-primary/10">
         <CardHeader>
-          <Badge variant="success">20 songs per round</Badge>
           <CardTitle>Guess the artist by song title</CardTitle>
           <CardDescription>
             Balanced mainstream and global tracks, with harder levels surfacing less
@@ -717,7 +716,7 @@ export function GuessTheArtistGame({ onPhaseChange }: GuessTheArtistGameProps) {
           )}
         >
           {shouldShowArtwork ? (
-            <div className="h-28 w-28 overflow-hidden rounded-xl border border-white/70 bg-secondary/70">
+            <div className="h-28 w-28 overflow-hidden border border-white/70 bg-secondary/70">
               {previewMetadata?.artworkUrl ? (
                 <img
                   alt={`${currentQuestion.subject.songTitle} cover`}

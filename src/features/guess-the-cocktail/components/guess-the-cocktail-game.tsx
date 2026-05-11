@@ -372,7 +372,6 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
     return (
       <Card className="border-primary/10">
         <CardHeader>
-          <Badge variant="success">20 cocktails per round</Badge>
           <CardTitle>Guess the cocktail from the photo</CardTitle>
           <CardDescription>
             Classic and global cocktails, with harder levels reaching for more obscure drinks.

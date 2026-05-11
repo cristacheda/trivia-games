@@ -393,12 +393,6 @@ export function GuessTheCapitalGame({
         />
         <Card className="border-primary/10">
           <CardHeader className="gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="success">Playable today</Badge>
-              <Badge variant="outline">20 capitals per round</Badge>
-              <Badge variant="outline">18 countries + 2 states</Badge>
-              <Badge variant="outline">Anonymous progress saved locally</Badge>
-            </div>
             <CardTitle>Pick a difficulty and chase capitals</CardTitle>
             <CardDescription>
               Later levels lean harder into smaller countries, island nations, and

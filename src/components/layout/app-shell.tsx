@@ -36,7 +36,7 @@ export function AppShell({ children }: AppShellProps) {
   const location = useLocation()
   const shouldPromptForTrackingOnLoad = getTrackingConsent() === 'unknown'
   const isOnline = useOnlineStatus()
-  const { offlineReady, needRefresh, refreshApp } = usePwaStatus()
+  const { needRefresh, refreshApp } = usePwaStatus()
   const { analytics, auth, consent } = useAppServices()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAccountOpen, setIsAccountOpen] = useState(false)
@@ -210,13 +210,6 @@ export function AppShell({ children }: AppShellProps) {
                               Offline
                             </>
                           )}
-                        </Badge>
-                        <Badge variant="outline">
-                          {needRefresh
-                            ? 'New version ready to install'
-                            : offlineReady
-                              ? 'Playable games cached for offline replay'
-                              : 'Offline cache after first load'}
                         </Badge>
                       </div>
                     </div>

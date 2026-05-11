@@ -395,13 +395,6 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
         />
         <Card className="border-primary/10">
           <CardHeader className="gap-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="success">Playable today</Badge>
-              <Badge variant="outline">
-                {FLAG_QUIZ_QUESTIONS_PER_ROUND} flags per round
-              </Badge>
-              <Badge variant="outline">Anonymous progress saved locally</Badge>
-            </div>
             <CardTitle>Choose a pace and jump in</CardTitle>
             <CardDescription>
               Each round favors countries outside Europe, with extra weight for

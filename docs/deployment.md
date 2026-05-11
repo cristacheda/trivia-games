@@ -53,7 +53,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - `npm run test:e2e`
 - `npm run test:e2e:offline`
 - `npm run check`
-- `npm run docs:check` for the staged pre-commit docs guard
+- `npm run docs:check` for the staged local docs guard before commit; GitHub CI does not block on this check
 - `curl -I https://triviagames.cristache.net/sw.js` after production deploys when checking a cache fix
 
 For UI changes, verify the experience at a mobile viewport before shipping. Treat mobile layout and interaction as required validation, not optional spot-checking.
