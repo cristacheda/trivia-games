@@ -31,12 +31,12 @@ import type { GuessTheCocktailQuestion } from '@/features/guess-the-cocktail/typ
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
+import { reserveGuessTheCocktailCocktails } from '@/lib/storage-decks'
 import {
   getAppPreferences,
   getGameStats,
   getPlayerId,
   recordRoundResult,
-  reserveGuessTheCocktailCocktails,
   setLastDifficulty,
   setSoundEnabled,
   useGameStats,

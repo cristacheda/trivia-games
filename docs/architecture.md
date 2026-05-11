@@ -13,6 +13,8 @@
 - `src/features`: self-contained game logic and UI per game
 - `src/components`: shared UI and layout components
 - `src/lib`: shared utilities and persistence
+- `src/lib/storage.ts`: lightweight app-state reads, writes, and React hooks for stats/preferences
+- `src/lib/storage-decks.ts`: game-specific deck validation, reservation, and question-bank-backed persistence helpers
 - `src/config`: metadata and game catalog configuration
 - `src/integrations`: future external-service contracts and no-op implementations
 - `src/components/seo`: route-aware document metadata updates
@@ -42,9 +44,11 @@
 - Question transition timing is shared through `src/lib/gameplay.ts`; future games should reuse those constants so wrong and timeout answers keep the global 5-second reveal delay
 - Current global defaults are `1000ms` after correct answers and `4000ms` after wrong or timeout outcomes
 - Timed low-time warning dispatch is also shared through `src/lib/gameplay.ts` and triggers once per second at 4, 3, 2, and 1 seconds remaining
-- Round results are stored through `src/lib/storage.ts`
+- The homepage and shared app shell read only the lightweight app-state layer from `src/lib/storage.ts`; game routes import `src/lib/storage-decks.ts` when they need question-bank-backed deck logic
+- Round results and preferences are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
 - Analytics runs through `src/integrations`, while auth and score sync providers remain no-op placeholders
+- The header logo uses the smaller `public/atlas.webp` asset for the live shell, while the larger PNG icons remain available for PWA install surfaces
 - The browser document title and description meta tag are updated on route changes by `src/components/seo/route-seo.tsx`
 - `src/components/layout/app-shell.tsx` owns the page-height shell, including the top inset around the app chrome and the footer flush alignment at the bottom edge
 
@@ -80,6 +84,7 @@
 ## Current analytics
 
 - PostHog is initialized through `src/integrations/posthog-provider.ts` when `VITE_POSTHOG_KEY` is set.
+- The PostHog client is loaded lazily after the existing token and consent gates pass, so analytics code stays off the homepage startup path until tracking is actually allowed.
 - SPA pageviews are emitted from the shared app shell instead of relying on PostHog automatic pageviews.
 - PostHog pageleave capture is always enabled so Web Analytics bounce and session duration stay accurate regardless of pageview capture settings.
 - Custom game analytics include game views, difficulty selection, round start, question answers, round completion, homepage game-entry clicks, and high-score beats.

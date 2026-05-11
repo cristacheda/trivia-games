@@ -36,12 +36,12 @@ import { useOnlineStatus } from '@/hooks/use-online-status'
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
+import { reserveGuessTheArtistSongs } from '@/lib/storage-decks'
 import {
   getAppPreferences,
   getGameStats,
   getPlayerId,
   recordRoundResult,
-  reserveGuessTheArtistSongs,
   setLastDifficulty,
   setSoundEnabled,
   useGameStats,

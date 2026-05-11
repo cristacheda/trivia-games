@@ -133,7 +133,7 @@ export function AppShell({ children }: AppShellProps) {
                       alt={`${siteConfig.title} logo`}
                       className="h-full w-full object-cover"
                       loading="eager"
-                      src="/atlas.png"
+                      src="/atlas.webp"
                     />
                   </div>
                   <div className="min-w-0">

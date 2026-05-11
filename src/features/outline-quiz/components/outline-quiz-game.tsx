@@ -23,12 +23,12 @@ import { ConfettiLayer } from '@/features/flag-quiz/components/confetti-layer'
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
+import { reserveOutlineQuizSubjects } from '@/lib/storage-decks'
 import {
   getAppPreferences,
   getGameStats,
   getPlayerId,
   recordRoundResult,
-  reserveOutlineQuizSubjects,
   setLastDifficulty,
   setSoundEnabled,
   useGameStats,

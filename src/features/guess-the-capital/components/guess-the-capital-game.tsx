@@ -32,12 +32,12 @@ import type { GuessTheCapitalQuestion } from '@/features/guess-the-capital/types
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
 import { playSoundCue, primeSound } from '@/lib/sound'
+import { reserveGuessTheCapitalSubjects } from '@/lib/storage-decks'
 import {
   getAppPreferences,
   getGameStats,
   getPlayerId,
   recordRoundResult,
-  reserveGuessTheCapitalSubjects,
   setLastDifficulty,
   setSoundEnabled,
   useGameStats,

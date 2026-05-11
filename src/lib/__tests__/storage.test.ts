@@ -21,15 +21,20 @@ import {
 } from '@/features/guess-the-artist/data/songs'
 import {
   STORAGE_VERSION,
-  getFlagQuizCountryDeck,
-  getGuessTheArtistDeck,
-  getGuessTheCapitalDeck,
-  getOutlineQuizDeck,
   getAppPreferences,
   getGameStats,
   getTrackingConsent,
   readAppState,
   recordRoundResult,
+  setTrackingConsent,
+  setSoundEnabled,
+  setLastDifficulty,
+} from '@/lib/storage'
+import {
+  getFlagQuizCountryDeck,
+  getGuessTheArtistDeck,
+  getGuessTheCapitalDeck,
+  getOutlineQuizDeck,
   reserveFlagQuizCountries,
   reserveGuessTheArtistSongs,
   reserveGuessTheCapitalSubjects,
@@ -38,10 +43,7 @@ import {
   setGuessTheArtistDeck,
   setGuessTheCapitalDeck,
   setOutlineQuizDeck,
-  setTrackingConsent,
-  setSoundEnabled,
-  setLastDifficulty,
-} from '@/lib/storage'
+} from '@/lib/storage-decks'
 
 describe('storage', () => {
   beforeEach(() => {
