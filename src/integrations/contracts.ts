@@ -1,5 +1,4 @@
-import type { RoundResult } from '@/types/game'
-import type { TrackingConsent } from '@/types/game'
+import type { GameId, RoundResult, SiteHighScoreLookup, TrackingConsent } from '@/types/game'
 
 export interface AuthProvider {
   signInWithGoogle: () => Promise<void>
@@ -11,6 +10,7 @@ export interface AuthProvider {
 export interface ScoreSyncProvider {
   syncRoundResult: (result: RoundResult) => Promise<void>
   syncLocalSnapshot: (playerId: string) => Promise<void>
+  getSiteHighScore: (gameId: GameId) => Promise<SiteHighScoreLookup>
 }
 
 export type AnalyticsEventName =

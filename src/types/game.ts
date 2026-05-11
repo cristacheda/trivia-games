@@ -28,6 +28,23 @@ export interface HighScoreRecord {
   difficultyId: DifficultyId
 }
 
+export interface SiteHighScoreRecord {
+  gameId: GameId
+  score: number
+  achievedAt: string
+  playerLabel?: string | null
+}
+
+export type SiteHighScoreLookup =
+  | {
+      status: 'coming-soon'
+      record: null
+    }
+  | {
+      status: 'ready'
+      record: SiteHighScoreRecord
+    }
+
 export interface CountryDeckProgress {
   orderedCountryCodes: string[]
   nextIndex: number

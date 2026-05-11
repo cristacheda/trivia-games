@@ -9,6 +9,7 @@ import {
 import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { CountryFlag } from '@/components/country-flag'
+import { GameScoreSummary } from '@/components/game-score-panels'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,6 +35,7 @@ import { scoreAnswer } from '@/features/flag-quiz/lib/scoring'
 import type { FlagQuizQuestion } from '@/features/flag-quiz/types'
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
+import { useSiteHighScore } from '@/hooks/use-site-high-score'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import { reserveFlagQuizCountries } from '@/lib/storage-decks'
 import {
@@ -78,6 +80,7 @@ function getResolutionMessage(
 
 export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
   const stats = useGameStats(FLAG_QUIZ_GAME_ID)
+  const siteHighScore = useSiteHighScore(FLAG_QUIZ_GAME_ID)
   const soundEnabled = useSoundEnabled()
   const initialDifficulty =
     getGameStats(FLAG_QUIZ_GAME_ID).lastDifficulty ?? 'level-1'
@@ -446,34 +449,12 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
               })}
             </div>
 
-            <div className="grid gap-4 rounded-[26px] bg-secondary/75 p-5 md:grid-cols-3">
-              <div>
-                <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
-                  Best score
-                </p>
-                <p className="mt-2 font-serif text-3xl font-semibold">
-                  {stats.highScore?.score ?? '—'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
-                  Last result
-                </p>
-                <p className="mt-2 text-lg font-semibold">
-                  {stats.recentResult
-                    ? `${stats.recentResult.totalScore} points`
-                    : 'No rounds yet'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
-                  Practice profile
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Stored locally as {getPlayerId().slice(0, 8)}...
-                </p>
-              </div>
-            </div>
+            <GameScoreSummary
+              localHighScore={stats.highScore?.score ?? null}
+              playerId={getPlayerId()}
+              recentResultScore={stats.recentResult?.totalScore ?? null}
+              siteHighScore={siteHighScore}
+            />
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button

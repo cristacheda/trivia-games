@@ -1,24 +1,31 @@
 import type { ElementType } from 'react'
-import { Coins, Flag, GlassWater, Globe2, Music2, Trophy } from 'lucide-react'
+import { Coins, Flag, GlassWater, Globe2, Music2 } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
+import { HomepageGameScoreFooter } from '@/components/game-score-panels'
 import { gameCatalog, siteConfig } from '@/config/site'
 import { GameCard } from '@/components/game-card'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { useGameStats } from '@/lib/storage'
-import type { GameId } from '@/types/game'
+import { useSiteHighScore } from '@/hooks/use-site-high-score'
+import type { GameCatalogEntry } from '@/types/game'
 
-const playableGameIds = [
+const readyGameIds = [
   'flag-quiz',
   'guess-the-capital',
   'outline-quiz',
   'guess-the-artist',
+  'guess-the-currency',
+  'guess-the-cocktail',
 ] as const
 
-function hasPlayableStats(
-  gameId: GameId,
-): gameId is (typeof playableGameIds)[number] {
-  return playableGameIds.includes(gameId as (typeof playableGameIds)[number])
+type ReadyGameId = (typeof readyGameIds)[number]
+type ReadyGameEntry = Omit<GameCatalogEntry, 'id'> & { id: ReadyGameId }
+
+function isReadyGameId(
+  gameId: GameCatalogEntry['id'],
+): gameId is ReadyGameId {
+  return readyGameIds.includes(gameId as ReadyGameId)
 }
 
 function IconTile({
@@ -45,17 +52,7 @@ function IconTile({
 }
 
 export function HomePage() {
-  const flagStats = useGameStats('flag-quiz')
-  const capitalStats = useGameStats('guess-the-capital')
-  const outlineStats = useGameStats('outline-quiz')
-  const artistStats = useGameStats('guess-the-artist')
   const { analytics } = useAppServices()
-  const statsByGame = {
-    'flag-quiz': flagStats,
-    'guess-the-capital': capitalStats,
-    'outline-quiz': outlineStats,
-    'guess-the-artist': artistStats,
-  } as const
 
   const sortedCatalog = [...gameCatalog].sort((a, b) =>
     a.isNew === b.isNew ? 0 : a.isNew ? -1 : 1,
@@ -114,29 +111,8 @@ export function HomePage() {
 
         <div className="grid gap-5 md:grid-cols-2">
           {sortedCatalog.map((game) => {
-            const stats = hasPlayableStats(game.id) ? statsByGame[game.id] : null
-
             return (
-              <GameCard
-                footer={
-                  !game.comingSoon && stats ? (
-                    <div className="rounded-[24px] bg-[#edf7ef] p-4">
-                      <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                        <Trophy className="h-4 w-4" />
-                        {game.id === 'flag-quiz'
-                          ? 'Flag quiz high score'
-                          : game.id === 'guess-the-capital'
-                            ? 'Capital quiz high score'
-                            : game.id === 'guess-the-artist'
-                              ? 'Artist quiz high score'
-                              : 'Outline quiz high score'}
-                      </div>
-                      <p className="mt-2 font-serif text-3xl font-semibold">
-                        {stats.highScore?.score ?? '—'}
-                      </p>
-                    </div>
-                  ) : undefined
-                }
+              <HomePageGameCard
                 game={game}
                 key={game.id}
                 onOpen={() =>
@@ -148,5 +124,43 @@ export function HomePage() {
         </div>
       </section>
     </div>
+  )
+}
+
+function HomePageGameCard({
+  game,
+  onOpen,
+}: {
+  game: GameCatalogEntry
+  onOpen: () => void
+}) {
+  if (!isReadyGameId(game.id)) {
+    return <GameCard game={game} onOpen={onOpen} />
+  }
+
+  return <ReadyHomePageGameCard game={game as ReadyGameEntry} onOpen={onOpen} />
+}
+
+function ReadyHomePageGameCard({
+  game,
+  onOpen,
+}: {
+  game: ReadyGameEntry
+  onOpen: () => void
+}) {
+  const stats = useGameStats(game.id)
+  const siteHighScore = useSiteHighScore(game.id)
+
+  return (
+    <GameCard
+      footer={
+        <HomepageGameScoreFooter
+          localHighScore={stats.highScore?.score ?? null}
+          siteHighScore={siteHighScore}
+        />
+      }
+      game={game}
+      onOpen={onOpen}
+    />
   )
 }

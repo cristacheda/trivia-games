@@ -17,6 +17,12 @@ export const noopAuthProvider: AuthProvider = {
 export const noopScoreSyncProvider: ScoreSyncProvider = {
   async syncRoundResult() {},
   async syncLocalSnapshot() {},
+  async getSiteHighScore() {
+    return {
+      status: 'coming-soon',
+      record: null,
+    }
+  },
 }
 
 export const noopAnalyticsProvider: AnalyticsProvider = {

@@ -8,6 +8,7 @@ import {
 import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { ConfettiLayer } from '@/components/confetti-layer'
+import { GameScoreSummary } from '@/components/game-score-panels'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +32,7 @@ import { buildGuessTheCapitalRound } from '@/features/guess-the-capital/lib/roun
 import type { GuessTheCapitalQuestion } from '@/features/guess-the-capital/types'
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
+import { useSiteHighScore } from '@/hooks/use-site-high-score'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import { reserveGuessTheCapitalSubjects } from '@/lib/storage-decks'
 import {
@@ -81,6 +83,7 @@ export function GuessTheCapitalGame({
   onPhaseChange,
 }: GuessTheCapitalGameProps) {
   const stats = useGameStats(GUESS_THE_CAPITAL_GAME_ID)
+  const siteHighScore = useSiteHighScore(GUESS_THE_CAPITAL_GAME_ID)
   const soundEnabled = useSoundEnabled()
   const initialDifficulty =
     getGameStats(GUESS_THE_CAPITAL_GAME_ID).lastDifficulty ?? 'level-1'
@@ -444,34 +447,12 @@ export function GuessTheCapitalGame({
               })}
             </div>
 
-            <div className="grid gap-4 rounded-[26px] bg-secondary/75 p-5 md:grid-cols-3">
-              <div>
-                <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
-                  Best score
-                </p>
-                <p className="mt-2 font-serif text-3xl font-semibold">
-                  {stats.highScore?.score ?? '—'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
-                  Last result
-                </p>
-                <p className="mt-2 text-lg font-semibold">
-                  {stats.recentResult
-                    ? `${stats.recentResult.totalScore} points`
-                    : 'No rounds yet'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm uppercase tracking-[0.18em] text-muted-foreground">
-                  Practice profile
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Stored locally as {getPlayerId().slice(0, 8)}...
-                </p>
-              </div>
-            </div>
+            <GameScoreSummary
+              localHighScore={stats.highScore?.score ?? null}
+              playerId={getPlayerId()}
+              recentResultScore={stats.recentResult?.totalScore ?? null}
+              siteHighScore={siteHighScore}
+            />
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Button
