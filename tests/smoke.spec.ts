@@ -71,7 +71,7 @@ test('generic round start works on mobile', async ({ page }) => {
   await dismissPrivacyPromptIfVisible(page)
   await startRound(page, 'level-1')
 
-  await expect(page.getByTestId('question-progress')).toContainText(
+  await expect(page.getByTestId('question-progress-footer')).toContainText(
     `Question 1 / ${QUESTIONS_PER_ROUND}`,
   )
 })

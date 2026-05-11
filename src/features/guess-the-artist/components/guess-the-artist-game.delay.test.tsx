@@ -41,6 +41,31 @@ afterEach(() => {
 })
 
 describe('GuessTheArtistGame answer delay', () => {
+  it('renders the floating untimed footer and exits back to setup', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <AppServicesContextForTests>
+        <GuessTheArtistGame />
+      </AppServicesContextForTests>,
+    )
+
+    await user.click(screen.getByTestId('difficulty-level-1'))
+    await user.click(screen.getByTestId('start-round'))
+
+    expect(screen.getByTestId('question-progress-footer')).toHaveTextContent(
+      'Question 1 / 1',
+    )
+    expect(screen.getByTestId('learning-mode-footer')).toBeInTheDocument()
+    expect(screen.getByTestId('round-progress-footer')).toBeInTheDocument()
+    expect(screen.queryByTestId('question-progress')).not.toBeInTheDocument()
+
+    await user.click(screen.getByTestId('in-round-back-button'))
+
+    expect(screen.getByTestId('start-round')).toBeInTheDocument()
+    expect(screen.queryByTestId('question-progress-footer')).not.toBeInTheDocument()
+  })
+
   it('uses 1000ms for correct answers', async () => {
     const user = userEvent.setup()
     const timeoutSpy = vi.spyOn(window, 'setTimeout')

@@ -27,7 +27,7 @@ test('flag-quiz timer expiry advances to the next question on timed difficulties
   await startRound(page, 'level-2')
 
   await expect
-    .poll(async () => page.getByTestId('question-progress').textContent(), {
+    .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
       timeout: 7000,
     })
     .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
@@ -40,7 +40,7 @@ test('capital game timer expiry advances to the next question', async ({ page })
   await startRound(page, 'level-2')
 
   await expect
-    .poll(async () => page.getByTestId('question-progress').textContent(), {
+    .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
       timeout: 7000,
     })
     .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
@@ -53,7 +53,7 @@ test('outline game timer expiry advances to the next question', async ({ page })
   await startRound(page, 'level-2')
 
   await expect
-    .poll(async () => page.getByTestId('question-progress').textContent(), {
+    .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
       timeout: 7000,
     })
     .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)

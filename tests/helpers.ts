@@ -34,7 +34,7 @@ export async function dismissPrivacyPromptIfVisible(page: Page) {
 export async function startRound(page: Page, difficultyId: string) {
   await page.getByTestId(`difficulty-${difficultyId}`).click()
   await page.getByTestId('start-round').click()
-  await expect(page.getByTestId('question-progress')).toContainText(
+  await expect(page.getByTestId('question-progress-footer')).toContainText(
     `Question 1 / ${QUESTIONS_PER_ROUND}`,
   )
 }
@@ -49,7 +49,7 @@ export async function answerFirstChoice(page: Page) {
 
 export async function expectQuestionNumber(page: Page, questionNumber: number) {
   await expect
-    .poll(async () => page.getByTestId('question-progress').textContent(), {
+    .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
       timeout: 7000,
     })
     .toContain(`Question ${questionNumber} / ${QUESTIONS_PER_ROUND}`)

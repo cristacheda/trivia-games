@@ -57,7 +57,7 @@ test('correct multiple-choice answer triggers success feedback and advances', as
   await expect(correctAnswer).toHaveAttribute('data-feedback', 'correct')
   await expect(page.getByTestId('resolution-message')).toContainText('Correct.')
   await expect
-    .poll(async () => page.getByTestId('question-progress').textContent(), {
+    .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
       timeout: 5000,
     })
     .not.toContain(`Question 1 / ${QUESTIONS_PER_ROUND}`)
@@ -135,7 +135,7 @@ test('beating the high score activates the long confetti celebration', async ({ 
     await page.locator('[data-correct="true"]').first().click()
     if (index < QUESTIONS_PER_ROUND - 1) {
       await expect
-        .poll(async () => page.getByTestId('question-progress').textContent(), {
+        .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
           timeout: 12000,
         })
         .toContain(`Question ${index + 2} / ${QUESTIONS_PER_ROUND}`)

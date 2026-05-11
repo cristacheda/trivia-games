@@ -49,7 +49,7 @@ test('capital game state questions only show US state capitals as options', asyn
 
     await page.locator('[data-correct="true"]').first().click()
     await expect
-      .poll(async () => page.getByTestId('question-progress').textContent(), {
+      .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
         timeout: 5000,
       })
       .toContain(`Question ${index + 2} / ${QUESTIONS_PER_ROUND}`)
@@ -90,7 +90,7 @@ test('capital game shows flags for country questions and no flag for state quest
 
     if (index < QUESTIONS_PER_ROUND - 1) {
       await expect
-        .poll(async () => page.getByTestId('question-progress').textContent(), {
+        .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
           timeout: 5000,
         })
         .toContain(`Question ${index + 2} / ${QUESTIONS_PER_ROUND}`)

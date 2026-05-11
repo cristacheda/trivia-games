@@ -9,6 +9,7 @@ import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { ConfettiLayer } from '@/components/confetti-layer'
 import { GameScoreSummary } from '@/components/game-score-panels'
+import { InRoundFooter } from '@/components/in-round-footer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,7 +20,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Progress } from '@/components/ui/progress'
 import {
   getGuessTheCurrencyDifficultyRule,
   guessTheCurrencyDifficultyRules,
@@ -381,6 +381,27 @@ export function GuessTheCurrencyGame({
   }
 
   const SoundIcon = soundEnabled ? Volume2 : VolumeX
+
+  const exitRoundToSetup = useCallback(() => {
+    if (advanceTimeoutRef.current) {
+      window.clearTimeout(advanceTimeoutRef.current)
+      advanceTimeoutRef.current = null
+    }
+
+    setPhase('setup')
+    setQuestions([])
+    setQuestionIndex(0)
+    setScore(0)
+    setCorrectAnswers(0)
+    setRemainingMs(0)
+    setResolution('idle')
+    setSelectedOption(null)
+    setTextAnswer('')
+    setResult(null)
+    roundStartedAtRef.current = null
+    timeoutCountRef.current = 0
+    lastWarningSecondRef.current = null
+  }, [])
   const soundButtonLabel = soundEnabled ? 'Sound on' : 'Sound off'
 
   if (phase === 'setup') {
@@ -569,15 +590,13 @@ export function GuessTheCurrencyGame({
         burstKey={correctBurstCounter}
         celebrationMs={highScoreCelebrationMs}
       />
-      <Card className="border-primary/10">
-        <CardHeader className="gap-4 pb-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
-              <Badge data-testid="question-progress" variant="outline">
-                Question {questionIndex + 1} / {questions.length}
-              </Badge>
-              <Badge variant="outline">{difficulty.label}</Badge>
-            </div>
+      <div className="pb-40 sm:pb-44">
+        <Card className="border-primary/10">
+          <CardHeader className="gap-4 pb-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">{difficulty.label}</Badge>
+              </div>
             <div className="flex items-start gap-2">
               <Button
                 aria-label={soundButtonLabel}
@@ -604,37 +623,10 @@ export function GuessTheCurrencyGame({
                 </p>
               </div>
             </div>
-          </div>
+            </div>
+          </CardHeader>
 
-          <div className="space-y-3">
-            {hasTimeLimit ? (
-              <>
-                <div className="flex items-center justify-between text-sm font-semibold text-muted-foreground">
-                  <span>{difficulty.timeLimitSeconds}s limit</span>
-                  <span>{Math.ceil(remainingMs / 1000)}s left</span>
-                </div>
-                <Progress
-                  indicatorClassName={
-                    timerPercent < 25
-                      ? 'bg-danger'
-                      : timerPercent < 50
-                        ? 'bg-accent'
-                        : 'bg-primary'
-                  }
-                  value={timerPercent}
-                />
-              </>
-            ) : (
-              <div className="flex items-center justify-between text-sm font-semibold text-muted-foreground">
-                <span>Learning mode</span>
-                <span>No time limit</span>
-              </div>
-            )}
-            <Progress className="h-1.5" value={progressValue} />
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-5" data-testid="question-card">
+          <CardContent className="space-y-5" data-testid="question-card">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1.05fr)_minmax(320px,0.95fr)] lg:items-stretch">
             <div className="space-y-4">
               <div className="rounded-[28px] bg-[linear-gradient(180deg,rgba(255,255,255,0.86)_0%,rgba(235,246,237,0.95)_100%)] p-5 shadow-inner sm:p-6">
@@ -795,8 +787,18 @@ export function GuessTheCurrencyGame({
               Correct answer: {currentQuestion.subject.name}
             </div>
           ) : null}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
+      <InRoundFooter
+        hasTimeLimit={hasTimeLimit}
+        onBack={exitRoundToSetup}
+        progressValue={progressValue}
+        questionLabel={`Question ${questionIndex + 1} / ${questions.length}`}
+        timeLeftLabel={`${Math.ceil(remainingMs / 1000)}s left`}
+        timeLimitLabel={`${difficulty.timeLimitSeconds}s limit`}
+        timerPercent={timerPercent}
+      />
     </>
   )
 }

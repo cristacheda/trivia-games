@@ -68,6 +68,31 @@ afterEach(() => {
 })
 
 describe('FlagQuizGame answer delay', () => {
+  it('renders the floating timed footer and exits back to setup', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <AppServicesContextForTests>
+        <FlagQuizGame />
+      </AppServicesContextForTests>,
+    )
+
+    await user.click(screen.getByTestId('difficulty-level-2'))
+    await user.click(screen.getByTestId('start-round'))
+
+    expect(screen.getByTestId('question-progress-footer')).toHaveTextContent(
+      'Question 1 / 1',
+    )
+    expect(screen.getByTestId('timer-progress-footer')).toBeInTheDocument()
+    expect(screen.getByTestId('round-progress-footer')).toBeInTheDocument()
+    expect(screen.queryByTestId('question-progress')).not.toBeInTheDocument()
+
+    await user.click(screen.getByTestId('in-round-back-button'))
+
+    expect(screen.getByTestId('start-round')).toBeInTheDocument()
+    expect(screen.queryByTestId('question-progress-footer')).not.toBeInTheDocument()
+  })
+
   it('uses 900ms for correct multiple-choice answers', async () => {
     const user = userEvent.setup()
     const timeoutSpy = vi.spyOn(window, 'setTimeout')

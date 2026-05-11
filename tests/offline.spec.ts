@@ -99,7 +99,7 @@ test.describe('production offline playability', () => {
 
     await expectQuestionNumber(page, 1)
     await expect
-      .poll(async () => page.getByTestId('question-progress').textContent(), {
+      .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
         timeout: 7000,
       })
       .not.toContain('Question 1 / 20')

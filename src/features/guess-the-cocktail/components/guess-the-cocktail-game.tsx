@@ -9,6 +9,7 @@ import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { ConfettiLayer } from '@/components/confetti-layer'
 import { GameScoreSummary } from '@/components/game-score-panels'
+import { InRoundFooter } from '@/components/in-round-footer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,7 +20,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Progress } from '@/components/ui/progress'
 import {
   getGuessTheCocktailDifficultyRule,
   guessTheCocktailDifficultyRules,
@@ -371,6 +371,27 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
 
   const SoundIcon = soundEnabled ? Volume2 : VolumeX
 
+  const exitRoundToSetup = useCallback(() => {
+    if (advanceTimeoutRef.current) {
+      window.clearTimeout(advanceTimeoutRef.current)
+      advanceTimeoutRef.current = null
+    }
+
+    setPhase('setup')
+    setQuestions([])
+    setQuestionIndex(0)
+    setScore(0)
+    setCorrectAnswers(0)
+    setRemainingMs(0)
+    setResolution('idle')
+    setSelectedOptionId(null)
+    setTextAnswer('')
+    setResult(null)
+    roundStartedAtRef.current = null
+    timeoutCountRef.current = 0
+    lastWarningSecondRef.current = null
+  }, [])
+
   if (phase === 'setup') {
     return (
       <Card className="border-primary/10">
@@ -510,28 +531,17 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
   const resolutionMessage = getResolutionMessage(resolution, currentQuestion, difficulty)
 
   return (
-    <Card className="border-primary/10">
-      <CardHeader className="gap-4 pb-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            <Badge data-testid="question-progress" variant="outline">
-              Question {questionIndex + 1} / {questions.length}
-            </Badge>
-            <Badge variant="outline">{difficulty.label}</Badge>
-          </div>
-        </div>
-        <Progress value={progressValue} />
-        {hasTimeLimit ? (
-          <div>
-            <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              <span>Time left</span>
-              <span data-testid="timer">{Math.ceil(remainingMs / 1000)}s</span>
+    <>
+      <div className="pb-40 sm:pb-44">
+        <Card className="border-primary/10">
+          <CardHeader className="gap-4 pb-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">{difficulty.label}</Badge>
+              </div>
             </div>
-            <Progress className="h-2" value={timerPercent} />
-          </div>
-        ) : null}
-      </CardHeader>
-      <CardContent className="space-y-5">
+          </CardHeader>
+          <CardContent className="space-y-5">
         <div className="overflow-hidden rounded-[24px] border border-white/65 bg-white/75">
           <div className="relative aspect-square w-full overflow-hidden bg-secondary/40 sm:aspect-video">
             <img
@@ -630,19 +640,30 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
           </form>
         )}
 
-        {resolutionMessage ? (
-          <p
-            className={cn(
-              'rounded-2xl border px-4 py-3 text-sm font-medium',
-              resolution === 'correct'
-                ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
-                : 'border-rose-300 bg-rose-50 text-rose-900',
-            )}
-          >
-            {resolutionMessage}
-          </p>
-        ) : null}
-      </CardContent>
-    </Card>
+            {resolutionMessage ? (
+              <p
+                className={cn(
+                  'rounded-2xl border px-4 py-3 text-sm font-medium',
+                  resolution === 'correct'
+                    ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                    : 'border-rose-300 bg-rose-50 text-rose-900',
+                )}
+              >
+                {resolutionMessage}
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
+      </div>
+      <InRoundFooter
+        hasTimeLimit={hasTimeLimit}
+        onBack={exitRoundToSetup}
+        progressValue={progressValue}
+        questionLabel={`Question ${questionIndex + 1} / ${questions.length}`}
+        timeLeftLabel={`${Math.ceil(remainingMs / 1000)}s left`}
+        timeLimitLabel={`${difficulty.timeLimitSeconds}s limit`}
+        timerPercent={timerPercent}
+      />
+    </>
   )
 }
