@@ -25,23 +25,23 @@ test('homepage renders the game shelf and offline badge on mobile', async ({ pag
     }),
   ).toBeVisible()
   await expect(
-    page.getByRole('heading', { name: 'Name the Country Flag', exact: true }),
+    page.getByRole('heading', { name: 'Guess the Country by Its Flag', exact: true }),
   ).toBeVisible()
   await expect(
-    page.getByRole('heading', { name: 'Guess the Capital', exact: true }),
+    page.getByRole('heading', { name: 'Guess the Capital of the Country', exact: true }),
   ).toBeVisible()
   await expect(
     page.getByRole('heading', {
-      name: 'Name the Country by Its Outline',
+      name: 'Guess the Country by Its Outline',
       exact: true,
     }),
   ).toBeVisible()
   await expect(
-    page.getByRole('heading', { name: 'Guess the Currency', exact: true }),
+    page.getByRole('heading', { name: 'Guess the Currency of the Country', exact: true }),
   ).toBeVisible()
   await expect(
     page.getByRole('heading', {
-      name: 'Guess the Official Language',
+      name: 'Guess the Official Language of the Country',
       exact: true,
     }),
   ).toBeVisible()
@@ -87,6 +87,6 @@ test('active round hides extra chrome on mobile', async ({ page }) => {
 
   await expect(page.getByText('Atlas of Answers')).toHaveCount(0)
   await expect(
-    page.getByRole('heading', { name: 'Name the Country Flag' }),
+    page.getByRole('heading', { name: 'Guess the Country by Its Flag' }),
   ).toHaveCount(0)
 })

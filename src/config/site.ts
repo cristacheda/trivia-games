@@ -13,7 +13,7 @@ export const siteConfig = {
 export const gameCatalog: GameCatalogEntry[] = [
   {
     id: 'flag-quiz',
-    title: 'Name the Country Flag',
+    title: 'Guess the Country by Its Flag',
     description:
       'Spot national flags quickly, with a bias toward countries that most European players see less often.',
     status: 'ready',
@@ -23,7 +23,7 @@ export const gameCatalog: GameCatalogEntry[] = [
   },
   {
     id: 'guess-the-capital',
-    title: 'Guess the Capital',
+    title: 'Guess the Capital of the Country',
     description:
       'Match UN countries and US states to their capitals, with tougher rounds steering toward more obscure geography.',
     status: 'ready',
@@ -33,7 +33,7 @@ export const gameCatalog: GameCatalogEntry[] = [
   },
   {
     id: 'outline-quiz',
-    title: 'Name the Country by Its Outline',
+    title: 'Guess the Country by Its Outline',
     description:
       'Spot country and state outlines quickly, with harder rounds leaning into smaller and less familiar geography.',
     status: 'ready',
@@ -43,7 +43,7 @@ export const gameCatalog: GameCatalogEntry[] = [
   },
   {
     id: 'guess-the-artist',
-    title: 'Guess the Artist by Song',
+    title: 'Guess the Artist by the Song',
     description:
       'Read a song title and identify the artist, with harder rounds shifting toward less obvious global tracks.',
     status: 'ready',
@@ -53,7 +53,7 @@ export const gameCatalog: GameCatalogEntry[] = [
   },
   {
     id: 'guess-the-currency',
-    title: 'Guess the Currency',
+    title: 'Guess the Currency of the Country',
     description:
       'Match countries to the currencies they actually use, with rounds that bias toward smaller and less-known nations.',
     status: 'ready',
@@ -75,7 +75,7 @@ export const gameCatalog: GameCatalogEntry[] = [
   },
   {
     id: 'guess-the-official-language',
-    title: 'Guess the Official Language',
+    title: 'Guess the Official Language of the Country',
     description:
       'Train on official languages without assuming one-country, one-language simplicity.',
     status: 'coming-soon',

@@ -18,7 +18,7 @@ export function FlagQuizPage() {
   useEffect(() => {
     analytics.trackEvent('game_viewed', {
       game_id: FLAG_QUIZ_GAME_ID,
-      game_title: 'Name the Country Flag',
+      game_title: 'Guess the Country by Its Flag',
     })
   }, [analytics])
 
@@ -41,7 +41,7 @@ export function FlagQuizPage() {
 
           <div className="max-w-3xl">
             <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-5xl">
-              Name the Country Flag
+              Guess the Country by Its Flag
             </h1>
             <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-lg">
               Fast recognition rounds built to keep the flag, the answer area, and the

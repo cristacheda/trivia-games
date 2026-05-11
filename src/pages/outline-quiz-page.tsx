@@ -18,7 +18,7 @@ export function OutlineQuizPage() {
   useEffect(() => {
     analytics.trackEvent('game_viewed', {
       game_id: OUTLINE_QUIZ_GAME_ID,
-      game_title: 'Name the Country by Its Outline',
+      game_title: 'Guess the Country by Its Outline',
     })
   }, [analytics])
 
@@ -41,7 +41,7 @@ export function OutlineQuizPage() {
 
           <div className="max-w-3xl">
             <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-5xl">
-              Name the Country by Its Outline
+              Guess the Country by Its Outline
             </h1>
             <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-lg">
               Read the shape, not the colors. Mixed rounds pull from all UN

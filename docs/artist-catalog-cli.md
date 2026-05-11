@@ -1,6 +1,6 @@
 # Artist Catalog CLI
 
-This CLI maintains the `Guess the Artist by Song` catalog in `src/features/guess-the-artist/data/songs.ts`.
+This CLI maintains the `Guess the Artist by the Song` catalog in `src/features/guess-the-artist/data/songs.ts`.
 
 ## Requirements
 

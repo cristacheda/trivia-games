@@ -13,8 +13,8 @@ Atlas of Answers is a collection of web games designed to help players train for
 ## Current MVP
 
 - Homepage hero with a game shelf that pushes the newest live games to the top and labels them as new
-- Six playable games: `Name the Country Flag`, `Guess the Capital`, `Name the Country by Its Outline`, `Guess the Artist by Song`, `Guess the Currency`, and `Guess the Cocktail`
-- One upcoming teaser card: `Guess the Official Language`
+- Six playable games: `Guess the Country by Its Flag`, `Guess the Capital of the Country`, `Guess the Country by Its Outline`, `Guess the Artist by the Song`, `Guess the Currency of the Country`, and `Guess the Cocktail`
+- One upcoming teaser card: `Guess the Official Language of the Country`
 - Local-first score and preference storage
 - Subtle in-game sound cues with a local mute toggle
 - Offline-capable playable games after the initial asset load
@@ -32,7 +32,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 
 ## First game rules
 
-### Name the Country Flag
+### Guess the Country by Its Flag
 
 - Uses UN member countries.
 - Prioritizes countries outside Europe.
@@ -47,7 +47,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 2`: 5 options, 10 seconds, 2 points
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance
 
-### Guess the Capital
+### Guess the Capital of the Country
 
 - Uses UN member countries plus the 50 US states.
 - Runs in rounds of 20 questions: 18 countries and 2 states.
@@ -57,7 +57,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 2`: 5 options, 15 seconds, 2 points, stronger bias away from Europe.
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance plus common capital variants.
 
-### Name the Country by Its Outline
+### Guess the Country by Its Outline
 
 - Uses all UN member countries plus the 50 US states.
 - Runs in rounds of 20 questions: 18 countries and 2 states.
@@ -66,7 +66,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 2`: 5 options, 15 seconds, 2 points, stronger bias toward smaller and less familiar geography.
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance.
 
-### Guess the Artist by Song
+### Guess the Artist by the Song
 
 - Uses a curated static song catalog.
 - Runs in rounds of 20 questions.
@@ -76,7 +76,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - `Level 3`: free text, no time limit, 3 points, light misspelling tolerance for artist names.
 - Catalog updates skip ambiguous entries until explicitly confirmed. Current skipped examples: `Bob Sinclair`, `Florence`, and `HUNTR/X`.
 
-### Guess the Currency
+### Guess the Currency of the Country
 
 - Uses all UN member countries with currency data (193 countries; Micronesia excluded for lacking currency data).
 - Prioritises countries outside Europe; higher difficulties further boost small, exotic, and less-known nations.

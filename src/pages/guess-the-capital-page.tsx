@@ -18,7 +18,7 @@ export function GuessTheCapitalPage() {
   useEffect(() => {
     analytics.trackEvent('game_viewed', {
       game_id: GUESS_THE_CAPITAL_GAME_ID,
-      game_title: 'Guess the Capital',
+      game_title: 'Guess the Capital of the Country',
     })
   }, [analytics])
 
@@ -41,7 +41,7 @@ export function GuessTheCapitalPage() {
 
           <div className="max-w-3xl">
             <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-5xl">
-              Guess the Capital
+              Guess the Capital of the Country
             </h1>
             <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-lg">
               Match countries and US states to their capitals, with harder rounds

@@ -18,7 +18,7 @@ export function GuessTheCurrencyPage() {
   useEffect(() => {
     analytics.trackEvent('game_viewed', {
       game_id: GUESS_THE_CURRENCY_GAME_ID,
-      game_title: 'Guess the Currency',
+      game_title: 'Guess the Currency of the Country',
     })
   }, [analytics])
 
@@ -41,7 +41,7 @@ export function GuessTheCurrencyPage() {
 
           <div className="max-w-3xl">
             <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-5xl">
-              Guess the Currency
+              Guess the Currency of the Country
             </h1>
             <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-lg">
               Match currencies to the countries that use them, with harder rounds

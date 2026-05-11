@@ -18,7 +18,7 @@ export function GuessTheArtistPage() {
   useEffect(() => {
     analytics.trackEvent('game_viewed', {
       game_id: GUESS_THE_ARTIST_GAME_ID,
-      game_title: 'Guess the Artist by Song',
+      game_title: 'Guess the Artist by the Song',
     })
   }, [analytics])
 
@@ -41,7 +41,7 @@ export function GuessTheArtistPage() {
 
           <div className="max-w-3xl">
             <h1 className="font-serif text-3xl font-semibold tracking-tight sm:text-5xl">
-              Guess the Artist by Song
+              Guess the Artist by the Song
             </h1>
             <p className="mt-2 text-sm text-muted-foreground sm:mt-3 sm:text-lg">
               Read the title and identify the artist. Harder rounds move toward less obvious global tracks.
