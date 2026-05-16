@@ -86,13 +86,16 @@ export function AppProviders({ children }: PropsWithChildren) {
       }
 
       syncTimeoutId = window.setTimeout(() => {
-        void auth.getSession().then((session) => {
-          if (cancelled || !session.userId) {
-            return
-          }
+        void auth
+          .getSession()
+          .then((session) => {
+            if (cancelled || !session.userId) {
+              return
+            }
 
-          return scoreSync.syncLocalSnapshot(getPlayerId())
-        })
+            return scoreSync.syncLocalSnapshot(getPlayerId())
+          })
+          .catch(() => undefined)
       }, 150)
     }
 

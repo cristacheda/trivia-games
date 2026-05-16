@@ -158,7 +158,7 @@ function toAuthSessionSummary(user: User | null): AuthSessionSummary {
   }
 }
 
-async function ensureSupabaseUser(client: SupabaseClient) {
+async function getExistingSupabaseUser(client: SupabaseClient) {
   const {
     data: { user: existingUser },
     error: getUserError,
@@ -177,45 +177,7 @@ async function ensureSupabaseUser(client: SupabaseClient) {
     throw getUserError
   }
 
-  if (existingUser) {
-    return existingUser
-  }
-
-  const { error: signInError } = await client.auth.signInAnonymously().catch((error: unknown) => {
-    if (markOfflineFromError(error)) {
-      return { error }
-    }
-
-    throw error
-  })
-
-  if (signInError) {
-    throw signInError
-  }
-
-  const {
-    data: { user: anonymousUser },
-    error: anonymousUserError,
-  } = await client.auth.getUser().catch((error: unknown) => {
-    if (markOfflineFromError(error)) {
-      return {
-        data: { user: null },
-        error,
-      }
-    }
-
-    throw error
-  })
-
-  if (anonymousUserError) {
-    throw anonymousUserError
-  }
-
-  if (!anonymousUser) {
-    throw new Error('Supabase anonymous sign-in did not return a user.')
-  }
-
-  return anonymousUser
+  return existingUser
 }
 
 function buildPlayerGameStatsRow(
@@ -430,7 +392,7 @@ export function createSupabaseAuthProvider(client: SupabaseClient): AuthProvider
       }
 
       try {
-        const user = await ensureSupabaseUser(client)
+        const user = await getExistingSupabaseUser(client)
         return toAuthSessionSummary(user)
       } catch (error) {
         if (markOfflineFromError(error)) {
@@ -481,7 +443,10 @@ export function createSupabaseScoreSyncProvider(
       }
 
       try {
-        const user = await ensureSupabaseUser(client)
+        const user = await getExistingSupabaseUser(client)
+        if (!user) {
+          return
+        }
         const state = readAppState()
         await syncLocalSnapshotForUser(client, user, state)
         await syncRoundPayloadForUser(client, user, payload)
@@ -499,7 +464,10 @@ export function createSupabaseScoreSyncProvider(
       }
 
       try {
-        const user = await ensureSupabaseUser(client)
+        const user = await getExistingSupabaseUser(client)
+        if (!user) {
+          return
+        }
         const state = readAppState()
 
         if (state.playerId !== playerId) {
@@ -525,7 +493,10 @@ export function createSupabaseScoreSyncProvider(
       }
 
       try {
-        await ensureSupabaseUser(client)
+        const user = await getExistingSupabaseUser(client)
+        if (!user) {
+          return createComingSoonLeaderboard()
+        }
 
         const { data, error } = await client.rpc('get_site_leaderboard', {
           target_game_id: gameId,

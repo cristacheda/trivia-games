@@ -66,25 +66,17 @@ describe('supabase providers', () => {
     expect(rpc).not.toHaveBeenCalled()
   })
 
-  it('falls back to anonymous sign-in before syncing a round result', async () => {
+  it('skips round sync when no Supabase session exists yet', async () => {
     mockIsNetworkAvailable.mockReturnValue(true)
-    const getUser = vi
-      .fn()
-      .mockResolvedValueOnce({
-        data: { user: null },
-        error: createSessionMissingError(),
-      })
-      .mockResolvedValueOnce({
-        data: { user: { id: 'anon-user', is_anonymous: true } },
-        error: null,
-      })
-    const signInAnonymously = vi.fn().mockResolvedValue({ error: null })
+    const getUser = vi.fn().mockResolvedValue({
+      data: { user: null },
+      error: createSessionMissingError(),
+    })
     const upsert = vi.fn().mockResolvedValue({ error: null })
 
     const client = {
       auth: {
         getUser,
-        signInAnonymously,
       },
       from: vi.fn().mockReturnValue({
         upsert,
@@ -111,8 +103,7 @@ describe('supabase providers', () => {
       }),
     ).resolves.toBeUndefined()
 
-    expect(signInAnonymously).toHaveBeenCalledTimes(1)
-    expect(upsert).toHaveBeenCalledTimes(2)
+    expect(upsert).not.toHaveBeenCalled()
   })
 
   it('allows Google sign-in to start without an existing session', async () => {
