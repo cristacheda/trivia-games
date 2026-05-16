@@ -102,6 +102,7 @@ test('starting new rounds advances the shared country deck across reloads and di
 
 test('beating the high score activates the long confetti celebration', async ({ page }) => {
   test.setTimeout(60000)
+  const questionCount = 40
 
   await page.addInitScript(() => {
     window.localStorage.setItem(
@@ -129,16 +130,16 @@ test('beating the high score activates the long confetti celebration', async ({ 
   })
   await page.goto('/games/flag-quiz')
   await dismissPrivacyPromptIfVisible(page)
-  await startRound(page, 'level-1')
+  await startRound(page, 'level-1', questionCount)
 
-  for (let index = 0; index < QUESTIONS_PER_ROUND; index += 1) {
+  for (let index = 0; index < questionCount; index += 1) {
     await page.locator('[data-correct="true"]').first().click()
-    if (index < QUESTIONS_PER_ROUND - 1) {
+    if (index < questionCount - 1) {
       await expect
         .poll(async () => page.getByTestId('question-progress-footer').textContent(), {
           timeout: 12000,
         })
-        .toContain(`Question ${index + 2} / ${QUESTIONS_PER_ROUND}`)
+        .toContain(`Question ${index + 2} / ${questionCount}`)
     }
   }
 

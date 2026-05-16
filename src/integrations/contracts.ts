@@ -1,16 +1,26 @@
-import type { GameId, RoundResult, SiteHighScoreLookup, TrackingConsent } from '@/types/game'
+import type {
+  GameId,
+  RoundSyncPayload,
+  SiteLeaderboardLookup,
+  TrackingConsent,
+} from '@/types/game'
+
+export interface AuthSessionSummary {
+  userId: string | null
+  isAnonymous: boolean
+}
 
 export interface AuthProvider {
   signInWithGoogle: () => Promise<void>
   signInWithGitHub: () => Promise<void>
   signOut: () => Promise<void>
-  getSession: () => Promise<{ userId: string | null }>
+  getSession: () => Promise<AuthSessionSummary>
 }
 
 export interface ScoreSyncProvider {
-  syncRoundResult: (result: RoundResult) => Promise<void>
+  syncRoundResult: (payload: RoundSyncPayload) => Promise<void>
   syncLocalSnapshot: (playerId: string) => Promise<void>
-  getSiteHighScore: (gameId: GameId) => Promise<SiteHighScoreLookup>
+  getSiteLeaderboard: (gameId: GameId) => Promise<SiteLeaderboardLookup>
 }
 
 export type AnalyticsEventName =

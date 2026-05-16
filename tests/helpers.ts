@@ -31,11 +31,16 @@ export async function dismissPrivacyPromptIfVisible(page: Page) {
   }
 }
 
-export async function startRound(page: Page, difficultyId: string) {
+export async function startRound(
+  page: Page,
+  difficultyId: string,
+  questionCount = QUESTIONS_PER_ROUND,
+) {
   await page.getByTestId(`difficulty-${difficultyId}`).click()
+  await page.getByTestId(`question-count-${questionCount}`).click()
   await page.getByTestId('start-round').click()
   await expect(page.getByTestId('question-progress-footer')).toContainText(
-    `Question 1 / ${QUESTIONS_PER_ROUND}`,
+    `Question 1 / ${questionCount}`,
   )
 }
 

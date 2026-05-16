@@ -84,6 +84,34 @@ describe('artist preview function', () => {
     expect(response.headers.get('Cache-Control')).toBe('public, max-age=3600')
   })
 
+  it('bypasses cache for local preview hosts', async () => {
+    fetchMock.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          results: [
+            {
+              artistName: 'Queen',
+              artworkUrl100: 'http://example.com/cover-100.jpg',
+              collectionName: 'A Night at the Opera',
+              previewUrl: 'https://audio-ssl.itunes.apple.com/preview.m4a',
+            },
+          ],
+        }),
+      ),
+    )
+
+    const response = await onRequestGet({
+      request: new Request(
+        'http://127.0.0.1:4173/api/artist-preview?songTitle=Bohemian%20Rhapsody&artistName=Queen',
+      ),
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('Cache-Control')).toBe('no-store')
+    expect(matchMock).not.toHaveBeenCalled()
+    expect(putMock).not.toHaveBeenCalled()
+  })
+
   it('prefers an artist match over the first unrelated result', async () => {
     fetchMock.mockResolvedValue(
       new Response(

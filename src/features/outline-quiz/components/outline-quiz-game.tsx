@@ -8,7 +8,8 @@ import {
 } from 'react'
 import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
-import { GameScoreSummary } from '@/components/game-score-panels'
+import { GameSetupControls } from '@/components/game-setup-controls'
+import { GameStatsSection } from '@/components/game-score-panels'
 import { InRoundFooter } from '@/components/in-round-footer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -23,7 +24,11 @@ import { Input } from '@/components/ui/input'
 import { ConfettiLayer } from '@/features/flag-quiz/components/confetti-layer'
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
-import { useSiteHighScore } from '@/hooks/use-site-high-score'
+import {
+  getGeographyRoundSplit,
+  type QuestionCount,
+} from '@/lib/question-count'
+import { useSiteLeaderboard } from '@/hooks/use-site-high-score'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import { reserveOutlineQuizSubjects } from '@/lib/storage-decks'
 import {
@@ -32,6 +37,7 @@ import {
   getPlayerId,
   recordRoundResult,
   setLastDifficulty,
+  setQuestionCount,
   setSoundEnabled,
   useGameStats,
   useSoundEnabled,
@@ -41,10 +47,7 @@ import type { DifficultyRule, RoundResult } from '@/types/game'
 import {
   getOutlineQuizDifficultyRule,
   outlineQuizDifficultyRules,
-  OUTLINE_QUIZ_COUNTRIES_PER_ROUND,
   OUTLINE_QUIZ_GAME_ID,
-  OUTLINE_QUIZ_QUESTIONS_PER_ROUND,
-  OUTLINE_QUIZ_STATES_PER_ROUND,
 } from '@/features/outline-quiz/constants'
 import { isAcceptableOutlineAnswer } from '@/features/outline-quiz/lib/match'
 import { buildOutlineQuizRoundFromSubjects } from '@/features/outline-quiz/lib/round'
@@ -101,12 +104,15 @@ function shuffleSubjects(values: OutlineQuestionSource[]) {
 
 export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
   const stats = useGameStats(OUTLINE_QUIZ_GAME_ID)
-  const siteHighScore = useSiteHighScore(OUTLINE_QUIZ_GAME_ID)
+  const siteLeaderboard = useSiteLeaderboard(OUTLINE_QUIZ_GAME_ID)
   const soundEnabled = useSoundEnabled()
   const initialDifficulty =
     getGameStats(OUTLINE_QUIZ_GAME_ID).lastDifficulty ?? 'level-1'
+  const initialQuestionCount = getGameStats(OUTLINE_QUIZ_GAME_ID).questionCount
   const [selectedDifficultyId, setSelectedDifficultyId] =
     useState(initialDifficulty)
+  const [selectedQuestionCount, setSelectedQuestionCount] =
+    useState<QuestionCount>(initialQuestionCount)
   const [phase, setPhase] = useState<Phase>('setup')
   const [questions, setQuestions] = useState<OutlineQuizQuestion[]>([])
   const [questionIndex, setQuestionIndex] = useState(0)
@@ -179,7 +185,19 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
         void playSoundCue(stored.beatHighScore ? 'high-score' : 'finish')
       }
 
-      await scoreSync.syncRoundResult(stored)
+      try {
+        void scoreSync
+          .syncRoundResult({
+            result: stored,
+            roundDurationSeconds,
+            timeoutsCount: timeoutCountRef.current,
+          })
+          .catch(() => {
+            // Offline and sync failures should not interrupt local play.
+          })
+      } catch {
+        // Sync launch is best-effort.
+      }
       setResult(stored)
       setPhase('results')
       setResolution('idle')
@@ -217,7 +235,7 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
     (
       isCorrect: boolean,
       answerLabel?: string,
-      nextResolution: Resolution = isCorrect ? 'correct' : 'wrong',
+      nextResolution: Exclude<Resolution, 'idle'> = isCorrect ? 'correct' : 'wrong',
     ) => {
       if (!currentQuestion || resolution !== 'idle') {
         return
@@ -230,12 +248,12 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
       setScore(nextScore)
       setCorrectAnswers(nextCorrectAnswers)
       setResolution(nextResolution)
-      setSelectedOptionCode(
+      const selectedOptionCode =
         answerLabel && difficulty.answerMode === 'multiple-choice'
           ? currentQuestion.options.find((option) => option.name === answerLabel)
               ?.code ?? null
-          : null,
-      )
+          : null
+      setSelectedOptionCode(selectedOptionCode)
 
       if (isCorrect) {
         setCorrectBurstCounter((current) => current + 1)
@@ -338,13 +356,15 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
 
   const startRound = () => {
     const rule = getOutlineQuizDifficultyRule(selectedDifficultyId)
+    const questionCount = selectedQuestionCount
+    const { countryCount, stateCount } = getGeographyRoundSplit(questionCount)
     if (getAppPreferences().soundEnabled) {
       void primeSound()
     }
     setLastDifficulty(OUTLINE_QUIZ_GAME_ID, selectedDifficultyId)
     const reservedSubjects = reserveOutlineQuizSubjects(
-      OUTLINE_QUIZ_COUNTRIES_PER_ROUND,
-      OUTLINE_QUIZ_STATES_PER_ROUND,
+      countryCount,
+      stateCount,
       selectedDifficultyId,
     )
 
@@ -376,7 +396,7 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
       answer_mode: rule.answerMode,
       difficulty_id: selectedDifficultyId,
       game_id: OUTLINE_QUIZ_GAME_ID,
-      question_count: OUTLINE_QUIZ_QUESTIONS_PER_ROUND,
+      question_count: questionCount,
       time_limit_seconds: rule.timeLimitSeconds,
       timed_round: rule.timeLimitSeconds !== null,
     })
@@ -409,6 +429,10 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
   }
 
   const SoundIcon = soundEnabled ? Volume2 : VolumeX
+  const handleQuestionCountChange = (questionCount: QuestionCount) => {
+    setSelectedQuestionCount(questionCount)
+    setQuestionCount(OUTLINE_QUIZ_GAME_ID, questionCount)
+  }
 
   const exitRoundToSetup = useCallback(() => {
     if (advanceTimeoutRef.current) {
@@ -492,14 +516,14 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
               })}
             </div>
 
-            <GameScoreSummary
+            <GameStatsSection
+              id="leaderboard"
               localHighScore={stats.highScore?.score ?? null}
               playerId={getPlayerId()}
               recentResultScore={stats.recentResult?.totalScore ?? null}
-              siteHighScore={siteHighScore}
+              siteLeaderboard={siteLeaderboard}
             />
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-3">
               <Button
                 className="w-full sm:w-auto"
                 data-testid="start-round"
@@ -508,17 +532,14 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
               >
                 Start round
               </Button>
-              <Button
-                aria-pressed={soundEnabled}
-                className="w-full justify-center sm:w-auto"
-                data-testid="sound-toggle"
-                onClick={() => void toggleSound()}
-                type="button"
-                variant="outline"
-              >
-                <SoundIcon className="h-4 w-4" />
-                {soundButtonLabel}
-              </Button>
+              <GameSetupControls
+                onQuestionCountChange={handleQuestionCountChange}
+                onToggleSound={() => void toggleSound()}
+                questionCount={selectedQuestionCount}
+                soundButtonLabel={soundButtonLabel}
+                soundEnabled={soundEnabled}
+                soundIcon={SoundIcon}
+              />
             </div>
             <p className="text-sm text-muted-foreground">
               Harder levels sharply reduce familiar European countries and pull in
@@ -585,6 +606,12 @@ export function OutlineQuizGame({ onPhaseChange }: OutlineQuizGameProps) {
                 </CardContent>
               </Card>
             </div>
+            <GameStatsSection
+              localHighScore={stats.highScore?.score ?? null}
+              playerId={getPlayerId()}
+              recentResultScore={result.totalScore}
+              siteLeaderboard={siteLeaderboard}
+            />
 
             <div className="flex flex-wrap gap-3">
               <Button data-testid="play-again" onClick={startRound}>

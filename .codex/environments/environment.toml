@@ -9,3 +9,8 @@ script = ""
 name = "Run"
 icon = "run"
 command = "npm run dev"
+
+[[actions]]
+name = "Wrangler"
+icon = "tool"
+command = "npm run preview:pages:fresh"

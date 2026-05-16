@@ -10,17 +10,21 @@ export const noopAuthProvider: AuthProvider = {
   async signInWithGitHub() {},
   async signOut() {},
   async getSession() {
-    return { userId: null }
+    return {
+      userId: null,
+      isAnonymous: false,
+    }
   },
 }
 
 export const noopScoreSyncProvider: ScoreSyncProvider = {
   async syncRoundResult() {},
   async syncLocalSnapshot() {},
-  async getSiteHighScore() {
+  async getSiteLeaderboard() {
     return {
       status: 'coming-soon',
-      record: null,
+      entries: [],
+      playerRank: null,
     }
   },
 }

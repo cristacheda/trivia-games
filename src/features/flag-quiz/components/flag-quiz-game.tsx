@@ -9,7 +9,8 @@ import {
 import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { CountryFlag } from '@/components/country-flag'
-import { GameScoreSummary } from '@/components/game-score-panels'
+import { GameSetupControls } from '@/components/game-setup-controls'
+import { GameStatsSection } from '@/components/game-score-panels'
 import { InRoundFooter } from '@/components/in-round-footer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -25,7 +26,6 @@ import { ConfettiLayer } from '@/features/flag-quiz/components/confetti-layer'
 import {
   difficultyRules,
   FLAG_QUIZ_GAME_ID,
-  FLAG_QUIZ_QUESTIONS_PER_ROUND,
   getDifficultyRule,
 } from '@/features/flag-quiz/constants'
 import { flagQuestionBankByCode } from '@/features/flag-quiz/data/countries'
@@ -35,7 +35,8 @@ import { scoreAnswer } from '@/features/flag-quiz/lib/scoring'
 import type { FlagQuizQuestion } from '@/features/flag-quiz/types'
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
-import { useSiteHighScore } from '@/hooks/use-site-high-score'
+import type { QuestionCount } from '@/lib/question-count'
+import { useSiteLeaderboard } from '@/hooks/use-site-high-score'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import { reserveFlagQuizCountries } from '@/lib/storage-decks'
 import {
@@ -43,6 +44,7 @@ import {
   getGameStats,
   getPlayerId,
   recordRoundResult,
+  setQuestionCount,
   setSoundEnabled,
   setLastDifficulty,
   useGameStats,
@@ -80,12 +82,15 @@ function getResolutionMessage(
 
 export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
   const stats = useGameStats(FLAG_QUIZ_GAME_ID)
-  const siteHighScore = useSiteHighScore(FLAG_QUIZ_GAME_ID)
+  const siteLeaderboard = useSiteLeaderboard(FLAG_QUIZ_GAME_ID)
   const soundEnabled = useSoundEnabled()
   const initialDifficulty =
     getGameStats(FLAG_QUIZ_GAME_ID).lastDifficulty ?? 'level-1'
+  const initialQuestionCount = getGameStats(FLAG_QUIZ_GAME_ID).questionCount
   const [selectedDifficultyId, setSelectedDifficultyId] =
     useState(initialDifficulty)
+  const [selectedQuestionCount, setSelectedQuestionCount] =
+    useState<QuestionCount>(initialQuestionCount)
   const [phase, setPhase] = useState<Phase>('setup')
   const [questions, setQuestions] = useState<FlagQuizQuestion[]>([])
   const [questionIndex, setQuestionIndex] = useState(0)
@@ -123,6 +128,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
       const roundDurationSeconds = roundStartedAtRef.current
         ? Math.max(1, Math.round((Date.now() - roundStartedAtRef.current) / 1000))
         : 0
+      const timeoutsCount = timeoutCountRef.current
       const stored = recordRoundResult({
         gameId: FLAG_QUIZ_GAME_ID,
         difficultyId: selectedDifficultyId,
@@ -132,33 +138,6 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
         completedAt: new Date().toISOString(),
       })
 
-      analytics.trackEvent('round_completed', {
-        accuracy: Number((nextCorrectAnswers / questions.length).toFixed(4)),
-        answer_mode: difficulty.answerMode,
-        beat_high_score: stored.beatHighScore,
-        correct_answers: stored.correctAnswers,
-        difficulty_id: selectedDifficultyId,
-        game_id: FLAG_QUIZ_GAME_ID,
-        round_duration_seconds: roundDurationSeconds,
-        score: stored.totalScore,
-        timeouts_count: timeoutCountRef.current,
-        total_questions: stored.totalQuestions,
-      })
-
-      if (stored.beatHighScore) {
-        analytics.trackEvent('high_score_beaten', {
-          difficulty_id: selectedDifficultyId,
-          game_id: FLAG_QUIZ_GAME_ID,
-          previous_best_score: stored.previousBestScore,
-          score: stored.totalScore,
-        })
-      }
-
-      if (getAppPreferences().soundEnabled) {
-        void playSoundCue(stored.beatHighScore ? 'high-score' : 'finish')
-      }
-
-      await scoreSync.syncRoundResult(stored)
       setResult(stored)
       setPhase('results')
       setResolution('idle')
@@ -167,6 +146,54 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
       roundStartedAtRef.current = null
       timeoutCountRef.current = 0
       lastWarningSecondRef.current = null
+
+      try {
+        analytics.trackEvent('round_completed', {
+          accuracy: Number((nextCorrectAnswers / questions.length).toFixed(4)),
+          answer_mode: difficulty.answerMode,
+          beat_high_score: stored.beatHighScore,
+          correct_answers: stored.correctAnswers,
+          difficulty_id: selectedDifficultyId,
+          game_id: FLAG_QUIZ_GAME_ID,
+          round_duration_seconds: roundDurationSeconds,
+          score: stored.totalScore,
+          timeouts_count: timeoutsCount,
+          total_questions: stored.totalQuestions,
+        })
+
+        if (stored.beatHighScore) {
+          analytics.trackEvent('high_score_beaten', {
+            difficulty_id: selectedDifficultyId,
+            game_id: FLAG_QUIZ_GAME_ID,
+            previous_best_score: stored.previousBestScore,
+            score: stored.totalScore,
+          })
+        }
+      } catch {
+        // Analytics should never block local result handling.
+      }
+
+      try {
+        if (getAppPreferences().soundEnabled) {
+          void playSoundCue(stored.beatHighScore ? 'high-score' : 'finish')
+        }
+      } catch {
+        // Sound playback is best-effort.
+      }
+
+      try {
+        void scoreSync
+          .syncRoundResult({
+            result: stored,
+            roundDurationSeconds,
+            timeoutsCount,
+          })
+          .catch(() => {
+            // Offline and sync failures should not interrupt local play.
+          })
+      } catch {
+        // Sync launch is best-effort.
+      }
     },
     [analytics, difficulty.answerMode, questions.length, scoreSync, selectedDifficultyId],
   )
@@ -196,7 +223,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
     (
       isCorrect: boolean,
       answerLabel?: string,
-      nextResolution: Resolution = isCorrect ? 'correct' : 'wrong',
+      nextResolution: Exclude<Resolution, 'idle'> = isCorrect ? 'correct' : 'wrong',
     ) => {
       if (!currentQuestion || resolution !== 'idle') {
         return
@@ -209,12 +236,12 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
       setScore(nextScore)
       setCorrectAnswers(nextCorrectAnswers)
       setResolution(nextResolution)
-      setSelectedOptionCode(
+      const selectedOptionCode =
         answerLabel && difficulty.answerMode === 'multiple-choice'
           ? currentQuestion.options.find((option) => option.name === answerLabel)
               ?.code ?? null
-          : null,
-      )
+          : null
+      setSelectedOptionCode(selectedOptionCode)
 
       if (isCorrect) {
         setCorrectBurstCounter((current) => current + 1)
@@ -317,6 +344,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
 
   const startRound = () => {
     const rule = getDifficultyRule(selectedDifficultyId)
+    const questionCount = selectedQuestionCount
     if (getAppPreferences().soundEnabled) {
       void primeSound()
     }
@@ -324,7 +352,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
     setQuestions(
       buildFlagQuizRoundFromCountries(
         rule,
-        reserveFlagQuizCountries(FLAG_QUIZ_QUESTIONS_PER_ROUND).map((countryCode) => {
+        reserveFlagQuizCountries(questionCount).map((countryCode) => {
           const question = flagQuestionBankByCode.get(countryCode)
 
           if (!question) {
@@ -354,7 +382,7 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
       answer_mode: rule.answerMode,
       difficulty_id: selectedDifficultyId,
       game_id: FLAG_QUIZ_GAME_ID,
-      question_count: FLAG_QUIZ_QUESTIONS_PER_ROUND,
+      question_count: questionCount,
       time_limit_seconds: rule.timeLimitSeconds,
       timed_round: rule.timeLimitSeconds !== null,
     })
@@ -387,6 +415,10 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
   }
 
   const SoundIcon = soundEnabled ? Volume2 : VolumeX
+  const handleQuestionCountChange = (questionCount: QuestionCount) => {
+    setSelectedQuestionCount(questionCount)
+    setQuestionCount(FLAG_QUIZ_GAME_ID, questionCount)
+  }
 
   const exitRoundToSetup = useCallback(() => {
     if (advanceTimeoutRef.current) {
@@ -470,14 +502,14 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
               })}
             </div>
 
-            <GameScoreSummary
+            <GameStatsSection
+              id="leaderboard"
               localHighScore={stats.highScore?.score ?? null}
               playerId={getPlayerId()}
               recentResultScore={stats.recentResult?.totalScore ?? null}
-              siteHighScore={siteHighScore}
+              siteLeaderboard={siteLeaderboard}
             />
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-3">
               <Button
                 className="w-full sm:w-auto"
                 data-testid="start-round"
@@ -486,17 +518,14 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
               >
                 Start round
               </Button>
-              <Button
-                aria-pressed={soundEnabled}
-                className="w-full justify-center sm:w-auto"
-                data-testid="sound-toggle"
-                onClick={() => void toggleSound()}
-                type="button"
-                variant="outline"
-              >
-                <SoundIcon className="h-4 w-4" />
-                {soundButtonLabel}
-              </Button>
+              <GameSetupControls
+                onQuestionCountChange={handleQuestionCountChange}
+                onToggleSound={() => void toggleSound()}
+                questionCount={selectedQuestionCount}
+                soundButtonLabel={soundButtonLabel}
+                soundEnabled={soundEnabled}
+                soundIcon={SoundIcon}
+              />
             </div>
             <p className="text-sm text-muted-foreground">
               Subtle game sounds for correct answers, misses, round finish, and new
@@ -563,6 +592,12 @@ export function FlagQuizGame({ onPhaseChange }: FlagQuizGameProps) {
                 </CardContent>
               </Card>
             </div>
+            <GameStatsSection
+              localHighScore={stats.highScore?.score ?? null}
+              playerId={getPlayerId()}
+              recentResultScore={result.totalScore}
+              siteLeaderboard={siteLeaderboard}
+            />
 
             <div className="flex flex-wrap gap-3">
               <Button data-testid="play-again" onClick={startRound}>

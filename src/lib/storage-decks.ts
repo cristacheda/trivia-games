@@ -26,8 +26,6 @@ import {
 import { buildGuessTheCapitalDeck } from '@/features/guess-the-capital/lib/round'
 import {
   GUESS_THE_COCKTAIL_GAME_ID,
-  GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND,
-  GUESS_THE_COCKTAIL_REGULAR_PER_ROUND,
 } from '@/features/guess-the-cocktail/constants'
 import {
   cocktailQuestionBank,
@@ -53,6 +51,9 @@ import {
   outlineStateQuestionBankByCode,
 } from '@/features/outline-quiz/data/states'
 import { buildOutlineQuizDeck } from '@/features/outline-quiz/lib/round'
+import {
+  DEFAULT_QUESTION_COUNT,
+} from '@/lib/question-count'
 import {
   getGameStats,
   normalizeArtistDeck,
@@ -81,6 +82,8 @@ function createDefaultStats(): GameLocalStats {
     highScore: null,
     recentResult: null,
     lastDifficulty: null,
+    questionCount: DEFAULT_QUESTION_COUNT,
+    roundsPlayed: 0,
     countryDeck: null,
     capitalDeck: null,
     outlineDeck: null,
@@ -313,9 +316,17 @@ export function reserveGuessTheArtistSongs(
   random: () => number = Math.random,
 ) {
   const currentDeck = getGuessTheArtistDeck()
-  let orderedSongIds = [...currentDeck.orderedSongIds]
-  let nextIndex = currentDeck.nextIndex
+  const validSongIds = new Set(songQuestionBank.map((song) => song.id))
+  let orderedSongIds = filterCodes(currentDeck.orderedSongIds, validSongIds)
+  let nextIndex = Math.min(currentDeck.nextIndex, orderedSongIds.length)
   const selectedSongIds: string[] = []
+
+  if (
+    orderedSongIds.length !== currentDeck.orderedSongIds.length ||
+    nextIndex !== currentDeck.nextIndex
+  ) {
+    setGuessTheArtistDeck({ orderedSongIds, nextIndex })
+  }
 
   while (selectedSongIds.length < totalQuestions) {
     if (orderedSongIds.length === 0 || nextIndex >= orderedSongIds.length) {
@@ -511,15 +522,18 @@ export function setGuessTheCocktailDeck(cocktailDeck: CocktailDeckProgress) {
 }
 
 export function reserveGuessTheCocktailCocktails(
+  totalQuestions: number,
   difficultyId: DifficultyId,
   random: () => number = Math.random,
 ) {
   const currentDeck = getGuessTheCocktailDeck()
+  const obscurePerRound = Math.ceil(totalQuestions / DEFAULT_QUESTION_COUNT)
+  const regularPerRound = totalQuestions - obscurePerRound
   let orderedRegularIds = [...currentDeck.orderedRegularIds]
   let nextRegularIndex = currentDeck.nextRegularIndex
   const selectedRegularIds: string[] = []
 
-  while (selectedRegularIds.length < GUESS_THE_COCKTAIL_REGULAR_PER_ROUND) {
+  while (selectedRegularIds.length < regularPerRound) {
     if (orderedRegularIds.length === 0 || nextRegularIndex >= orderedRegularIds.length) {
       orderedRegularIds = buildGuessTheCocktailRegularDeck(random, difficultyId).map(
         (cocktail) => cocktail.id,
@@ -527,7 +541,7 @@ export function reserveGuessTheCocktailCocktails(
       nextRegularIndex = 0
     }
 
-    const remainingSlots = GUESS_THE_COCKTAIL_REGULAR_PER_ROUND - selectedRegularIds.length
+    const remainingSlots = regularPerRound - selectedRegularIds.length
     const nextIds = orderedRegularIds.slice(
       nextRegularIndex,
       nextRegularIndex + remainingSlots,
@@ -540,7 +554,7 @@ export function reserveGuessTheCocktailCocktails(
   let nextObscureIndex = currentDeck.nextObscureIndex
   const selectedObscureIds: string[] = []
 
-  while (selectedObscureIds.length < GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND) {
+  while (selectedObscureIds.length < obscurePerRound) {
     if (orderedObscureIds.length === 0 || nextObscureIndex >= orderedObscureIds.length) {
       orderedObscureIds = buildGuessTheCocktailObscureDeck(random).map(
         (cocktail) => cocktail.id,
@@ -548,7 +562,7 @@ export function reserveGuessTheCocktailCocktails(
       nextObscureIndex = 0
     }
 
-    const remainingSlots = GUESS_THE_COCKTAIL_OBSCURE_PER_ROUND - selectedObscureIds.length
+    const remainingSlots = obscurePerRound - selectedObscureIds.length
     const nextIds = orderedObscureIds.slice(
       nextObscureIndex,
       nextObscureIndex + remainingSlots,

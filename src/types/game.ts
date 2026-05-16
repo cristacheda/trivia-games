@@ -9,6 +9,7 @@ export type GameId =
 
 export type DifficultyId = 'level-1' | 'level-2' | 'level-3'
 export type TrackingConsent = 'unknown' | 'granted' | 'denied'
+export type QuestionCount = 10 | 20 | 30 | 40
 
 export type AnswerMode = 'multiple-choice' | 'free-text'
 
@@ -28,21 +29,25 @@ export interface HighScoreRecord {
   difficultyId: DifficultyId
 }
 
-export interface SiteHighScoreRecord {
+export interface SiteLeaderboardEntry {
   gameId: GameId
+  rank: number
   score: number
   achievedAt: string
   playerLabel?: string | null
+  isCurrentPlayer: boolean
 }
 
-export type SiteHighScoreLookup =
+export type SiteLeaderboardLookup =
   | {
       status: 'coming-soon'
-      record: null
+      entries: []
+      playerRank: null
     }
   | {
       status: 'ready'
-      record: SiteHighScoreRecord
+      entries: SiteLeaderboardEntry[]
+      playerRank: SiteLeaderboardEntry | null
     }
 
 export interface CountryDeckProgress {
@@ -82,6 +87,7 @@ export interface CocktailDeckProgress {
 }
 
 export interface RoundResult {
+  roundId: string
   gameId: GameId
   difficultyId: DifficultyId
   totalScore: number
@@ -92,10 +98,18 @@ export interface RoundResult {
   beatHighScore: boolean
 }
 
+export interface RoundSyncPayload {
+  result: RoundResult
+  roundDurationSeconds: number
+  timeoutsCount: number
+}
+
 export interface GameLocalStats {
   highScore: HighScoreRecord | null
   recentResult: RoundResult | null
   lastDifficulty: DifficultyId | null
+  questionCount: QuestionCount
+  roundsPlayed: number
   countryDeck: CountryDeckProgress | null
   capitalDeck: CapitalDeckProgress | null
   outlineDeck: OutlineDeckProgress | null
@@ -109,11 +123,16 @@ export interface AppPreferences {
   trackingConsent: TrackingConsent
 }
 
+export interface PlayerProfile {
+  displayName: string | null
+}
+
 export interface PersistedAppState {
   version: number
   playerId: string
   games: Partial<Record<GameId, GameLocalStats>>
   preferences: AppPreferences
+  profile: PlayerProfile
 }
 
 export interface GameCatalogEntry {

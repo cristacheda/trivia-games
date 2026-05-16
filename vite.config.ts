@@ -16,6 +16,7 @@ const appCommitSha =
   'local'
 const appBuildId = `${appVersion}-${appCommitSha.slice(0, 7)}`
 const serviceWorkerFilename = 'sw.js'
+const isLocalPreviewFresh = process.env.VITE_LOCAL_PREVIEW_FRESH === '1'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -28,58 +29,60 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      filename: serviceWorkerFilename,
-      registerType: 'autoUpdate',
-      includeAssets: ['atlas.png', 'atlas.webp', 'atlas-192.png', 'apple-touch-icon.png'],
-      manifest: {
-        name: 'Atlas of Answers',
-        short_name: 'Atlas',
-        description: 'A collection of polished trivia training games.',
-        theme_color: '#efe4d2',
-        background_color: '#f6f1ea',
-        display: 'standalone',
-        start_url: '/',
-        icons: [
-          {
-            src: 'atlas-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any',
-          },
-          {
-            src: 'atlas.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any',
-          },
-        ],
-      },
-      workbox: {
-        cacheId: `atlas-of-answers-${appVersion}`,
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
-        navigateFallback: 'index.html',
-        skipWaiting: true,
-        runtimeCaching: [
-          {
-            urlPattern: /\/cocktails\/.*\.jpg$/,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'cocktail-images',
-              expiration: {
-                maxEntries: 500,
-                maxAgeSeconds: 30 * 24 * 60 * 60,
+        injectRegister: 'inline',
+        filename: serviceWorkerFilename,
+        registerType: 'autoUpdate',
+        selfDestroying: isLocalPreviewFresh,
+        includeAssets: ['atlas.png', 'atlas.webp', 'atlas-192.png', 'apple-touch-icon.png'],
+        manifest: {
+          name: 'Atlas of Answers',
+          short_name: 'Atlas',
+          description: 'A collection of polished trivia training games.',
+          theme_color: '#efe4d2',
+          background_color: '#f6f1ea',
+          display: 'standalone',
+          start_url: '/',
+          icons: [
+            {
+              src: 'atlas-192.png',
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any',
+            },
+            {
+              src: 'atlas.png',
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any',
+            },
+          ],
+        },
+        workbox: {
+          cacheId: `atlas-of-answers-${appVersion}`,
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          globPatterns: ['**/*.{js,css,html,svg,png,webp,ico,woff2}'],
+          maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+          navigateFallback: 'index.html',
+          skipWaiting: true,
+          runtimeCaching: [
+            {
+              urlPattern: /\/cocktails\/.*\.jpg$/,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'cocktail-images',
+                expiration: {
+                  maxEntries: 500,
+                  maxAgeSeconds: 30 * 24 * 60 * 60,
+                },
               },
             },
-          },
-        ],
-      },
-      devOptions: {
-        enabled: false,
-      },
-    }),
+          ],
+        },
+        devOptions: {
+          enabled: false,
+        },
+      }),
   ],
   resolve: {
     alias: {

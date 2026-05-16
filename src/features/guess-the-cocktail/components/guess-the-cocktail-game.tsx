@@ -8,7 +8,8 @@ import {
 import { RotateCcw, Trophy, Volume2, VolumeX } from 'lucide-react'
 import { useAppServices } from '@/app/app-providers'
 import { ConfettiLayer } from '@/components/confetti-layer'
-import { GameScoreSummary } from '@/components/game-score-panels'
+import { GameSetupControls } from '@/components/game-setup-controls'
+import { GameStatsSection } from '@/components/game-score-panels'
 import { InRoundFooter } from '@/components/in-round-footer'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -24,14 +25,14 @@ import {
   getGuessTheCocktailDifficultyRule,
   guessTheCocktailDifficultyRules,
   GUESS_THE_COCKTAIL_GAME_ID,
-  GUESS_THE_COCKTAIL_QUESTIONS_PER_ROUND,
 } from '@/features/guess-the-cocktail/constants'
 import { isAcceptableCocktailAnswer } from '@/features/guess-the-cocktail/lib/match'
 import { buildGuessTheCocktailRound } from '@/features/guess-the-cocktail/lib/round'
 import type { GuessTheCocktailQuestion } from '@/features/guess-the-cocktail/types'
 import { getDebugSettings } from '@/lib/debug'
 import { getAnswerAdvanceDelayMs, getNextTimeWarningSecond } from '@/lib/gameplay'
-import { useSiteHighScore } from '@/hooks/use-site-high-score'
+import type { QuestionCount } from '@/lib/question-count'
+import { useSiteLeaderboard } from '@/hooks/use-site-high-score'
 import { playSoundCue, primeSound } from '@/lib/sound'
 import { reserveGuessTheCocktailCocktails } from '@/lib/storage-decks'
 import {
@@ -39,6 +40,7 @@ import {
   getGameStats,
   getPlayerId,
   recordRoundResult,
+  setQuestionCount,
   setLastDifficulty,
   setSoundEnabled,
   useGameStats,
@@ -77,11 +79,14 @@ function getResolutionMessage(
 
 export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProps) {
   const stats = useGameStats(GUESS_THE_COCKTAIL_GAME_ID)
-  const siteHighScore = useSiteHighScore(GUESS_THE_COCKTAIL_GAME_ID)
+  const siteLeaderboard = useSiteLeaderboard(GUESS_THE_COCKTAIL_GAME_ID)
   const soundEnabled = useSoundEnabled()
   const initialDifficulty =
     getGameStats(GUESS_THE_COCKTAIL_GAME_ID).lastDifficulty ?? 'level-1'
+  const initialQuestionCount = getGameStats(GUESS_THE_COCKTAIL_GAME_ID).questionCount
   const [selectedDifficultyId, setSelectedDifficultyId] = useState(initialDifficulty)
+  const [selectedQuestionCount, setSelectedQuestionCount] =
+    useState<QuestionCount>(initialQuestionCount)
   const [phase, setPhase] = useState<Phase>('setup')
   const [questions, setQuestions] = useState<GuessTheCocktailQuestion[]>([])
   const [questionIndex, setQuestionIndex] = useState(0)
@@ -152,7 +157,19 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
         void playSoundCue(stored.beatHighScore ? 'high-score' : 'finish')
       }
 
-      await scoreSync.syncRoundResult(stored)
+      try {
+        void scoreSync
+          .syncRoundResult({
+            result: stored,
+            roundDurationSeconds,
+            timeoutsCount: timeoutCountRef.current,
+          })
+          .catch(() => {
+            // Offline and sync failures should not interrupt local play.
+          })
+      } catch {
+        // Sync launch is best-effort.
+      }
       setResult(stored)
       setPhase('results')
       setResolution('idle')
@@ -196,7 +213,7 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
     (
       isCorrect: boolean,
       answerOptionId?: string,
-      nextResolution: Resolution = isCorrect ? 'correct' : 'wrong',
+      nextResolution: Exclude<Resolution, 'idle'> = isCorrect ? 'correct' : 'wrong',
     ) => {
       if (!currentQuestion || resolution !== 'idle') {
         return
@@ -315,13 +332,17 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
 
   const startRound = () => {
     const rule = getGuessTheCocktailDifficultyRule(selectedDifficultyId)
+    const questionCount = selectedQuestionCount
 
     if (getAppPreferences().soundEnabled) {
       void primeSound()
     }
 
     setLastDifficulty(GUESS_THE_COCKTAIL_GAME_ID, selectedDifficultyId)
-    const reservedCocktails = reserveGuessTheCocktailCocktails(selectedDifficultyId)
+    const reservedCocktails = reserveGuessTheCocktailCocktails(
+      questionCount,
+      selectedDifficultyId,
+    )
 
     setQuestions(buildGuessTheCocktailRound(rule, reservedCocktails))
     setQuestionIndex(0)
@@ -343,7 +364,7 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
       answer_mode: rule.answerMode,
       difficulty_id: selectedDifficultyId,
       game_id: GUESS_THE_COCKTAIL_GAME_ID,
-      question_count: GUESS_THE_COCKTAIL_QUESTIONS_PER_ROUND,
+      question_count: questionCount,
       time_limit_seconds: rule.timeLimitSeconds,
       timed_round: rule.timeLimitSeconds !== null,
     })
@@ -370,6 +391,10 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
   }
 
   const SoundIcon = soundEnabled ? Volume2 : VolumeX
+  const handleQuestionCountChange = (questionCount: QuestionCount) => {
+    setSelectedQuestionCount(questionCount)
+    setQuestionCount(GUESS_THE_COCKTAIL_GAME_ID, questionCount)
+  }
 
   const exitRoundToSetup = useCallback(() => {
     if (advanceTimeoutRef.current) {
@@ -421,13 +446,14 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
               </button>
             ))}
           </div>
-          <GameScoreSummary
+          <GameStatsSection
+            id="leaderboard"
             localHighScore={stats.highScore?.score ?? null}
             playerId={getPlayerId()}
             recentResultScore={stats.recentResult?.totalScore ?? null}
-            siteHighScore={siteHighScore}
+            siteLeaderboard={siteLeaderboard}
           />
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-col gap-3">
             <Button
               className="w-full sm:w-auto"
               data-testid="start-round"
@@ -436,17 +462,14 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
             >
               Start round
             </Button>
-            <Button
-              aria-pressed={soundEnabled}
-              className="w-full justify-center sm:w-auto"
-              data-testid="sound-toggle"
-              onClick={() => void toggleSound()}
-              type="button"
-              variant="outline"
-            >
-              <SoundIcon className="h-4 w-4" />
-              {soundEnabled ? 'Sound on' : 'Sound off'}
-            </Button>
+            <GameSetupControls
+              onQuestionCountChange={handleQuestionCountChange}
+              onToggleSound={() => void toggleSound()}
+              questionCount={selectedQuestionCount}
+              soundButtonLabel={soundEnabled ? 'Sound on' : 'Sound off'}
+              soundEnabled={soundEnabled}
+              soundIcon={SoundIcon}
+            />
           </div>
         </CardContent>
       </Card>
@@ -504,6 +527,12 @@ export function GuessTheCocktailGame({ onPhaseChange }: GuessTheCocktailGameProp
                 </CardContent>
               </Card>
             </div>
+            <GameStatsSection
+              localHighScore={stats.highScore?.score ?? null}
+              playerId={getPlayerId()}
+              recentResultScore={result.totalScore}
+              siteLeaderboard={siteLeaderboard}
+            />
             <div className="flex flex-wrap gap-3">
               <Button data-testid="play-again" onClick={startRound}>
                 <RotateCcw className="h-4 w-4" />

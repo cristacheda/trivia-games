@@ -4,10 +4,6 @@ import type { SongQuestionSource } from '@/features/guess-the-artist/types'
 type SongSeed = Omit<SongQuestionSource, 'weightModifier'>
 
 const songSeeds: SongSeed[] = [
-  { id: 'bad-guy', songTitle: 'bad guy', artistName: 'Billie Eilish', aliases: ['Billie Eilish'], era: '2010s', region: 'Americas', popularityTier: 'popular' },
-  { id: 'hips-dont-lie', songTitle: "Hips Don't Lie", artistName: 'Shakira', aliases: ['Shakira'], era: '2000s', region: 'Americas', popularityTier: 'global' },
-  { id: 'waka-waka', songTitle: 'Waka Waka (This Time for Africa)', artistName: 'Shakira', aliases: ['Shakira'], era: '2010s', region: 'Americas', popularityTier: 'global' },
-  { id: 'bailando', songTitle: 'Bailando', artistName: 'Enrique Iglesias', aliases: ['Enrique Iglesias'], era: '2010s', region: 'Europe', popularityTier: 'global' },
   { id: 'dynamite', songTitle: 'Dynamite', artistName: 'BTS', aliases: ['BTS'], era: '2020s', region: 'Asia', popularityTier: 'global' },
   { id: 'how-you-like-that', songTitle: 'How You Like That', artistName: 'BLACKPINK', aliases: ['Blackpink', 'BLACKPINK'], era: '2020s', region: 'Asia', popularityTier: 'global' },
   { id: 'faded', songTitle: 'Faded', artistName: 'Alan Walker', aliases: ['Alan Walker'], era: '2010s', region: 'Europe', popularityTier: 'global' },
@@ -27,10 +23,7 @@ const songSeeds: SongSeed[] = [
   { id: 'gasolina', songTitle: 'Gasolina', artistName: 'Daddy Yankee', aliases: ['Daddy Yankee'], era: '2000s', region: 'Americas', popularityTier: 'global' },
   { id: 'havana', songTitle: 'Havana', artistName: 'Camila Cabello', aliases: ['Camila Cabello'], era: '2010s', region: 'Americas', popularityTier: 'popular' },
   { id: 'september', songTitle: 'September', artistName: 'Earth, Wind & Fire', aliases: ['Earth Wind and Fire', 'Earth Wind & Fire'], era: '1970s', region: 'Americas', popularityTier: 'popular' },
-  { id: 'africa', songTitle: 'Africa', artistName: 'Toto', aliases: ['Toto'], era: '1980s', region: 'Americas', popularityTier: 'popular' },
-  { id: 'take-on-me', songTitle: 'Take On Me', artistName: 'a-ha', aliases: ['a-ha', 'aha', 'A-ha'], era: '1980s', region: 'Europe', popularityTier: 'popular' },
   { id: 'zombie', songTitle: 'Zombie', artistName: 'The Cranberries', aliases: ['The Cranberries', 'Cranberries'], era: '1990s', region: 'Europe', popularityTier: 'popular' },
-  { id: 'somebody-that-i-used-to-know', songTitle: 'Somebody That I Used To Know', artistName: 'Gotye', aliases: ['Gotye'], era: '2010s', region: 'Oceania', popularityTier: 'global' },
   { id: 'dance-monkey', songTitle: 'Dance Monkey', artistName: 'Tones and I', aliases: ['Tones and I'], era: '2020s', region: 'Oceania', popularityTier: 'popular' },
   { id: 'royals', songTitle: 'Royals', artistName: 'Lorde', aliases: ['Lorde'], era: '2010s', region: 'Oceania', popularityTier: 'popular' },
   { id: 'riptide', songTitle: 'Riptide', artistName: 'Vance Joy', aliases: ['Vance Joy'], era: '2010s', region: 'Oceania', popularityTier: 'global' },
@@ -327,8 +320,6 @@ const songSeeds: SongSeed[] = [
   { id: 'mr-blue-sky', songTitle: 'Mr. Blue Sky', artistName: 'Electric Light Orchestra', aliases: ['Electric Light Orchestra'], era: '2010s', region: 'Europe', popularityTier: 'popular' },
   { id: 'shout', songTitle: 'Shout', artistName: 'Tears for Fears', aliases: ['Tears for Fears'], era: '1980s', region: 'Europe', popularityTier: 'popular' },
   { id: 'head-over-heels', songTitle: 'Head Over Heels', artistName: 'Tears for Fears', aliases: ['Tears for Fears'], era: '2000s', region: 'Europe', popularityTier: 'popular' },
-  { id: 'relax', songTitle: 'Relax', artistName: 'Frankie Goes to Hollywood', aliases: ['Frankie Goes to Hollywood'], era: '1990s', region: 'Europe', popularityTier: 'popular' },
-  { id: 'two-tribes', songTitle: 'Two Tribes', artistName: 'Frankie Goes to Hollywood', aliases: ['Frankie Goes to Hollywood'], era: '1990s', region: 'Europe', popularityTier: 'global' },
   { id: 'karma-chameleon', songTitle: 'Karma Chameleon', artistName: 'Culture Club', aliases: ['Culture Club'], era: '2000s', region: 'Europe', popularityTier: 'popular' },
   { id: 'do-you-really-want-to-hurt-me', songTitle: 'Do You Really Want to Hurt Me', artistName: 'Culture Club', aliases: ['Culture Club'], era: '2000s', region: 'Europe', popularityTier: 'global' },
   { id: 'wake-me-up-before-you-go-go', songTitle: 'Wake Me Up Before You Go-Go', artistName: 'Wham!', aliases: ['Wham!'], era: '1990s', region: 'Europe', popularityTier: 'popular' },

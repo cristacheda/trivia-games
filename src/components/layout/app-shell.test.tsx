@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppShell } from '@/components/layout/app-shell'
@@ -6,8 +7,12 @@ import { createLocalConsentProvider } from '@/integrations/local-consent-provide
 import { setTrackingConsent } from '@/lib/storage'
 import { AppServicesContextForTests } from '@/test/test-app-services'
 
+const { mockIsOnline } = vi.hoisted(() => ({
+  mockIsOnline: vi.fn(() => true),
+}))
+
 vi.mock('@/hooks/use-online-status', () => ({
-  useOnlineStatus: () => true,
+  useOnlineStatus: () => mockIsOnline(),
 }))
 
 vi.mock('@/hooks/use-pwa-status', () => ({
@@ -33,6 +38,7 @@ function renderAppShell() {
 describe('AppShell privacy prompt', () => {
   beforeEach(() => {
     window.localStorage.clear()
+    mockIsOnline.mockReturnValue(true)
   })
 
   it('opens the privacy selector on first visit', () => {
@@ -55,5 +61,33 @@ describe('AppShell privacy prompt', () => {
         name: 'Play anonymously and choose whether optional tracking is allowed.',
       }),
     ).not.toBeInTheDocument()
+  })
+
+  it('renders footer links to the public legal pages', () => {
+    setTrackingConsent('denied')
+
+    renderAppShell()
+
+    expect(screen.getByRole('link', { name: 'Privacy Policy' })).toHaveAttribute(
+      'href',
+      '/privacy',
+    )
+    expect(screen.getByRole('link', { name: 'Terms of Service' })).toHaveAttribute(
+      'href',
+      '/terms',
+    )
+  })
+
+  it('shows Offline in the header status menu when connectivity is down', async () => {
+    const user = userEvent.setup()
+    setTrackingConsent('denied')
+    mockIsOnline.mockReturnValue(false)
+
+    renderAppShell()
+
+    await user.click(screen.getByRole('button', { name: 'Menu' }))
+
+    expect(screen.getByText('Offline')).toBeInTheDocument()
+    expect(screen.queryByText('Online')).not.toBeInTheDocument()
   })
 })

@@ -7,7 +7,7 @@ import { GameCard } from '@/components/game-card'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { useGameStats } from '@/lib/storage'
-import { useSiteHighScore } from '@/hooks/use-site-high-score'
+import { useSiteLeaderboard } from '@/hooks/use-site-high-score'
 import type { GameCatalogEntry } from '@/types/game'
 
 const readyGameIds = [
@@ -73,8 +73,8 @@ export function HomePage() {
                 </h1>
                 <p className="max-w-xl text-base text-muted-foreground sm:text-xl">
                   {siteConfig.description} Start with fast flag reps now. Country
-                  capitals and outline rounds are live, with currency and
-                  official language rounds next.
+                  capitals, outline, currency, artist, and cocktail rounds are
+                  live, with official language still next.
                 </p>
               </div>
 
@@ -116,7 +116,16 @@ export function HomePage() {
                 game={game}
                 key={game.id}
                 onOpen={() =>
-                  analytics.trackEvent('homepage_card_clicked', { gameId: game.id })
+                  analytics.trackEvent('homepage_card_clicked', {
+                    gameId: game.id,
+                    cta: 'play-now',
+                  })
+                }
+                onOpenLeaderboard={() =>
+                  analytics.trackEvent('homepage_card_clicked', {
+                    gameId: game.id,
+                    cta: 'leaderboard',
+                  })
                 }
               />
             )
@@ -130,37 +139,48 @@ export function HomePage() {
 function HomePageGameCard({
   game,
   onOpen,
+  onOpenLeaderboard,
 }: {
   game: GameCatalogEntry
   onOpen: () => void
+  onOpenLeaderboard: () => void
 }) {
   if (!isReadyGameId(game.id)) {
     return <GameCard game={game} onOpen={onOpen} />
   }
 
-  return <ReadyHomePageGameCard game={game as ReadyGameEntry} onOpen={onOpen} />
+  return (
+    <ReadyHomePageGameCard
+      game={game as ReadyGameEntry}
+      onOpen={onOpen}
+      onOpenLeaderboard={onOpenLeaderboard}
+    />
+  )
 }
 
 function ReadyHomePageGameCard({
   game,
   onOpen,
+  onOpenLeaderboard,
 }: {
   game: ReadyGameEntry
   onOpen: () => void
+  onOpenLeaderboard: () => void
 }) {
   const stats = useGameStats(game.id)
-  const siteHighScore = useSiteHighScore(game.id)
+  const siteLeaderboard = useSiteLeaderboard(game.id)
 
   return (
     <GameCard
       footer={
         <HomepageGameScoreFooter
           localHighScore={stats.highScore?.score ?? null}
-          siteHighScore={siteHighScore}
+          siteLeaderboard={siteLeaderboard}
         />
       }
       game={game}
       onOpen={onOpen}
+      onOpenLeaderboard={onOpenLeaderboard}
     />
   )
 }

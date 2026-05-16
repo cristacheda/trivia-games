@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { TrackingConsent } from '@/types/game'
@@ -57,7 +58,7 @@ export function PrivacyPanel({
         <h3 className="font-semibold">What stays on your device</h3>
         <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
           <li>High scores, recent results, deck progress, sound preference, and an anonymous local player id.</li>
-          <li>No account is required to play. The current sign-in buttons are placeholders for future sync work.</li>
+          <li>No account is required to play. Optional sign-in and sync may appear when enabled, but anonymous play remains the default.</li>
           <li>Free-text answers are not sent to analytics.</li>
         </ul>
       </div>
@@ -77,6 +78,14 @@ export function PrivacyPanel({
           <li>You can return here any time to change the optional analytics setting.</li>
         </ul>
       </div>
+
+      <p className="text-sm text-muted-foreground">
+        Read the full{' '}
+        <Link className="font-semibold text-foreground underline underline-offset-4" to="/privacy">
+          Privacy Policy
+        </Link>{' '}
+        for details about local storage, optional analytics, and data rights.
+      </p>
 
       <div className="grid gap-2 sm:grid-cols-2">
         <Button onClick={onAllowTracking} size="sm">

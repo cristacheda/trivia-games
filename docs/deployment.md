@@ -25,6 +25,7 @@ This file covers release flow, versioning, cache busting, and deployment behavio
 - The production CSP must stay aligned with Cloudflare-injected scripts and app features that rely on `blob:` images or workers.
 - If Cloudflare Web Analytics is enabled, include `https://cloudflareinsights.com` in CSP `connect-src` so the RUM beacon endpoint (`/cdn-cgi/rum`) is not blocked.
 - If PostHog EU analytics is enabled, include `https://eu.i.posthog.com` in CSP `connect-src` for event ingestion and `https://eu-assets.i.posthog.com` in both `script-src` and `connect-src` for PostHog remote config and extension assets.
+- If Supabase auth or data sync is enabled, include the active project host in CSP `connect-src`. This repo currently allows `https://*.supabase.co` so preview and production projects can differ without breaking auth, profile sync, or RPC calls after deploy.
 - The artist quiz preview proxy runs through a Cloudflare Pages Function, so browser CSP only needs the Apple artwork CDNs in `img-src` and `https://audio-ssl.itunes.apple.com` in `media-src`; `itunes.apple.com` is only contacted server-side.
 
 ## Release flow
@@ -85,6 +86,7 @@ For UI changes, verify the experience at a mobile viewport before shipping. Trea
 
 - Use `npm run build` first so Pages local dev serves the current static output.
 - Run `npx wrangler@latest pages dev dist --ip 0.0.0.0 --port 4173` to serve both the built app and the repo-root `functions/` directory locally.
+- For a Codex-friendly fresh local preview with isolated Wrangler state and PWA caching disabled, prefer `npm run preview:pages:fresh`.
 - Open `http://127.0.0.1:4173` on desktop.
 - For device testing on the same network, open `http://<your-mac-lan-ip>:4173` on the phone.
 - The artist preview proxy can be checked directly with:
@@ -101,10 +103,18 @@ For UI changes, verify the experience at a mobile viewport before shipping. Trea
 - Cloudflare Pages Functions are deployed from the repo-root `functions/` directory alongside the static build output, using `wrangler.jsonc` as the Pages configuration source of truth.
 - Client-side `VITE_*` variables must therefore be configured in GitHub Actions secrets or variables for the build step, not only in the Cloudflare Pages dashboard.
 - The deploy workflow runs `wrangler pages deploy dist --project-name trivia-games --branch <branch> --commit-dirty=true` so the built asset directory stays explicit for the pinned Wrangler version currently used in CI, and Wrangler does not warn about build-generated tracked file changes.
+- Before each Cloudflare Pages deploy, GitHub Actions runs `supabase db push --db-url ... --include-all` against the branch-appropriate hosted database when the matching database URL secret is configured, so schema migrations land before the client bundle that depends on them.
 - CI forces JavaScript-based GitHub Actions onto Node 24 and uses the Node-24-based major versions of `actions/checkout` and `actions/setup-node`.
 - Production deploys can optionally purge the root HTML, compatibility service worker, and manifest when `CLOUDFLARE_ZONE_ID` is available in GitHub Actions secrets.
 - `main` is the production branch.
 - `preview` is the long-lived preview branch.
+
+### Supabase deployment secrets
+
+- `SUPABASE_DB_URL_NONPROD`: direct Postgres connection string for the preview database used by the `preview` branch deploy.
+- `SUPABASE_DB_URL_PROD`: direct Postgres connection string for the production database used by the `main` branch deploy.
+- Keep passwords percent-encoded inside these URLs because `supabase db push --db-url` expects a valid Postgres connection string.
+- If either secret is missing, the matching deploy skips schema push and only ships the frontend bundle.
 
 ### Branch behavior
 

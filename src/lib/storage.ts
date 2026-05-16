@@ -1,4 +1,8 @@
 import { useEffect, useState } from 'react'
+import {
+  DEFAULT_QUESTION_COUNT,
+  normalizeQuestionCount,
+} from '@/lib/question-count'
 import { FLAG_QUIZ_GAME_ID } from '@/features/flag-quiz/constants'
 import { GUESS_THE_CAPITAL_GAME_ID } from '@/features/guess-the-capital/constants'
 import { GUESS_THE_ARTIST_GAME_ID } from '@/features/guess-the-artist/constants'
@@ -16,16 +20,75 @@ import type {
   GameLocalStats,
   ArtistDeckProgress,
   OutlineDeckProgress,
+  QuestionCount,
+  PlayerProfile,
   PersistedAppState,
   RoundResult,
   TrackingConsent,
 } from '@/types/game'
 
 const STORAGE_KEY = 'atlas-of-answers:app-state'
-const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
-export const STORAGE_VERSION = 10
+export const STORAGE_EVENT = 'atlas-of-answers:storage-updated'
+export const STORAGE_VERSION = 13
+const DISPLAY_NAME_MAX_LENGTH = 32
 
-type RoundResultInput = Omit<RoundResult, 'previousBestScore' | 'beatHighScore'>
+type RoundResultInput = Omit<
+  RoundResult,
+  'roundId' | 'previousBestScore' | 'beatHighScore'
+> & {
+  roundId?: string
+}
+
+function createRoundId(value: Partial<RoundResult>) {
+  if (typeof value.roundId === 'string' && value.roundId.length > 0) {
+    return value.roundId
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+
+  const gameId = typeof value.gameId === 'string' ? value.gameId : 'round'
+  const completedAt =
+    typeof value.completedAt === 'string' && value.completedAt.length > 0
+      ? value.completedAt
+      : 'unknown'
+
+  return `${gameId}-${completedAt}`
+}
+
+function normalizeRoundResult(value: unknown): RoundResult | null {
+  if (!value || typeof value !== 'object') {
+    return null
+  }
+
+  const result = value as Partial<RoundResult>
+
+  if (
+    typeof result.gameId !== 'string' ||
+    typeof result.difficultyId !== 'string' ||
+    typeof result.totalScore !== 'number' ||
+    typeof result.correctAnswers !== 'number' ||
+    typeof result.totalQuestions !== 'number' ||
+    typeof result.completedAt !== 'string' ||
+    typeof result.beatHighScore !== 'boolean'
+  ) {
+    return null
+  }
+
+  return {
+    roundId: createRoundId(result),
+    gameId: result.gameId as GameId,
+    difficultyId: result.difficultyId as DifficultyId,
+    totalScore: result.totalScore,
+    correctAnswers: result.correctAnswers,
+    totalQuestions: result.totalQuestions,
+    completedAt: result.completedAt,
+    previousBestScore:
+      typeof result.previousBestScore === 'number' ? result.previousBestScore : null,
+    beatHighScore: result.beatHighScore,
+  }
+}
 
 function normalizeStringList(value: unknown): string[] {
   return Array.isArray(value)
@@ -90,6 +153,26 @@ function createDefaultPreferences(): AppPreferences {
   }
 }
 
+function createDefaultProfile(): PlayerProfile {
+  return {
+    displayName: null,
+  }
+}
+
+function normalizeDisplayName(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  const trimmed = value.trim()
+
+  if (trimmed.length === 0) {
+    return null
+  }
+
+  return trimmed.slice(0, DISPLAY_NAME_MAX_LENGTH)
+}
+
 function normalizeTrackingConsent(value: unknown): TrackingConsent {
   return value === 'granted' || value === 'denied' ? value : 'unknown'
 }
@@ -99,6 +182,8 @@ function createDefaultStats(): GameLocalStats {
     highScore: null,
     recentResult: null,
     lastDifficulty: null,
+    questionCount: DEFAULT_QUESTION_COUNT,
+    roundsPlayed: 0,
     countryDeck: null,
     capitalDeck: null,
     outlineDeck: null,
@@ -138,8 +223,13 @@ function normalizeGameStats(
 
   return {
     highScore: stats.highScore ?? null,
-    recentResult: stats.recentResult ?? null,
+    recentResult: normalizeRoundResult(stats.recentResult),
     lastDifficulty: stats.lastDifficulty ?? null,
+    questionCount: normalizeQuestionCount(stats.questionCount),
+    roundsPlayed:
+      typeof stats.roundsPlayed === 'number' && Number.isInteger(stats.roundsPlayed)
+        ? Math.max(0, stats.roundsPlayed)
+        : 0,
     countryDeck:
       gameId === FLAG_QUIZ_GAME_ID
         ? normalizeCountryDeck(stats.countryDeck)
@@ -226,6 +316,7 @@ function createDefaultState(): PersistedAppState {
     playerId: crypto.randomUUID(),
     games: {},
     preferences: createDefaultPreferences(),
+    profile: createDefaultProfile(),
   }
 }
 
@@ -253,7 +344,10 @@ function normalizeState(value: unknown): PersistedAppState {
     state.version === 6 ||
     state.version === 7 ||
     state.version === 8 ||
-    state.version === 9
+    state.version === 9 ||
+    state.version === 10 ||
+    state.version === 11 ||
+    state.version === 12
   ) {
     return {
       version: STORAGE_VERSION,
@@ -263,6 +357,10 @@ function normalizeState(value: unknown): PersistedAppState {
         ...createDefaultPreferences(),
         ...(state.preferences ?? {}),
         trackingConsent: normalizeTrackingConsent(state.preferences?.trackingConsent),
+      },
+      profile: {
+        ...createDefaultProfile(),
+        displayName: normalizeDisplayName(state.profile?.displayName),
       },
     }
   }
@@ -279,6 +377,10 @@ function normalizeState(value: unknown): PersistedAppState {
       ...createDefaultPreferences(),
       ...(state.preferences ?? {}),
       trackingConsent: normalizeTrackingConsent(state.preferences?.trackingConsent),
+    },
+    profile: {
+      ...createDefaultProfile(),
+      displayName: normalizeDisplayName(state.profile?.displayName),
     },
   }
 }
@@ -317,6 +419,11 @@ export function getAppPreferences() {
   return state.preferences
 }
 
+export function getPlayerProfile() {
+  const state = readAppState()
+  return state.profile
+}
+
 export function getGameStats(gameId: GameId): GameLocalStats {
   const state = readAppState()
   return normalizeGameStats(gameId, state.games[gameId])
@@ -350,6 +457,18 @@ export function setTrackingConsent(trackingConsent: TrackingConsent) {
   })
 }
 
+export function setDisplayName(displayName: string | null) {
+  const state = readAppState()
+
+  writeAppState({
+    ...state,
+    profile: {
+      ...state.profile,
+      displayName: normalizeDisplayName(displayName),
+    },
+  })
+}
+
 export function setLastDifficulty(gameId: GameId, difficultyId: DifficultyId) {
   const state = readAppState()
   const nextState: PersistedAppState = {
@@ -367,6 +486,23 @@ export function setLastDifficulty(gameId: GameId, difficultyId: DifficultyId) {
   writeAppState(nextState)
 }
 
+export function setQuestionCount(gameId: GameId, questionCount: QuestionCount) {
+  const state = readAppState()
+  const nextState: PersistedAppState = {
+    ...state,
+    games: {
+      ...state.games,
+      [gameId]: {
+        ...createDefaultStats(),
+        ...state.games[gameId],
+        questionCount: normalizeQuestionCount(questionCount),
+      },
+    },
+  }
+
+  writeAppState(nextState)
+}
+
 export function recordRoundResult(result: RoundResultInput): RoundResult {
   const state = readAppState()
   const currentStats = getGameStats(result.gameId)
@@ -376,6 +512,7 @@ export function recordRoundResult(result: RoundResultInput): RoundResult {
 
   const nextResult: RoundResult = {
     ...result,
+    roundId: createRoundId(result),
     previousBestScore,
     beatHighScore,
   }
@@ -383,6 +520,7 @@ export function recordRoundResult(result: RoundResultInput): RoundResult {
   const nextStats: GameLocalStats = {
     ...currentStats,
     lastDifficulty: result.difficultyId,
+    roundsPlayed: currentStats.roundsPlayed + 1,
     recentResult: nextResult,
     highScore: beatHighScore
       ? {
@@ -569,4 +707,25 @@ export function useTrackingConsent() {
   }, [])
 
   return trackingConsent
+}
+
+export function useDisplayName() {
+  const [displayName, setDisplayNameState] = useState(
+    () => getPlayerProfile().displayName,
+  )
+
+  useEffect(() => {
+    const update = () => setDisplayNameState(getPlayerProfile().displayName)
+
+    update()
+    window.addEventListener('storage', update)
+    window.addEventListener(STORAGE_EVENT, update)
+
+    return () => {
+      window.removeEventListener('storage', update)
+      window.removeEventListener(STORAGE_EVENT, update)
+    }
+  }, [])
+
+  return displayName
 }

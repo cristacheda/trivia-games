@@ -47,7 +47,7 @@
 - The homepage and shared app shell read only the lightweight app-state layer from `src/lib/storage.ts`; game routes import `src/lib/storage-decks.ts` when they need question-bank-backed deck logic
 - Round results and preferences are stored through `src/lib/storage.ts`
 - Sound cues are generated client-side through `src/lib/sound.ts`
-- Analytics runs through `src/integrations`, while auth and score sync providers remain no-op placeholders
+- Analytics runs through `src/integrations`; auth and score sync use no-op fallbacks by default and switch to Supabase-backed providers when the required environment variables are present
 - The header logo uses the smaller `public/atlas.webp` asset for the live shell, while the larger PNG icons remain available for PWA install surfaces
 - The browser document title and description meta tag are updated on route changes by `src/components/seo/route-seo.tsx`
 - `src/components/layout/app-shell.tsx` owns the page-height shell, including the top inset around the app chrome and the footer flush alignment at the bottom edge
@@ -77,9 +77,15 @@
 
 ## Planned external integrations
 
-- Supabase for auth and sync
+- Supabase is the current optional auth and sync path when configured
 - Consent manager for GDPR-sensitive tracking
 - Additional analytics destinations if the product outgrows the current PostHog setup
+
+## Conditional auth and sync
+
+- `src/app/app-providers.tsx` creates Supabase auth and score-sync providers only when `VITE_SUPABASE_URL` and an anon key are available; otherwise the app keeps the existing no-op providers
+- When Supabase is active, the app schedules a local snapshot sync after auth changes and storage updates so local scores, profile fields, and recent results can be mirrored without changing the local-first gameplay model
+- Anonymous play still works without Supabase because the gameplay routes continue reading and writing local state through `src/lib/storage.ts`
 
 ## Current analytics
 

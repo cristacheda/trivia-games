@@ -26,7 +26,7 @@ Atlas of Answers is a collection of web games designed to help players train for
 - Preferences and scores are stored in the browser with `localStorage`.
 - Flag quiz country exposure is also tracked in `localStorage` so new rounds avoid repeating flags until a full country cycle has been used.
 - Cookies are not the default persistence mechanism.
-- Google and GitHub login are planned for cross-device sync later.
+- Optional Supabase-backed sign-in and score sync may be available in environments that are configured for it, while anonymous local play remains the default.
 - First-time visitors are prompted with an in-app privacy panel to decide whether optional analytics are enabled.
 - Scores and gameplay progress still stay local even when optional analytics are denied.
 
@@ -101,6 +101,6 @@ Atlas of Answers is a collection of web games designed to help players train for
 ## Near-term roadmap
 
 - Build the official-language game now teased on the homepage
-- Add login and score sync with Supabase
+- Expand the optional Supabase sync rollout beyond the environments that already expose it
 - Refine privacy onboarding and consent copy
 - Review PostHog event quality and expand game-specific reporting where useful

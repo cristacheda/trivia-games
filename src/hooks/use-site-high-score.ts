@@ -1,30 +1,31 @@
 import { useEffect, useState } from 'react'
 import { useAppServices } from '@/app/app-providers'
-import type { GameId, SiteHighScoreLookup } from '@/types/game'
+import type { GameId, SiteLeaderboardLookup } from '@/types/game'
 
-const comingSoonSiteHighScore: SiteHighScoreLookup = {
+const comingSoonSiteLeaderboard: SiteLeaderboardLookup = {
   status: 'coming-soon',
-  record: null,
+  entries: [],
+  playerRank: null,
 }
 
-export function useSiteHighScore(gameId: GameId) {
+export function useSiteLeaderboard(gameId: GameId) {
   const { scoreSync } = useAppServices()
-  const [siteHighScore, setSiteHighScore] =
-    useState<SiteHighScoreLookup>(comingSoonSiteHighScore)
+  const [siteLeaderboard, setSiteLeaderboard] =
+    useState<SiteLeaderboardLookup>(comingSoonSiteLeaderboard)
 
   useEffect(() => {
     let cancelled = false
 
     void scoreSync
-      .getSiteHighScore(gameId)
-      .then((nextSiteHighScore) => {
+      .getSiteLeaderboard(gameId)
+      .then((nextSiteLeaderboard) => {
         if (!cancelled) {
-          setSiteHighScore(nextSiteHighScore)
+          setSiteLeaderboard(nextSiteLeaderboard)
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setSiteHighScore(comingSoonSiteHighScore)
+          setSiteLeaderboard(comingSoonSiteLeaderboard)
         }
       })
 
@@ -33,5 +34,5 @@ export function useSiteHighScore(gameId: GameId) {
     }
   }, [gameId, scoreSync])
 
-  return siteHighScore
+  return siteLeaderboard
 }

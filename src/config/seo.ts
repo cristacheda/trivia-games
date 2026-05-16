@@ -43,6 +43,21 @@ export const routeSeo: Record<string, RouteSeo> = {
     description:
       'Identify cocktails from photos across easy, medium, and hard difficulty levels with local score tracking.',
   },
+  '/settings': {
+    title: 'Settings | Atlas of Answers',
+    description:
+      'Manage sound, privacy, and account sync preferences for Atlas of Answers.',
+  },
+  '/terms': {
+    title: 'Terms of Service | Atlas of Answers',
+    description:
+      'Review the terms that govern access to Atlas of Answers, including anonymous play and acceptable use.',
+  },
+  '/privacy': {
+    title: 'Privacy Policy | Atlas of Answers',
+    description:
+      'Learn how Atlas of Answers handles local storage, optional analytics, and privacy choices.',
+  },
   '*': {
     title: `Page Not Found | ${siteConfig.title}`,
     description: defaultDescription,

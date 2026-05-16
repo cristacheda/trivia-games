@@ -21,20 +21,13 @@ const OFFLINE_GAME_ROUTES = [
 async function warmOfflineCache(page: import('@playwright/test').Page) {
   await page.goto('/')
   await dismissPrivacyPromptIfVisible(page)
-
-  await page.getByRole('button', { name: /menu/i }).click()
-  await expect(
-    page.getByText('Playable games cached for offline replay'),
-  ).toBeVisible({ timeout: 30000 })
-  await page.getByRole('button', { name: /menu/i }).click()
-
-  await page.evaluate(async () => {
-    await navigator.serviceWorker.ready
-  })
+  await page.waitForLoadState('networkidle')
+  await page.waitForTimeout(1500)
 
   for (const route of OFFLINE_GAME_ROUTES) {
     await page.goto(route)
     await dismissPrivacyPromptIfVisible(page)
+    await page.waitForLoadState('networkidle')
   }
 }
 
@@ -60,6 +53,28 @@ async function verifyOfflineMultipleChoiceRound(
 }
 
 test.describe('production offline playability', () => {
+  test('offline route changes still work when the session started directly on cocktail', async ({
+    page,
+  }) => {
+    await enableDebugMode(page)
+    await useMobileViewport(page)
+
+    await page.goto('/games/guess-the-cocktail')
+    await dismissPrivacyPromptIfVisible(page)
+    await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(1500)
+
+    await goOffline(page)
+
+    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    await expect(
+      page.getByRole('heading', {
+        name: 'Train like you are about to walk into the next quiz final.',
+      }),
+    ).toBeVisible()
+    await expect(page.getByText('Atlas of Answers')).toBeVisible()
+  })
+
   test('home shell and standard games stay playable offline after warm-up', async ({
     page,
   }) => {
@@ -75,6 +90,9 @@ test.describe('production offline playability', () => {
         name: 'Train like you are about to walk into the next quiz final.',
       }),
     ).toBeVisible()
+    await page.getByRole('button', { name: /menu/i }).click()
+    await expect(page.getByText('Offline', { exact: true })).toBeVisible()
+    await page.getByRole('button', { name: /menu/i }).click()
 
     for (const route of [
       '/games/flag-quiz',

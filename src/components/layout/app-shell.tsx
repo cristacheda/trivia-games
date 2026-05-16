@@ -8,16 +8,19 @@ import {
   ChevronRight,
   GitBranch,
   Globe2,
+  LogOut,
   Menu,
   RefreshCw,
+  Settings,
   UserRound,
   Wifi,
   WifiOff,
   X,
 } from 'lucide-react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAppServices } from '@/app/app-providers'
 import { AppChromeContext } from '@/components/layout/app-chrome'
+import { shellLogoSrc } from '@/components/layout/shell-logo'
 import { PrivacyPanel } from '@/components/privacy-panel'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,6 +37,7 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const location = useLocation()
+  const navigate = useNavigate()
   const shouldPromptForTrackingOnLoad = getTrackingConsent() === 'unknown'
   const isOnline = useOnlineStatus()
   const { needRefresh, refreshApp } = usePwaStatus()
@@ -44,7 +48,12 @@ export function AppShell({ children }: AppShellProps) {
   const [panelRoute, setPanelRoute] = useState<string | null>(
     shouldPromptForTrackingOnLoad ? location.pathname : null,
   )
-  const [sessionUserId, setSessionUserId] = useState<string | null>(null)
+  const [cloudSessionSummary, setCloudSessionSummary] = useState({
+    userId: null as string | null,
+    isAnonymous: false,
+  })
+  const [accountError, setAccountError] = useState<string | null>(null)
+  const [accountPending, setAccountPending] = useState(false)
   const [chromeHidden, setChromeHidden] = useState(false)
   const trackingConsent = useTrackingConsent()
   const isGameRoute = location.pathname.startsWith('/games/')
@@ -59,6 +68,12 @@ export function AppShell({ children }: AppShellProps) {
     }),
     [chromeHidden],
   )
+  const sessionSummary = isOnline
+    ? cloudSessionSummary
+    : {
+        userId: null,
+        isAnonymous: false,
+      }
 
   useEffect(() => {
     analytics.trackPageView(location.pathname)
@@ -67,16 +82,22 @@ export function AppShell({ children }: AppShellProps) {
   useEffect(() => {
     let mounted = true
 
+    if (!isOnline) {
+      return () => {
+        mounted = false
+      }
+    }
+
     void auth.getSession().then((session) => {
       if (mounted) {
-        setSessionUserId(session.userId)
+        setCloudSessionSummary(session)
       }
     })
 
     return () => {
       mounted = false
     }
-  }, [auth])
+  }, [auth, isOnline])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -95,6 +116,48 @@ export function AppShell({ children }: AppShellProps) {
     setIsMenuOpen(false)
     setIsAccountOpen(false)
     setIsPrivacyOpen(false)
+  }
+
+  const handleGoogleAuth = async () => {
+    setAccountError(null)
+    setAccountPending(true)
+
+    try {
+      await auth.signInWithGoogle()
+    } catch (error) {
+      setAccountError(error instanceof Error ? error.message : 'Google sign-in failed.')
+    } finally {
+      setAccountPending(false)
+    }
+  }
+
+  const googleButtonLabel = accountPending
+    ? 'Opening Google...'
+    : sessionSummary.userId && sessionSummary.isAnonymous
+      ? 'Link Google account'
+      : 'Continue with Google'
+
+  const handleSignOut = async () => {
+    setAccountError(null)
+    setAccountPending(true)
+
+    try {
+      await auth.signOut()
+      setCloudSessionSummary({
+        userId: null,
+        isAnonymous: false,
+      })
+      closePanels()
+    } catch (error) {
+      setAccountError(error instanceof Error ? error.message : 'Sign out failed.')
+    } finally {
+      setAccountPending(false)
+    }
+  }
+
+  const openSettings = () => {
+    closePanels()
+    void navigate('/settings')
   }
 
   const openPrivacyPanel = () => {
@@ -133,7 +196,7 @@ export function AppShell({ children }: AppShellProps) {
                       alt={`${siteConfig.title} logo`}
                       className="h-full w-full object-cover"
                       loading="eager"
-                      src="/atlas.webp"
+                      src={shellLogoSrc}
                     />
                   </div>
                   <div className="min-w-0">
@@ -266,6 +329,15 @@ export function AppShell({ children }: AppShellProps) {
                         </a>
                       </Button>
                     </div>
+
+                    <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                      <Link className="underline-offset-4 hover:underline" to="/privacy">
+                        Privacy Policy
+                      </Link>
+                      <Link className="underline-offset-4 hover:underline" to="/terms">
+                        Terms of Service
+                      </Link>
+                    </nav>
                   </div>
                 </div>
               ) : null}
@@ -294,26 +366,66 @@ export function AppShell({ children }: AppShellProps) {
                         Account
                       </p>
                       <h2 className="mt-2 font-serif text-xl font-semibold tracking-tight sm:text-2xl">
-                        {sessionUserId ? 'Signed in' : 'Save your progress later'}
+                        {sessionSummary.userId
+                          ? sessionSummary.isAnonymous
+                            ? 'Cloud sync is active'
+                            : 'Signed in with Google'
+                          : 'Save your progress later'}
                       </h2>
                       <p className="mt-2 text-sm text-muted-foreground">
-                        {sessionUserId
-                          ? `Session id: ${sessionUserId}`
-                          : 'Anonymous play stays local. Login remains optional and is still stubbed for future sync.'}
+                        {sessionSummary.userId
+                          ? sessionSummary.isAnonymous
+                            ? 'Anonymous play now syncs scores and settings to your Supabase profile. Link Google any time to keep the same profile.'
+                            : `Session id: ${sessionSummary.userId}`
+                          : 'Anonymous play still works locally. Once Supabase auth initializes, progress can sync without forcing a login.'}
                       </p>
                     </div>
 
                     <div className="grid gap-2">
-                      <Button onClick={() => void auth.signInWithGoogle()} variant="secondary">
-                        Continue with Google
-                      </Button>
-                      <Button onClick={() => void auth.signInWithGitHub()} variant="outline">
-                        Continue with GitHub
-                      </Button>
+                      {sessionSummary.userId && !sessionSummary.isAnonymous ? (
+                        <>
+                          <Button onClick={openSettings} variant="secondary">
+                            <Settings className="h-4 w-4" />
+                            Settings
+                          </Button>
+                          <Button
+                            disabled={accountPending}
+                            onClick={() => void handleSignOut()}
+                            variant="outline"
+                          >
+                            <LogOut className="h-4 w-4" />
+                            {accountPending ? 'Signing out...' : 'Sign out'}
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            disabled={accountPending}
+                            onClick={() => void handleGoogleAuth()}
+                            variant="secondary"
+                          >
+                            {googleButtonLabel}
+                          </Button>
+                          <Button onClick={openSettings} variant="outline">
+                            <Settings className="h-4 w-4" />
+                            Settings
+                          </Button>
+                        </>
+                      )}
                     </div>
 
+                    {accountError ? (
+                      <p className="rounded-2xl bg-[#fff0ea] px-3 py-2 text-sm text-[#8a3d1f]">
+                        {accountError}
+                      </p>
+                    ) : null}
+
                     <p className="text-xs text-muted-foreground">
-                      Local scores still work without an account.
+                      {sessionSummary.userId
+                        ? sessionSummary.isAnonymous
+                          ? 'Cloud sync is active for this anonymous profile. Link Google later to keep the same history.'
+                          : 'Cloud sync is active for this signed-in profile.'
+                        : 'Local play still works offline. Cloud sync starts once a Supabase session is available.'}
                     </p>
                   </div>
                 </div>
@@ -336,7 +448,15 @@ export function AppShell({ children }: AppShellProps) {
 
           {!isGameRoute ? (
             <footer className="border-t border-white/55 py-3 text-sm text-muted-foreground">
-              <div className="flex items-center justify-end">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <nav className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <Link className="underline-offset-4 hover:underline" to="/privacy">
+                    Privacy Policy
+                  </Link>
+                  <Link className="underline-offset-4 hover:underline" to="/terms">
+                    Terms of Service
+                  </Link>
+                </nav>
                 <span className="font-medium">
                   v{buildInfo.version} · {buildInfo.shortCommitSha}
                 </span>

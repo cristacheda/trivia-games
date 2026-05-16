@@ -24,6 +24,8 @@ for (const block of catalogBlocks) {
 
 const routes = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
+  { path: '/privacy', changefreq: 'monthly', priority: '0.4' },
+  { path: '/terms', changefreq: 'monthly', priority: '0.4' },
   ...gameIds.map((id) => ({ path: `/games/${id}`, changefreq: 'weekly', priority: '0.9' })),
 ]
 
